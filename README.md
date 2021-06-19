@@ -94,9 +94,8 @@
 
 捐赠虚拟货币
 
-| 代币           | 钱包地址                                   | 备注                                              |
-| -------------- | ------------------------------------------ | ------------------------------------------------- |
-| 柚子(EOS)      | doramusic123                               | TAG中直接填写你的github用户名                     |
-| USDT(TRC-20链) | TYVXzqctSSPSTeVPYg7i7qbEtSxwrAJQ5y         | 发送你的github用户名至邮箱dora924666990@gmail.com |
-| 以太坊(ETH)    | 0x5dA12D7DB7B5D6C8D2Af78723F6dCE4A3C89caB9 | 发送你的github用户名至邮箱dora924666990@gmail.com |
-
+| 代币           | 钱包地址                                   | 备注                                                        |
+| -------------- | ------------------------------------------ | ----------------------------------------------------------- |
+| 柚子(EOS)      | doramusic123                               | TAG中直接填写你的github用户名                               |
+| USDT(TRC-20链) | TYVXzqctSSPSTeVPYg7i7qbEtSxwrAJQ5y         | 发送你的钱包地址和github用户名至邮箱dora924666990@gmail.com |
+| 以太坊(ETH)    | 0x5dA12D7DB7B5D6C8D2Af78723F6dCE4A3C89caB9 | 发送你的钱包地址和github用户名至邮箱dora924666990@gmail.com |

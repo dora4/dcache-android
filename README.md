@@ -1,4 +1,5 @@
-# dcache-android
+# dcache-android ![Release](https://jitpack.io/v/dora4/dcache-android.svg)
+
 一个使用在Android平台的数据缓存框架，支持将model数据从后端接口下载后，简单的配置即可自动映射到数据库，并在断网的情况下可以离线读取
 
 
@@ -89,11 +90,13 @@
           });
   ```
 
-
-如果帮您节省了大量的开发时间，对您有所帮助，欢迎您的赞赏！
+#### 如果帮您节省了大量的开发时间，对您有所帮助，欢迎您的赞赏！
 
 捐赠虚拟货币
 
-柚子(EOS): 钱包地址 - doramusic123 , 备注TAG - 你的github用户名
-USDT(TRC-20链): 钱包地址 - TYVXzqctSSPSTeVPYg7i7qbEtSxwrAJQ5y
-以太坊(ETH): 钱包地址 - 0x5dA12D7DB7B5D6C8D2Af78723F6dCE4A3C89caB9
+| 代币           | 钱包地址                                   | 备注                                              |
+| -------------- | ------------------------------------------ | ------------------------------------------------- |
+| 柚子(EOS)      | doramusic123                               | TAG中直接填写你的github用户名                     |
+| USDT(TRC-20链) | TYVXzqctSSPSTeVPYg7i7qbEtSxwrAJQ5y         | 发送你的github用户名至邮箱dora924666990@gmail.com |
+| 以太坊(ETH)    | 0x5dA12D7DB7B5D6C8D2Af78723F6dCE4A3C89caB9 | 发送你的github用户名至邮箱dora924666990@gmail.com |
+

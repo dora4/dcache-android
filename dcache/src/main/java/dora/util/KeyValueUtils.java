@@ -61,14 +61,6 @@ public final class KeyValueUtils {
         return mCache.keySet();
     }
 
-    public String printCacheKeys() {
-        Set<String> keys = mCache.keySet();
-        if (keys.size() > 0) {
-            return TextUtils.combineString(keys.iterator(), "\n");
-        }
-        return "no key found";
-    }
-
     public static KeyValueUtils getInstance() {
         if (mInstance == null) {
             throw new IllegalStateException("dora.BaseApplication未被使用");

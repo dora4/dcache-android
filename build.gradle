@@ -1,0 +1,39 @@
+ext {
+    compile_sdk = 30
+    min_sdk = 21
+    target_sdk = 30
+    build_tools_version = '30.0.0'
+    release_version_code = 1
+    release_version_name = '1.0.0'
+}
+
+buildscript {
+    ScriptHandler handler -> repositories {
+        google()
+        jcenter()
+        mavenCentral()
+    }
+    ext {
+        gradle_version = '4.0.0'
+        gradle_plugin_version = '1.5'
+        kotlin_version = '1.4.21'
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:4.0.0"
+        classpath "com.github.dcendents:android-maven-gradle-plugin:${this.gradle_plugin_version}"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${this.kotlin_version}"
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+        maven { url "https://jitpack.io" }
+        mavenLocal()
+        google()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

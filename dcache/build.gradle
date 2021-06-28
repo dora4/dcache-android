@@ -19,9 +19,32 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    packagingAar(project, android)
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+void packagingAar(project, android) {
+    android.libraryVariants.all { variant ->
+        if (variant.buildType.name == "debug") {
+            // 修改aar名称
+            variant.outputs.all { output ->
+                outputFileName = "${project.name}-v${android.defaultConfig.versionName}@${variant.buildType.name}.aar"
+            }
+            // 复制aar到指定目录
+            variant.assemble.doLast {
+                variant.outputs.all { output ->
+                    // 输出目录在：项目目录/build/outputs/aar/
+                    def outputPath = "${project.rootDir.absolutePath}/build/outputs/aar"
+                    copy {
+                        from output.outputFile
+                        into outputPath
+                    }
+                }
+            }
+        }
     }
 }
 

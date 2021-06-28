@@ -230,19 +230,18 @@ public class OrmDao<T extends OrmTable> implements Dao<T> {
 
     @Override
     public boolean insert(T bean) {
-        return insertSafety(bean, mDatabase);
+        return insertInternal(bean, mDatabase);
     }
 
     @Override
     public boolean insert(List<T> beans) {
-        return insertSafety(beans, mDatabase);
+        return insertInternal(beans, mDatabase);
     }
 
-    @Override
-    public boolean insertSafety(List<T> beans, SQLiteDatabase db) {
+    private boolean insertInternal(List<T> beans, SQLiteDatabase db) {
         int count = 0;
         for (T bean : beans) {
-            boolean isOk = insertSafety(bean, db);
+            boolean isOk = insertInternal(bean, db);
             if (isOk) {
                 count++;
             }
@@ -250,8 +249,7 @@ public class OrmDao<T extends OrmTable> implements Dao<T> {
         return count == beans.size();
     }
 
-    @Override
-    public boolean insertSafety(T bean, SQLiteDatabase db) {
+    private boolean insertInternal(T bean, SQLiteDatabase db) {
         TableManager manager = TableManager.getInstance();
         String tableName = manager.getTableName(mBeanClass);
         ContentValues contentValues = getContentValues(bean);
@@ -260,7 +258,7 @@ public class OrmDao<T extends OrmTable> implements Dao<T> {
 
     @Override
     public boolean delete(WhereBuilder builder) {
-        return deleteSafety(builder, mDatabase);
+        return deleteInternal(builder, mDatabase);
     }
 
     @Override
@@ -268,23 +266,21 @@ public class OrmDao<T extends OrmTable> implements Dao<T> {
         PrimaryKeyEntity primaryKey = bean.getPrimaryKey();
         String name = primaryKey.getName();
         String value = primaryKey.getValue();
-        return deleteSafety(WhereBuilder.create(new Condition(name + "=?", new String[]{value})), mDatabase);
+        return deleteInternal(WhereBuilder.create(new Condition(name + "=?", new String[]{value})), mDatabase);
     }
 
     @Override
     public boolean deleteAll() {
-        return deleteAllSafety(mDatabase);
+        return deleteAllInternal(mDatabase);
     }
 
-    @Override
-    public boolean deleteAllSafety(SQLiteDatabase db) {
+    private boolean deleteAllInternal(SQLiteDatabase db) {
         TableManager manager = TableManager.getInstance();
         String tableName = manager.getTableName(mBeanClass);
         return db.delete(tableName, null, null) > 0;
     }
 
-    @Override
-    public boolean deleteSafety(WhereBuilder builder, SQLiteDatabase db) {
+    private boolean deleteInternal(WhereBuilder builder, SQLiteDatabase db) {
         TableManager manager = TableManager.getInstance();
         String tableName = manager.getTableName(mBeanClass);
         return db.delete(tableName, builder.getSelection(), builder.getSelectionArgs()) > 0;
@@ -292,7 +288,7 @@ public class OrmDao<T extends OrmTable> implements Dao<T> {
 
     @Override
     public boolean update(WhereBuilder builder, final T newBean) {
-        return updateSafety(builder, newBean, mDatabase);
+        return updateInternal(builder, newBean, mDatabase);
     }
 
     @Override
@@ -300,25 +296,24 @@ public class OrmDao<T extends OrmTable> implements Dao<T> {
         PrimaryKeyEntity primaryKey = bean.getPrimaryKey();
         String name = primaryKey.getName();
         String value = primaryKey.getValue();
-        return updateSafety(WhereBuilder.create(new Condition(name + "=?", new String[]{value})),
+        return updateInternal(WhereBuilder.create(new Condition(name + "=?", new String[]{value})),
                 bean, mDatabase);
     }
 
+    @Deprecated
     @Override
     public boolean updateAll(T newBean) {
-        return updateAllSafety(newBean, mDatabase);
+        return updateAllInternal(newBean, mDatabase);
     }
 
-    @Override
-    public boolean updateAllSafety(T newBean, SQLiteDatabase db) {
+    private boolean updateAllInternal(T newBean, SQLiteDatabase db) {
         TableManager manager = TableManager.getInstance();
         String tableName = manager.getTableName(mBeanClass);
         ContentValues contentValues = getContentValues(newBean);
         return db.update(tableName, contentValues, null, null) > 0;
     }
 
-    @Override
-    public boolean updateSafety(WhereBuilder builder, T newBean, SQLiteDatabase db) {
+    private boolean updateInternal(WhereBuilder builder, T newBean, SQLiteDatabase db) {
         TableManager manager = TableManager.getInstance();
         String tableName = manager.getTableName(mBeanClass);
         ContentValues contentValues = getContentValues(newBean);
@@ -333,6 +328,7 @@ public class OrmDao<T extends OrmTable> implements Dao<T> {
         return getResult(cursor);
     }
 
+    @Override
     public List<T> select(WhereBuilder builder) {
         return select(QueryBuilder.create().where(builder));
     }
@@ -371,6 +367,7 @@ public class OrmDao<T extends OrmTable> implements Dao<T> {
         return null;
     }
 
+    @Override
     public T selectOne(WhereBuilder builder) {
         return selectOne(QueryBuilder.create().where(builder));
     }
@@ -423,6 +420,7 @@ public class OrmDao<T extends OrmTable> implements Dao<T> {
         return count;
     }
 
+    @Override
     public long selectCount(WhereBuilder builder) {
         return selectCount(QueryBuilder.create().where(builder));
     }

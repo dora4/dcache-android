@@ -2,6 +2,8 @@ package dora.db;
 
 public interface OrmTable {
 
+    String INDEX_ID = "_id";
+
     /**
      * Gets the unique identifier's value.
      *

@@ -16,8 +16,6 @@ public class QueryBuilder {
 
     private static final String SPACE = "";
 
-    public static final String ID = "_id";
-
     private String[] mColumns;
 
     private String mGroup;

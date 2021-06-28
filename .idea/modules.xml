@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="ProjectModuleManager">
-    <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/dcache-android.iml" filepath="$PROJECT_DIR$/.idea/dcache-android.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/dcache/dcache-android.dcache.iml" filepath="$PROJECT_DIR$/.idea/modules/dcache/dcache-android.dcache.iml" />
-    </modules>
-  </component>
-</project>

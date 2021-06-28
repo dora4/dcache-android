@@ -79,10 +79,10 @@
   }
   ```
 
-  界面调用逻辑代码（如果不为集合数据，则调用getData()方法）
+  界面调用逻辑代码（如果不为集合数据，则调用fetchData()方法）
 
   ```java
-          repository.getListData().observe(this, new Observer<List<PopMusic>>() {
+          repository.fetchListData().observe(this, new Observer<List<PopMusic>>() {
               @Override
               public void onChanged(List<PopMusic> popMusics) {
                   ViewUtils.configRecyclerView(mBinding.rvDataCache).setAdapter(new PopMusicAdapter(popMusics));

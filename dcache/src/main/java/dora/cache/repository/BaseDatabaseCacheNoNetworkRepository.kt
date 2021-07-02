@@ -37,7 +37,7 @@ abstract class BaseDatabaseCacheNoNetworkRepository<T : OrmTable>(context: Conte
                             }
                             return true
                         }
-                        liveData.setValue(null)
+                        liveData.value = null
                         return false
                     }
 
@@ -59,7 +59,7 @@ abstract class BaseDatabaseCacheNoNetworkRepository<T : OrmTable>(context: Conte
 
                     override fun onFailure(code: Int, msg: String?) {
                         if (isClearDataOnNetworkError) {
-                            liveData.setValue(null)
+                            liveData.value = null
                             dao.delete(where())
                         }
                     }
@@ -90,7 +90,7 @@ abstract class BaseDatabaseCacheNoNetworkRepository<T : OrmTable>(context: Conte
                             }
                             return true
                         }
-                        liveData.setValue(null)
+                        liveData.value = null
                         return false
                     }
 
@@ -112,7 +112,7 @@ abstract class BaseDatabaseCacheNoNetworkRepository<T : OrmTable>(context: Conte
 
                     override fun onFailure(code: Int, msg: String?) {
                         if (isClearDataOnNetworkError) {
-                            liveData.setValue(null)
+                            liveData.value = null
                             dao.delete(where())
                         }
                     }

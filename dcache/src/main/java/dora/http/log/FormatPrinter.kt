@@ -33,7 +33,7 @@ interface FormatPrinter {
      * @param responseUrl  请求地址
      */
     fun printJsonResponse(chainMs: Long, isSuccessful: Boolean, code: Int, headers: String, contentType: MediaType?,
-                          bodyString: String?, segments: List<String?>, message: String, responseUrl: String)
+                          bodyString: String?, segments: List<String>, message: String, responseUrl: String)
 
     /**
      * 打印网络响应信息, 当网络响应时 {[okhttp3.ResponseBody]} 为 `null` 或不可解析的情况
@@ -47,5 +47,5 @@ interface FormatPrinter {
      * @param responseUrl  请求地址
      */
     fun printFileResponse(chainMs: Long, isSuccessful: Boolean, code: Int, headers: String,
-                          segments: List<String?>, message: String, responseUrl: String)
+                          segments: List<String>, message: String, responseUrl: String)
 }

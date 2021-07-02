@@ -44,7 +44,7 @@ class RequestInterceptor : Interceptor {
             bodyString = printResult(request, originalResponse, logResponse)
         }
         if (logResponse) {
-            val segmentList: List<String?> = request.url.encodedPathSegments
+            val segmentList: List<String> = request.url.encodedPathSegments
             val header = originalResponse.headers.toString()
             val code = originalResponse.code
             val isSuccessful = originalResponse.isSuccessful
@@ -100,7 +100,7 @@ class RequestInterceptor : Interceptor {
      * @param clone        克隆后的服务器响应内容
      * @return 解析后的响应结果
      */
-    private fun parseContent(responseBody: ResponseBody?, encoding: String?, clone: Buffer): String {
+    private fun parseContent(responseBody: ResponseBody?, encoding: String?, clone: Buffer): String? {
         var charset = Charset.forName("UTF-8")
         val contentType = responseBody!!.contentType()
         if (contentType != null) {
@@ -160,7 +160,7 @@ class RequestInterceptor : Interceptor {
                 if (contentType != null) {
                     charset = contentType.charset(charset)
                 }
-                var json: String? = requestbuffer.readString(charset!!)
+                var json: String = requestbuffer.readString(charset!!)
                 if (UrlEncoderUtils.hasUrlEncoded(json)) {
                     json = URLDecoder.decode(json, convertCharset(charset))
                 }

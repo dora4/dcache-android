@@ -1,5 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'kotlin-android'
+
 group = 'com.github.dora4'
 
 android {
@@ -10,9 +12,6 @@ android {
         versionCode this.release_version_code
         versionName this.release_version_name
     }
-    buildFeatures {
-        dataBinding true
-    }
     buildTypes {
         release {
             minifyEnabled false
@@ -21,8 +20,7 @@ android {
     }
     packagingAar(project, android)
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        kotlinOptions.freeCompilerArgs += ['-module-name', "dcache"]
     }
 }
 
@@ -32,6 +30,22 @@ void packagingAar(project, android) {
             // 修改aar名称
             variant.outputs.all { output ->
                 outputFileName = "${project.name}-v${android.defaultConfig.versionName}@${variant.buildType.name}.aar"
+            }
+            // 复制aar到指定目录
+            variant.assemble.doLast {
+                variant.outputs.all { output ->
+                    // 输出目录在：项目目录/build/outputs/aar/
+                    def outputPath = "${project.rootDir.absolutePath}/build/outputs/aar"
+                    copy {
+                        from output.outputFile
+                        into outputPath
+                    }
+                }
+            }
+        } else if (variant.buildType.name == "release") {
+            // 修改aar名称
+            variant.outputs.all { output ->
+                outputFileName = "${project.name}-v${android.defaultConfig.versionName}.aar"
             }
             // 复制aar到指定目录
             variant.assemble.doLast {

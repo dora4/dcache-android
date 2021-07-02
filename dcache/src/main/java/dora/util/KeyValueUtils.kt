@@ -1,0 +1,49 @@
+package dora.util
+
+import android.content.Context
+import dora.cache.Cache
+import dora.cache.LruCache
+
+/**
+ * 内存缓存工具。
+ */
+object KeyValueUtils {
+
+    private val CACHE: Cache<String, Any> = LruCache(Int.MAX_VALUE)
+
+    /**
+     * 添加缓存，如果name重复则会失败。
+     *
+     * @param name
+     * @param cache
+     */
+    private fun setCacheToMemory(name: String, cache: Any) {
+        CACHE.put(name, cache)
+    }
+
+    fun getCacheFromMemory(name: String): Any? {
+        return CACHE.get(name)
+    }
+
+    fun removeCacheAtMemory(name: String) {
+        if (CACHE.containsKey(name)) {
+            CACHE.remove(name)
+        }
+    }
+
+    /**
+     * 推荐使用这个方法而不是[.setCacheToMemory]，[.updateCacheAtMemory]
+     * 这个方法能保证更新成功。
+     *
+     * @param name
+     * @param cache
+     */
+    fun updateCacheAtMemory(name: String, cache: Any) {
+        removeCacheAtMemory(name)
+        setCacheToMemory(name, cache)
+    }
+
+    fun cacheKeys(): Set<String>? {
+        return CACHE.keySet()
+    }
+}

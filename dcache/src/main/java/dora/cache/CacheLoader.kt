@@ -23,7 +23,11 @@ object CacheLoader {
      */
     private fun loadCache(repositoryClazz: Class<out BaseMemoryCacheRepository<*>>) {
         val repository = ReflectionUtils.newInstance(repositoryClazz)
-        val data = repository.loadData()
-        KeyValueUtils.getInstance().updateCacheAtMemory(repository.cacheName, data)
+        repository?.let {
+            val data = it.loadData()
+            if (it.cacheName != null && data != null) {
+                KeyValueUtils.updateCacheAtMemory(it.cacheName!!, data)
+            }
+        }
     }
 }

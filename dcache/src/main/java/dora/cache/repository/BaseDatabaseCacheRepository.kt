@@ -37,7 +37,7 @@ abstract class BaseDatabaseCacheRepository<T : OrmTable>(context: Context, clazz
                             }
                             return true
                         }
-                        liveData.setValue(null)
+                        liveData.value = null
                         return false
                     }
 
@@ -59,7 +59,7 @@ abstract class BaseDatabaseCacheRepository<T : OrmTable>(context: Context, clazz
 
                     override fun onFailure(code: Int, msg: String?) {
                         if (isClearDataOnNetworkError) {
-                            liveData.setValue(null)
+                            liveData.value = null
                             dao.delete(where())
                         }
                     }
@@ -84,13 +84,13 @@ abstract class BaseDatabaseCacheRepository<T : OrmTable>(context: Context, clazz
                     override fun loadFromCache(type: DataSource.CacheType?): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
                             val entities = dao.select(where())
-                            if (entities != null && entities.size > 0) {
+                            if (entities != null && entities.isNotEmpty()) {
                                 onInterceptData(DataSource.Type.CACHE, entities)
                                 liveData.setValue(entities)
                             }
                             return true
                         }
-                        liveData.setValue(null)
+                        liveData.value = null
                         return false
                     }
 
@@ -112,7 +112,7 @@ abstract class BaseDatabaseCacheRepository<T : OrmTable>(context: Context, clazz
 
                     override fun onFailure(code: Int, msg: String?) {
                         if (isClearDataOnNetworkError) {
-                            liveData.setValue(null)
+                            liveData.value = null
                             dao.delete(where())
                         }
                     }

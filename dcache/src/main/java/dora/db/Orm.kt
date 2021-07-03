@@ -6,44 +6,29 @@ import android.database.sqlite.SQLiteOpenHelper
 import dora.db.exception.OrmStateException
 
 object Orm {
-    private lateinit var sDatabase: SQLiteDatabase
-    private var sHelper: SQLiteOpenHelper? = null
+    private var database: SQLiteDatabase? = null
+    private var dbHelper: SQLiteOpenHelper? = null
     private const val STATE_DATABASE_NOT_EXISTS = -1
     private const val STATE_DATABASE_EXISTS = 0
-    private const val STATE_DATABASE_UPDATING = 1
-    private var sDatabaseState = STATE_DATABASE_NOT_EXISTS
-    val isPrepared: Boolean
-        get() = sDatabaseState == STATE_DATABASE_EXISTS
+    private var dbState = STATE_DATABASE_NOT_EXISTS
 
-    val isWaitingUpdate: Boolean
-        get() = sDatabaseState == STATE_DATABASE_UPDATING
-
-    @JvmStatic
-    fun update() {
-        sDatabaseState = STATE_DATABASE_UPDATING
+    fun getDB() : SQLiteDatabase {
+        if (isPrepared()) {
+            return database!!
+        }
+        throw OrmStateException("Database is not exists.")
     }
 
-    @JvmStatic
-    val database: SQLiteDatabase
-        get() = if (isPrepared) {
-            sDatabase
-        } else if (isWaitingUpdate) {
-            sDatabase = sHelper!!.writableDatabase
-            if (sDatabase != null) {
-                sDatabaseState = STATE_DATABASE_EXISTS
-            }
-            sDatabase
-        } else {
-            throw OrmStateException("Database is not exists.")
-        }
+    fun isPrepared() : Boolean {
+        return dbState == STATE_DATABASE_EXISTS
+    }
 
     @Synchronized
     fun init(context: Context, databaseName: String) {
-        sHelper = OrmSQLiteOpenHelper(context, databaseName, 1, null)
-        sDatabase = sHelper!!.writableDatabase
-        if (sDatabase != null) {
-            sDatabaseState = STATE_DATABASE_EXISTS
-        }
+        dbHelper = OrmSQLiteOpenHelper(context, databaseName, 1, null)
+        database = dbHelper!!.writableDatabase
+        dbState = STATE_DATABASE_EXISTS
+        dbHelper!!.onCreate(database)
     }
 
     @Synchronized
@@ -51,10 +36,9 @@ object Orm {
         val name: String = config.databaseName
         val versionCode: Int = config.versionCode
         val tables: Array<Class<out OrmTable>>? = config.tables
-        sHelper = OrmSQLiteOpenHelper(context, name, versionCode, tables)
-        sDatabase = sHelper!!.writableDatabase
-        if (sDatabase != null) {
-            sDatabaseState = STATE_DATABASE_EXISTS
-        }
+        dbHelper = OrmSQLiteOpenHelper(context, name, versionCode, tables)
+        database = dbHelper!!.writableDatabase
+        dbState = STATE_DATABASE_EXISTS
+        dbHelper!!.onCreate(database)
     }
 }

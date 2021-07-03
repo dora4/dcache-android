@@ -21,9 +21,10 @@ import dora.db.table.PropertyConverter
 import dora.util.ReflectionUtils
 import java.lang.reflect.*
 import java.util.*
+import kotlin.jvm.Throws
 
 class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>) : Dao<T> {
-    private val database: SQLiteDatabase
+    private val database: SQLiteDatabase = Orm.getDB()
     private fun isAssignableFromBoolean(fieldType: Class<*>): Boolean {
         return Boolean::class.javaPrimitiveType!!.isAssignableFrom(fieldType) ||
                 Boolean::class.java.isAssignableFrom(fieldType)
@@ -599,9 +600,5 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
         init {
             this.clazz = clazz
         }
-    }
-
-    init {
-        database = Orm.database
     }
 }

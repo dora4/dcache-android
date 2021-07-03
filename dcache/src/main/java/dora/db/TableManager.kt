@@ -2,9 +2,6 @@ package dora.db
 
 import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
-import dora.db.Orm.database
-import dora.db.Orm.isPrepared
-import dora.db.Orm.update
 import dora.db.constraint.*
 import dora.db.dao.DaoFactory.removeDao
 import dora.db.exception.ConstraintException
@@ -277,7 +274,6 @@ object TableManager {
             e.message?.let { OrmLog.i(it) }
         }
         removeDao(tableClass)
-        update()
     }
 
     private fun <T : OrmTable> _upgradeTable(tableClass: Class<T>, db: SQLiteDatabase) {
@@ -299,7 +295,6 @@ object TableManager {
             }
         }
         removeDao(tableClass)
-        update()
     }
 
     private fun <T : OrmTable> _dropTable(tableClass: Class<T>, db: SQLiteDatabase) {
@@ -309,29 +304,28 @@ object TableManager {
         OrmLog.d(sql)
         db.execSQL(sql)
         removeDao(tableClass)
-        update()
     }
 
     fun <T : OrmTable> createTable(tableClass: Class<T>) {
-        if (isPrepared) {
-            _createTable(tableClass, database)
+        if (Orm.isPrepared()) {
+            _createTable(tableClass, Orm.getDB())
         }
     }
 
     fun <T : OrmTable> upgradeTable(tableClass: Class<T>) {
-        if (isPrepared) {
-            _upgradeTable(tableClass, database)
+        if (Orm.isPrepared()) {
+            _upgradeTable(tableClass, Orm.getDB())
         }
     }
 
     fun <T : OrmTable> dropTable(tableClass: Class<T>) {
-        if (isPrepared) {
-            _dropTable(tableClass, database)
+        if (Orm.isPrepared()) {
+            _dropTable(tableClass, Orm.getDB())
         }
     }
 
     fun <T : OrmTable> recreateTable(tableClass: Class<T>) {
-        if (isPrepared) {
+        if (Orm.isPrepared()) {
             Transaction.execute(tableClass) {
                 _dropTable(tableClass, db)
                 _createTable(tableClass, db)

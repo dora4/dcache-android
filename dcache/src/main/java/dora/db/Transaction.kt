@@ -7,7 +7,7 @@ import java.lang.IllegalArgumentException
 
 object Transaction {
 
-    val db = Orm.database
+    val db = Orm.getDB()
 
     fun execute(block: Transaction.() -> Unit) : Transaction = apply {
         try {
@@ -21,7 +21,8 @@ object Transaction {
         }
     }
 
-    fun <T : OrmTable> execute(tableClass: Class<T>, block: Transaction.(dao: OrmDao<T>) -> Unit) : Transaction = apply {
+    fun <T : OrmTable> execute(tableClass: Class<T>, block: Transaction.(dao: OrmDao<T>) -> Unit) :
+            Transaction = apply {
         val dao = DaoFactory.getDao(tableClass) ?: throw IllegalArgumentException("DAO not found.")
         try {
             db.beginTransaction()

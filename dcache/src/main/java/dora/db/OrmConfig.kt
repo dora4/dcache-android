@@ -1,7 +1,5 @@
 package dora.db
 
-import android.text.TextUtils
-
 class OrmConfig private constructor(builder: Builder) {
 
     val databaseName: String

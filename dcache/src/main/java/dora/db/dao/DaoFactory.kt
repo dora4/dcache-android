@@ -5,10 +5,12 @@ import java.lang.IllegalArgumentException
 import java.util.*
 
 object DaoFactory {
+
     private val DAO_MAP: MutableMap<Class<out OrmTable>, OrmDao<*>> = HashMap()
     private val LOCK1 = Any()
     private val LOCK2 = Any()
     private val LOCK3 = Any()
+
     fun <T : OrmTable> removeDao(beanClass: Class<T>) {
         synchronized(DaoFactory::class.java) {
             if (DAO_MAP.containsKey(beanClass)) {

@@ -1,15 +1,18 @@
 package dora.db
 
 import android.content.Context
+import android.database.DatabaseErrorHandler
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import java.lang.reflect.InvocationTargetException
 
 class OrmSQLiteOpenHelper(context: Context, name: String, version: Int,
                           private val tables: Array<Class<out OrmTable>>?) :
-        SQLiteOpenHelper(context, name, null, version) {
+        SQLiteOpenHelper(context, name, null, version, DatabaseErrorHandler {
+            dbObj -> OrmLog.e(dbObj.toString()) }) {
 
     override fun onCreate(db: SQLiteDatabase) {
+        OrmLog.d("OrmSQLiteOpenHelper onCreate")
         if (tables != null && tables.isNotEmpty()) {
             for (table in tables) {
                 TableManager.createTable(table)
@@ -22,7 +25,7 @@ class OrmSQLiteOpenHelper(context: Context, name: String, version: Int,
         for (c in constructors) {
             c.isAccessible = true
             val cls = c.parameterTypes
-            if (cls.size == 0) {
+            if (cls.isEmpty()) {
                 try {
                     return c.newInstance() as T
                 } catch (e: InstantiationException) {

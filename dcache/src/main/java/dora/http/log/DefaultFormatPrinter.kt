@@ -54,7 +54,7 @@ class DefaultFormatPrinter : FormatPrinter {
     override fun printJsonResponse(chainMs: Long, isSuccessful: Boolean, code: Int, headers: String, contentType: MediaType?,
                                    bodyString: String?, segments: List<String>, message: String, responseUrl: String) {
         var bodyString = bodyString
-        bodyString = if (RequestInterceptor.isJson(contentType)) jsonFormat(bodyString!!) else if (RequestInterceptor.isXml(contentType)) xmlFormat(bodyString) else bodyString
+        bodyString = if (FormatLogInterceptor.isJson(contentType)) jsonFormat(bodyString!!) else if (FormatLogInterceptor.isXml(contentType)) xmlFormat(bodyString) else bodyString
         val responseBody = LINE_SEPARATOR + BODY_TAG + LINE_SEPARATOR + bodyString
         val tag = getTag(false)
         val urlLine = arrayOf(URL_TAG + responseUrl, N)

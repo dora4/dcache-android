@@ -21,6 +21,7 @@ android {
     packagingAar(project, android)
     compileOptions {
         kotlinOptions.freeCompilerArgs += ['-module-name', "dcache"]
+        kotlinOptions.freeCompilerArgs += ["-Xinline-classes", "-Xallow-result-return-type"]
     }
 }
 
@@ -63,8 +64,12 @@ void packagingAar(project, android) {
 }
 
 dependencies {
-    implementation 'com.squareup.okhttp3:okhttp:4.8.0'
     implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.8.0'
     implementation 'com.squareup.retrofit2:retrofit:2.7.2'
     implementation 'com.squareup.retrofit2:converter-gson:2.7.2'
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.5.10"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.2'
 }

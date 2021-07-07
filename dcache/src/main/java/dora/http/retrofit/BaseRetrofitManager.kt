@@ -4,35 +4,31 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.*
+import kotlin.collections.HashMap
 
 abstract class BaseRetrofitManager protected constructor() {
-    var urlMap: MutableMap<Class<*>, String>
-    var retrofitMap: MutableMap<Class<*>, Retrofit?>
-    protected abstract fun initBaseUrl()
-    protected fun registerBaseUrl(serviceClazz: Class<out ApiService?>, baseUrl: String) {
+
+    protected var urlMap: MutableMap<Class<*>, String> = HashMap()
+    protected var retrofitMap: MutableMap<Class<*>, Retrofit> = HashMap()
+    var client: OkHttpClient
+
+    init {
+        client = createHttpClient()
+        initBaseUrl(client)
+    }
+
+    protected abstract fun initBaseUrl(client: OkHttpClient)
+
+    /**
+     * 请在子类的initBaseUrl()中进行注册，可以注册多个url地址。
+     */
+    fun registerBaseUrl(serviceClazz: Class<out ApiService>, baseUrl: String) = apply {
         urlMap[serviceClazz] = baseUrl
     }
 
-    protected abstract fun createHttpClient(): OkHttpClient?
+    protected abstract fun createHttpClient(): OkHttpClient
 
-    /**
-     * 建议在单例的子类写一些静态方法getService，调用此方法。
-     * <pre>
-     * public static <T> T getService(Class<T> clazz) {
-     * if (retrofitManager == null) {
-     * synchronized (RetrofitManager.class) {
-     * if (retrofitManager == null) retrofitManager = new RetrofitManager();
-     * }
-     * }
-     * return retrofitManager._getService(clazz);
-     * }
-    </T></T></pre> *
-     *
-     * @param clazz
-     * @param <T>
-     * @return
-    </T> */
-    protected fun <T> _getService(clazz: Class<T>): T {
+    fun <T : ApiService> getService(clazz: Class<T>): T {
         val retrofit: Retrofit?
         if (retrofitMap.containsKey(clazz)) {
             retrofit = retrofitMap[clazz]
@@ -41,16 +37,10 @@ abstract class BaseRetrofitManager protected constructor() {
             retrofit = Retrofit.Builder()
                     .baseUrl(Objects.requireNonNull(urlMap[clazz]))
                     .addConverterFactory(GsonConverterFactory.create())
-                    .client(createHttpClient())
+                    .client(client)
                     .build()
             retrofitMap[clazz] = retrofit
         }
         return retrofit.create(clazz)
-    }
-
-    init {
-        urlMap = HashMap()
-        retrofitMap = HashMap()
-        initBaseUrl()
     }
 }

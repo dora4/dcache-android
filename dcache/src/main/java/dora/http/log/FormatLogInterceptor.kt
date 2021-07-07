@@ -10,7 +10,7 @@ import java.net.URLDecoder
 import java.nio.charset.Charset
 import java.util.concurrent.TimeUnit
 
-class RequestInterceptor : Interceptor {
+class FormatLogInterceptor : Interceptor {
     var mPrinter: FormatPrinter = DefaultFormatPrinter()
     var printLevel = Level.ALL
 

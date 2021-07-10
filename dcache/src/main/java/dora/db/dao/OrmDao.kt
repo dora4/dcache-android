@@ -18,7 +18,6 @@ import dora.db.table.Convert
 import dora.db.table.Id
 import dora.db.table.Ignore
 import dora.db.table.PropertyConverter
-import dora.util.ReflectionUtils
 import java.lang.reflect.*
 import java.util.*
 import kotlin.jvm.Throws
@@ -109,7 +108,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
                             values.put(columnName, propertyConverter.convertToDatabaseValue(it))
                         }
                     } else {
-                        values.put(columnName, field[bean].toString())
+                        values.put(columnName, field[bean]?.let { it.toString() } ?: "")
                     }
                 } else if (isAssignableFromBoolean(fieldType)) {
                     if (convert != null) {
@@ -592,9 +591,49 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     internal class PropertyHandler(clazz: Class<out PropertyConverter<*,*>>) : InvocationHandler {
         private val clazz: Class<out PropertyConverter<*,*>>
 
+        private fun <T> newInstance(clazz: Class<T>): T? {
+            val constructors = clazz.declaredConstructors
+            for (c in constructors) {
+                c.isAccessible = true
+                val cls = c.parameterTypes
+                if (cls.size == 0) {
+                    try {
+                        return c.newInstance() as T
+                    } catch (e: InstantiationException) {
+                        e.printStackTrace()
+                    } catch (e: IllegalAccessException) {
+                        e.printStackTrace()
+                    } catch (e: InvocationTargetException) {
+                        e.printStackTrace()
+                    }
+                } else {
+                    val objs = arrayOfNulls<Any>(cls.size)
+                    for (i in cls.indices) {
+                        objs[i] = getPrimitiveDefaultValue(cls[i])
+                    }
+                    try {
+                        return c.newInstance(*objs) as T
+                    } catch (e: InstantiationException) {
+                        e.printStackTrace()
+                    } catch (e: IllegalAccessException) {
+                        e.printStackTrace()
+                    } catch (e: InvocationTargetException) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+            return null
+        }
+
+        private fun getPrimitiveDefaultValue(clazz: Class<*>): Any? {
+            return if (clazz.isPrimitive) {
+                if (clazz == Boolean::class.javaPrimitiveType) false else 0
+            } else null
+        }
+
         @Throws(Throwable::class)
         override fun invoke(proxy: Any, method: Method, args: Array<Any>): Any? {
-            return method.invoke(ReflectionUtils.newInstance(clazz), args)
+            return method.invoke(newInstance(clazz), args)
         }
 
         init {

@@ -1,13 +1,9 @@
-package dora.util
-
-import android.content.Context
-import dora.cache.Cache
-import dora.cache.LruCache
+package dora.cache
 
 /**
  * 内存缓存工具。
  */
-object KeyValueUtils {
+object MemoryCache {
 
     private val CACHE: Cache<String, Any> = LruCache(Int.MAX_VALUE)
 

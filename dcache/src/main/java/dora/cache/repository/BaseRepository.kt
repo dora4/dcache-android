@@ -1,6 +1,8 @@
 package dora.cache.repository
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import android.util.Log
 import androidx.lifecycle.LiveData
 import dora.cache.data.IDataFetcher
@@ -9,7 +11,6 @@ import dora.cache.data.page.IDataPager
 import dora.db.OrmTable
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
-import dora.util.NetworkUtils
 
 /**
  * 数据仓库，扩展它来支持数据的三级缓存，即从云端服务器的数据库、手机本地数据库和手机内存中读取需要的数据，以支持用户
@@ -236,7 +237,18 @@ abstract class BaseRepository<T : OrmTable> protected constructor(var context: C
      * @return
      */
     protected val isNetworkAvailable: Boolean
-        protected get() = NetworkUtils.checkNetwork(context)
+        protected get() = checkNetwork(context)
+
+    protected fun checkNetwork(context: Context): Boolean {
+        val networkInfo = getActiveNetworkInfo(context)
+        return networkInfo != null && networkInfo.isConnected
+    }
+
+    private fun getActiveNetworkInfo(context: Context): NetworkInfo? {
+        val connectivityManager = context
+                .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        return connectivityManager.activeNetworkInfo
+    }
 
     companion object {
         protected const val TAG = "BaseRepository"

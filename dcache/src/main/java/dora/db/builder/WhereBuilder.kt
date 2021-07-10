@@ -33,7 +33,7 @@ class WhereBuilder {
         return this
     }
 
-    operator fun not(): WhereBuilder {
+    fun not(): WhereBuilder {
         if (selection != null) {
             selection += NOT
         } else {
@@ -42,23 +42,23 @@ class WhereBuilder {
         return this
     }
 
-    fun and(whereClause: String, whereArgs: Array<String?>): WhereBuilder {
-        return append(AND, whereClause, whereArgs)
+    fun and(whereClause: String, vararg whereArgs: Any): WhereBuilder {
+        return append(AND, whereClause, arrayOf(whereArgs))
     }
 
-    fun or(whereClause: String, whereArgs: Array<String?>): WhereBuilder {
-        return append(OR, whereClause, whereArgs)
+    fun or(whereClause: String, vararg whereArgs: Any): WhereBuilder {
+        return append(OR, whereClause, arrayOf(whereArgs))
     }
 
-    fun not(whereClause: String, whereArgs: Array<String?>): WhereBuilder {
-        return not().parenthesesLeft().append(null, whereClause, whereArgs).parenthesesRight()
+    fun not(whereClause: String, vararg whereArgs: Any): WhereBuilder {
+        return not().parenthesesLeft().append(null, whereClause, arrayOf(whereArgs)).parenthesesRight()
     }
 
-    fun andNot(whereClause: String, whereArgs: Array<String?>): WhereBuilder {
+    fun andNot(whereClause: String, whereArgs: Array<Any>): WhereBuilder {
         return and(not(whereClause, whereArgs))
     }
 
-    fun orNot(whereClause: String, whereArgs: Array<String?>): WhereBuilder {
+    fun orNot(whereClause: String, whereArgs: Array<Any>): WhereBuilder {
         return or(not(whereClause, whereArgs))
     }
 
@@ -104,97 +104,100 @@ class WhereBuilder {
         return this
     }
 
-    fun addWhereEqualTo(column: String, value: Array<String?>): WhereBuilder {
-        return append(null, column + EQUAL_HOLDER, value)
+    fun addWhereEqualTo(column: String, value: Any): WhereBuilder {
+        return append(null, column + EQUAL_HOLDER, arrayOf(value))
     }
 
-    fun addWhereNotEqualTo(column: String, value: Array<String?>): WhereBuilder {
-        return append(null, column + NOT_EQUAL_HOLDER, value)
+    fun addWhereNotEqualTo(column: String, value: Any): WhereBuilder {
+        return append(null, column + NOT_EQUAL_HOLDER, arrayOf(value))
     }
 
-    fun addWhereGreaterThan(column: String, value: Array<String?>): WhereBuilder {
-        return append(null, column + GREATER_THAN_HOLDER, value)
+    fun addWhereGreaterThan(column: String, value: Number): WhereBuilder {
+        return append(null, column + GREATER_THAN_HOLDER, arrayOf(value))
     }
 
-    fun addWhereGreaterThanOrEqualTo(column: String, value: Array<String?>): WhereBuilder {
-        return append(null, column + GREATER_THAN_OR_EQUAL_TO_HOLDER, value)
+    fun addWhereGreaterThanOrEqualTo(column: String, value: Number): WhereBuilder {
+        return append(null, column + GREATER_THAN_OR_EQUAL_TO_HOLDER, arrayOf(value))
     }
 
-    fun addWhereLessThan(column: String, value: Array<String?>): WhereBuilder {
-        return append(null, column + LESS_THAN_HOLDER, value)
+    fun addWhereLessThan(column: String, value: Number): WhereBuilder {
+        return append(null, column + LESS_THAN_HOLDER, arrayOf(value))
     }
 
-    fun addWhereLessThanOrEqualTo(column: String, value: Array<String?>): WhereBuilder {
-        return append(null, column + LESS_THAN_OR_EQUAL_TO_HOLDER, value)
+    fun addWhereLessThanOrEqualTo(column: String, value: Number): WhereBuilder {
+        return append(null, column + LESS_THAN_OR_EQUAL_TO_HOLDER, arrayOf(value))
     }
 
-    fun addWhereIn(column: String, values: Array<String?>): WhereBuilder {
+    fun addWhereIn(column: String, values: Array<Any>): WhereBuilder {
         return appendWhereIn(null, column, values)
     }
 
-    fun andWhereEqualTo(column: String, value: Array<String?>): WhereBuilder {
-        return append(AND, column + EQUAL_HOLDER, value)
+    fun andWhereEqualTo(column: String, value: Any): WhereBuilder {
+        return append(AND, column + EQUAL_HOLDER, arrayOf(value))
     }
 
-    fun andWhereNotEqualTo(column: String, value: Array<String?>): WhereBuilder {
-        return append(AND, column + NOT_EQUAL_HOLDER, value)
+    fun andWhereNotEqualTo(column: String, value: Any): WhereBuilder {
+        return append(AND, column + NOT_EQUAL_HOLDER, arrayOf(value))
     }
 
-    fun andWhereGreatorThan(column: String, value: Array<String?>): WhereBuilder {
-        return append(AND, column + GREATER_THAN_HOLDER, value)
+    fun andWhereGreatorThan(column: String, value: Number): WhereBuilder {
+        return append(AND, column + GREATER_THAN_HOLDER, arrayOf(value))
     }
 
-    fun andWhereGreatorThanOrEqualTo(column: String, value: Array<String?>): WhereBuilder {
-        return append(AND, column + GREATER_THAN_OR_EQUAL_TO_HOLDER, value)
+    fun andWhereGreatorThanOrEqualTo(column: String, value: Number): WhereBuilder {
+        return append(AND, column + GREATER_THAN_OR_EQUAL_TO_HOLDER, arrayOf(value))
     }
 
-    fun andWhereLessThan(column: String, value: Array<String?>): WhereBuilder {
-        return append(AND, column + LESS_THAN_HOLDER, value)
+    fun andWhereLessThan(column: String, value: Number): WhereBuilder {
+        return append(AND, column + LESS_THAN_HOLDER, arrayOf(value))
     }
 
-    fun andWhereLessThanOrEqualTo(column: String, value: Array<String?>): WhereBuilder {
-        return append(AND, column + LESS_THAN_OR_EQUAL_TO_HOLDER, value)
+    fun andWhereLessThanOrEqualTo(column: String, value: Number): WhereBuilder {
+        return append(AND, column + LESS_THAN_OR_EQUAL_TO_HOLDER, arrayOf(value))
     }
 
-    fun andWhereIn(column: String, values: Array<String?>): WhereBuilder {
+    fun andWhereIn(column: String, values: Array<Any>): WhereBuilder {
         return appendWhereIn(AND, column, values)
     }
 
-    fun orWhereEqualTo(column: String, value: Array<String?>): WhereBuilder {
-        return append(OR, column + EQUAL_HOLDER, value)
+    fun orWhereEqualTo(column: String, value: Any): WhereBuilder {
+        return append(OR, column + EQUAL_HOLDER, arrayOf(value))
     }
 
-    fun orWhereNotEqualTo(column: String, value: Array<String?>): WhereBuilder {
-        return append(OR, column + NOT_EQUAL_HOLDER, value)
+    fun orWhereNotEqualTo(column: String, value: Any): WhereBuilder {
+        return append(OR, column + NOT_EQUAL_HOLDER, arrayOf(value))
     }
 
-    fun orWhereGreatorThan(column: String, value: Array<String?>): WhereBuilder {
-        return append(OR, column + GREATER_THAN_HOLDER, value)
+    fun orWhereGreatorThan(column: String, value: Number): WhereBuilder {
+        return append(OR, column + GREATER_THAN_HOLDER, arrayOf(value))
     }
 
-    fun orWhereGreatorThanOrEqualTo(column: String, value: Array<String?>): WhereBuilder {
-        return append(OR, column + GREATER_THAN_OR_EQUAL_TO_HOLDER, value)
+    fun orWhereGreatorThanOrEqualTo(column: String, value: Number): WhereBuilder {
+        return append(OR, column + GREATER_THAN_OR_EQUAL_TO_HOLDER, arrayOf(value))
     }
 
-    fun orWhereLessThan(column: String, value: Array<String?>): WhereBuilder {
-        return append(OR, column + LESS_THAN_HOLDER, value)
+    fun orWhereLessThan(column: String, value: Number): WhereBuilder {
+        return append(OR, column + LESS_THAN_HOLDER, arrayOf(value))
     }
 
-    fun orWhereLessThanOrEqualTo(column: String, value: Array<String?>): WhereBuilder {
-        return append(OR, column + LESS_THAN_OR_EQUAL_TO_HOLDER, value)
+    fun orWhereLessThanOrEqualTo(column: String, value: Number): WhereBuilder {
+        return append(OR, column + LESS_THAN_OR_EQUAL_TO_HOLDER, arrayOf(value))
     }
 
-    fun orWhereIn(column: String, values: Array<String?>): WhereBuilder {
+    fun orWhereIn(column: String, values: Array<Any>): WhereBuilder {
         return appendWhereIn(OR, column, values)
     }
 
-    private fun append(connect: String?, whereClause: String, whereArgs: Array<String?>): WhereBuilder {
+    private fun append(connect: String?, whereClause: String, whereArgs: Array<Any>): WhereBuilder {
         if (connect != null) {
             selection += connect
         }
         selection += whereClause
         if (this.selectionArgs == null) {
-            this.selectionArgs = whereArgs
+            selectionArgs = arrayOfNulls(whereArgs.size)
+            for (i in whereArgs.indices) {
+                this.selectionArgs!![i] = whereArgs[i].toString()
+            }
         } else {
             val tempArgs = arrayOfNulls<String>(this.selectionArgs!!.size + whereArgs.size)
             System.arraycopy(this.selectionArgs, 0, tempArgs, 0, this.selectionArgs!!.size)
@@ -204,7 +207,7 @@ class WhereBuilder {
         return this
     }
 
-    private fun appendWhereIn(connect: String?, column: String, values: Array<String?>): WhereBuilder {
+    private fun appendWhereIn(connect: String?, column: String, values: Array<Any>): WhereBuilder {
         val whereIn = buildWhereIn(column, values.size)
         return append(connect, whereIn, values)
     }

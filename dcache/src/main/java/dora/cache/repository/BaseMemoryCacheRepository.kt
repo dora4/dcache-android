@@ -11,7 +11,7 @@ import dora.db.dao.DaoFactory
 import dora.db.dao.OrmDao
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
-import dora.util.KeyValueUtils
+import dora.cache.MemoryCache
 
 abstract class BaseMemoryCacheRepository<T : OrmTable>(context: Context, clazz: Class<T>) : BaseRepository<T>(context) {
     val dao: OrmDao<T>
@@ -36,7 +36,7 @@ abstract class BaseMemoryCacheRepository<T : OrmTable>(context: Context, clazz: 
                     override fun loadFromCache(type: DataSource.CacheType?): Boolean {
                         try {
                             if (type === DataSource.CacheType.MEMORY) {
-                                val model = KeyValueUtils.getCacheFromMemory(cacheName) as T
+                                val model = MemoryCache.getCacheFromMemory(cacheName) as T
                                 onInterceptData(DataSource.Type.CACHE, model)
                                 liveData.setValue(model)
                             } else if (type === DataSource.CacheType.DATABASE) {
@@ -44,7 +44,7 @@ abstract class BaseMemoryCacheRepository<T : OrmTable>(context: Context, clazz: 
                                 if (model != null) {
                                     onInterceptData(DataSource.Type.CACHE, model)
                                     liveData.value = model
-                                    KeyValueUtils.updateCacheAtMemory(cacheName, model)
+                                    MemoryCache.updateCacheAtMemory(cacheName, model)
                                 }
                             }
                         } catch (e: Exception) {
@@ -64,7 +64,7 @@ abstract class BaseMemoryCacheRepository<T : OrmTable>(context: Context, clazz: 
                 return object : DoraCallback<T>() {
                     override fun onSuccess(data: T) {
                         onInterceptNetworkData(data)
-                        KeyValueUtils.updateCacheAtMemory(cacheName, data)
+                        MemoryCache.updateCacheAtMemory(cacheName, data)
                         dao.delete(where())
                         dao.insert(data)
                         liveData.value = data
@@ -73,7 +73,7 @@ abstract class BaseMemoryCacheRepository<T : OrmTable>(context: Context, clazz: 
                     override fun onFailure(code: Int, msg: String?) {
                         if (isClearDataOnNetworkError) {
                             liveData.value = null
-                            KeyValueUtils.removeCacheAtMemory(cacheName)
+                            MemoryCache.removeCacheAtMemory(cacheName)
                             dao.delete(where())
                         }
                     }
@@ -99,14 +99,14 @@ abstract class BaseMemoryCacheRepository<T : OrmTable>(context: Context, clazz: 
                     override fun loadFromCache(type: DataSource.CacheType?): Boolean {
                         try {
                             if (type === DataSource.CacheType.MEMORY) {
-                                val models = KeyValueUtils.getCacheFromMemory(cacheName) as List<T>
+                                val models = MemoryCache.getCacheFromMemory(cacheName) as List<T>
                                 onInterceptData(DataSource.Type.CACHE, models)
                                 liveData.setValue(models)
                             } else if (type === DataSource.CacheType.DATABASE) {
                                 val models = dao.select(where())
                                 onInterceptData(DataSource.Type.CACHE, models)
                                 liveData.value = models
-                                KeyValueUtils.updateCacheAtMemory(cacheName, models)
+                                MemoryCache.updateCacheAtMemory(cacheName, models)
                             }
                         } catch (e: Exception) {
                             return false
@@ -125,7 +125,7 @@ abstract class BaseMemoryCacheRepository<T : OrmTable>(context: Context, clazz: 
                 return object : DoraListCallback<T>() {
                     override fun onSuccess(data: List<T>) {
                         onInterceptNetworkData(data)
-                        KeyValueUtils.updateCacheAtMemory(cacheName, data)
+                        MemoryCache.updateCacheAtMemory(cacheName, data)
                         dao.delete(where())
                         dao.insert(data)
                         liveData.value = data
@@ -135,7 +135,7 @@ abstract class BaseMemoryCacheRepository<T : OrmTable>(context: Context, clazz: 
                         if (isClearDataOnNetworkError) {
                             dao.delete(where())
                             liveData.value = null
-                            KeyValueUtils.removeCacheAtMemory(cacheName)
+                            MemoryCache.removeCacheAtMemory(cacheName)
                         }
                     }
 

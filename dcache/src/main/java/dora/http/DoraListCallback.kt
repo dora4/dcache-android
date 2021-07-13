@@ -16,12 +16,10 @@ abstract class DoraListCallback<T : OrmTable> : Callback<List<T>> {
     override fun onResponse(call: Call<List<T>>, response: Response<List<T>>) {
         if (response.isSuccessful) {
             val body = response.body()
-            body?.let {
-                if (it != null) {
-                    onSuccess(it)
-                } else {
-                    onFailure(-1, "Empty Body")
-                }
+            if (body != null) {
+                onSuccess(body)
+            } else {
+                onFailure(-1, "Empty Body")
             }
         }
     }

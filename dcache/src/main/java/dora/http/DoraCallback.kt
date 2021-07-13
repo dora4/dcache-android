@@ -15,12 +15,10 @@ abstract class DoraCallback<T> : Callback<T> {
     override fun onResponse(call: Call<T>, response: Response<T>) {
         if (response.isSuccessful) {
             val body = response.body()
-            body?.let {
-                if (it != null) {
-                    onSuccess(it)
-                } else {
-                    onFailure(-1, "Empty Body")
-                }
+            if (body != null) {
+                onSuccess(body)
+            } else {
+                onFailure(-1, "Empty Body")
             }
         }
     }

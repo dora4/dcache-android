@@ -9,7 +9,7 @@ class DoraCoroutineContext(val activity: Activity) : AbstractCoroutineContextEle
         ContinuationInterceptor {
 
     override fun <T> interceptContinuation(continuation: Continuation<T>): Continuation<T> {
-        return ThreadSwapContinuation(activity, continuation.context.fold(continuation) { continuation, element ->
+        return ThreadTransferContinuation(activity, continuation.context.fold(continuation) { continuation, element ->
             if (element != this && element is ContinuationInterceptor) {
                 element.interceptContinuation(continuation)
             } else continuation

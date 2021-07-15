@@ -1,11 +1,10 @@
 package dora.http
 
-import dora.db.OrmTable
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-abstract class DoraListCallback<T : OrmTable> : Callback<List<T>> {
+abstract class DoraListCallback<T> : Callback<List<T>> {
 
     abstract fun onSuccess(data: List<T>)
 

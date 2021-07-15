@@ -19,7 +19,7 @@ buildscript {
         kotlin_version = '1.4.21'
     }
     dependencies {
-        classpath "com.android.tools.build:gradle:4.0.0"
+        classpath "com.android.tools.build:gradle:${this.gradle_version}"
         classpath "com.github.dcendents:android-maven-gradle-plugin:${this.gradle_plugin_version}"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${this.kotlin_version}"
     }

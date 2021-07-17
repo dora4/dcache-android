@@ -8,7 +8,7 @@ import androidx.lifecycle.LiveData
 import dora.cache.data.IDataFetcher
 import dora.cache.data.IListDataFetcher
 import dora.cache.data.page.IDataPager
-import dora.db.OrmTable
+import dora.cache.factory.CacheFactory
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 
@@ -17,7 +17,7 @@ import dora.http.DoraListCallback
  * 手机在断网情况下也能显示以前的数据。一个[BaseRepository]要么用于非集合数据，要么用于集合数据。如果要用于
  * 非集合数据，请配置[Repository]注解将[.listData]的值设置为false。
  */
-abstract class BaseRepository<T : OrmTable> protected constructor(var context: Context) : IDataFetcher<T>, IListDataFetcher<T> {
+abstract class BaseRepository<M> protected constructor(var context: Context) : IDataFetcher<M>, IListDataFetcher<M> {
     /**
      * 缓存策略。
      */
@@ -27,12 +27,16 @@ abstract class BaseRepository<T : OrmTable> protected constructor(var context: C
     /**
      * 非集合数据获取接口。
      */
-    lateinit var dataFetcher: IDataFetcher<T>
+    lateinit var dataFetcher: IDataFetcher<M>
 
     /**
      * 集合数据获取接口。
      */
-    lateinit var listDataFetcher: IListDataFetcher<T>
+    lateinit var listDataFetcher: IListDataFetcher<M>
+
+    var cacheFactory: CacheFactory<M>
+
+    var listCacheFactory: CacheFactory<List<M>>
 
     /**
      * true代表用于集合数据，false用于非集合数据。
@@ -41,10 +45,11 @@ abstract class BaseRepository<T : OrmTable> protected constructor(var context: C
         protected set
 
     /**
-     * 是否在网络加载数据失败的时候清空数据。
+     * 是否在网络加载数据失败的时候清空数据，不建议为true。
      *
      * @return
      */
+    @Deprecated("")
     protected val isClearDataOnNetworkError: Boolean
         protected get() = false
 
@@ -53,17 +58,22 @@ abstract class BaseRepository<T : OrmTable> protected constructor(var context: C
      *
      * @return
      */
-    protected abstract fun installDataFetcher(): IDataFetcher<T>
+    protected abstract fun installDataFetcher(): IDataFetcher<M>
 
     /**
      * 安装默认的集合数据抓取。
      *
      * @return
      */
-    protected abstract fun installListDataFetcher(): IListDataFetcher<T>
-    override fun callback(): DoraCallback<T> {
-        return object : DoraCallback<T>() {
-            override fun onSuccess(data: T) {
+    protected abstract fun installListDataFetcher(): IListDataFetcher<M>
+
+    protected abstract fun createCacheFactory(): CacheFactory<M>
+
+    protected abstract fun createListCacheFactory(): CacheFactory<List<M>>
+
+    override fun callback(): DoraCallback<M> {
+        return object : DoraCallback<M>() {
+            override fun onSuccess(data: M) {
                 Log.d(TAG, data.toString())
             }
 
@@ -73,9 +83,9 @@ abstract class BaseRepository<T : OrmTable> protected constructor(var context: C
         }
     }
 
-    override fun listCallback(): DoraListCallback<T> {
-        return object : DoraListCallback<T>() {
-            override fun onSuccess(data: List<T>) {
+    override fun listCallback(): DoraListCallback<M> {
+        return object : DoraListCallback<M>() {
+            override fun onSuccess(data: List<M>) {
                 for (t in data) {
                     Log.d(TAG, t.toString())
                 }
@@ -92,14 +102,14 @@ abstract class BaseRepository<T : OrmTable> protected constructor(var context: C
      *
      * @param callback
      */
-    protected fun onLoadFromNetwork(callback: DoraCallback<T>) {}
+    protected fun onLoadFromNetwork(callback: DoraCallback<M>) {}
 
     /**
      * 集合数据的API接口调用。
      *
      * @param callback
      */
-    protected fun onLoadFromNetwork(callback: DoraListCallback<T>) {}
+    protected fun onLoadFromNetwork(callback: DoraListCallback<M>) {}
 
     /**
      * 从三级缓存仓库选择数据。
@@ -219,15 +229,15 @@ abstract class BaseRepository<T : OrmTable> protected constructor(var context: C
         fun loadFromNetwork()
     }
 
-    override fun fetchData(): LiveData<T> {
+    override fun fetchData(): LiveData<M> {
         return dataFetcher.fetchData()
     }
 
-    override fun fetchListData(): LiveData<List<T>> {
+    override fun fetchListData(): LiveData<List<M>> {
         return listDataFetcher.fetchListData()
     }
 
-    override fun obtainPager(): IDataPager<T>? {
+    override fun obtainPager(): IDataPager<M>? {
         return listDataFetcher.obtainPager()
     }
 
@@ -260,6 +270,8 @@ abstract class BaseRepository<T : OrmTable> protected constructor(var context: C
             cacheStrategy = repository.cacheStrategy
             isListData = repository.isListData
         }
+        cacheFactory = createCacheFactory()
+        listCacheFactory = createListCacheFactory()
         if (isListData) {
             listDataFetcher = installListDataFetcher()
         } else {

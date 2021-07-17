@@ -2,7 +2,7 @@ package dora.cache.data.page
 
 import dora.cache.data.visitor.IPageDataVisitor
 
-class DataPager<T>(override val data: List<T>) : IDataPager<T> {
+class DataPager<M>(override val data: List<M>) : IDataPager<M> {
     /**
      * 建议从0开始累加。
      */
@@ -12,19 +12,19 @@ class DataPager<T>(override val data: List<T>) : IDataPager<T> {
      * 每页的数据数量不能为0，0不能做除数。
      */
     override var pageSize = 1
-    private var callback: PageCallback<T>? = null
+    private var callback: PageCallback<M>? = null
     val nextPage: Int
         get() = currentPage + 1
 
-    override fun setPageCallback(callback: PageCallback<T>) {
+    override fun setPageCallback(callback: PageCallback<M>) {
         this.callback = callback
     }
 
-    override fun accept(visitor: IPageDataVisitor<T>) {
+    override fun accept(visitor: IPageDataVisitor<M>) {
         visitor.visitDataPager(this)
     }
 
-    override fun onResult(data: List<T>?) {
-        callback!!.onResult(data)
+    override fun onResult(model: List<M>?) {
+        callback!!.onResult(model)
     }
 }

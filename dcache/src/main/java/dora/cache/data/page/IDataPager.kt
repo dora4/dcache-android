@@ -2,9 +2,9 @@ package dora.cache.data.page
 
 import dora.cache.data.visitor.IPageDataVisitor
 
-interface IDataPager<T> : PageCallback<T> {
-    fun setPageCallback(callback: PageCallback<T>)
-    fun accept(visitor: IPageDataVisitor<T>)
+interface IDataPager<M> : PageCallback<M> {
+    fun setPageCallback(callback: PageCallback<M>)
+    fun accept(visitor: IPageDataVisitor<M>)
 
     /**
      * 设置当前是第几页。
@@ -19,5 +19,5 @@ interface IDataPager<T> : PageCallback<T> {
      * @return 不要返回0，0不能做除数
      */
     var pageSize: Int
-    val data: List<T>
+    val model: List<M>
 }

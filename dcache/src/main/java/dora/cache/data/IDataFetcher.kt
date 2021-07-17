@@ -5,8 +5,8 @@ import dora.cache.data.page.IDataPager
 import dora.db.OrmTable
 import dora.http.DoraCallback
 
-interface IDataFetcher<T : OrmTable> {
-    fun callback(): DoraCallback<T>
-    fun fetchData(): LiveData<T>
-    fun obtainPager(): IDataPager<T>?
+interface IDataFetcher<M> {
+    fun callback(): DoraCallback<M>
+    fun fetchData(): LiveData<M>
+    fun obtainPager(): IDataPager<M>?
 }

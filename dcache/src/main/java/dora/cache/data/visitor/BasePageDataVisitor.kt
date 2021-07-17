@@ -2,9 +2,9 @@ package dora.cache.data.visitor
 
 import dora.cache.data.page.IDataPager
 
-abstract class BasePageDataVisitor<T> : IPageDataVisitor<T> {
+abstract class BasePageDataVisitor<M> : IPageDataVisitor<M> {
 
-    override fun visitDataPager(pager: IDataPager<T>) {
-        pager.onResult(getResult(pager.data, pager.data.size, pager.currentPage, pager.pageSize))
+    override fun visitDataPager(pager: IDataPager<M>) {
+        pager.onResult(getResult(pager.model, pager.data.size, pager.currentPage, pager.pageSize))
     }
 }

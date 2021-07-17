@@ -5,32 +5,31 @@ import androidx.lifecycle.LiveData
 import dora.cache.data.DataFetcher
 import dora.cache.data.ListDataFetcher
 import dora.cache.data.page.IDataPager
-import dora.db.OrmTable
+import dora.db.builder.Condition
 import dora.db.builder.WhereBuilder
-import dora.db.dao.DaoFactory
-import dora.db.dao.OrmDao
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 
-abstract class BaseDatabaseCacheRepository<T : OrmTable>(context: Context, clazz: Class<T>) : BaseRepository<T>(context) {
-    val dao: OrmDao<T>
+abstract class BaseDatabaseCacheRepository<M>(context: Context, var clazz: Class<M>) : BaseRepository<M>(context) {
+
+    abstract val isNoNetworkMode: Boolean
 
     /**
      * 根据查询条件进行初步的过滤从数据库加载的数据，过滤不完全则再调用onInterceptData。
      *
      * @return
      */
-    protected fun where(): WhereBuilder {
-        return WhereBuilder.create()
+    protected fun where(): Condition {
+        return WhereBuilder.create().toCondition()
     }
 
-    override fun installDataFetcher(): DataFetcher<T> {
-        return object : DataFetcher<T>() {
-            override fun fetchData(): LiveData<T> {
+    override fun installDataFetcher(): DataFetcher<M> {
+        return object : DataFetcher<M>() {
+            override fun fetchData(): LiveData<M> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType?): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
-                            val entity = dao.selectOne(where())
+                            val entity = cacheFactory.queryCache(where())
                             if (entity != null) {
                                 onInterceptData(DataSource.Type.CACHE, entity)
                                 liveData.setValue(entity)
@@ -48,42 +47,42 @@ abstract class BaseDatabaseCacheRepository<T : OrmTable>(context: Context, clazz
                 return liveData
             }
 
-            override fun callback(): DoraCallback<T> {
-                return object : DoraCallback<T>() {
-                    override fun onSuccess(data: T) {
+            override fun callback(): DoraCallback<M> {
+                return object : DoraCallback<M>() {
+                    override fun onSuccess(data: M) {
                         onInterceptNetworkData(data)
-                        dao.delete(where())
-                        dao.insert(data)
+                        cacheFactory.removeOldCache(where())
+                        cacheFactory.addNewCache(data)
                         liveData.setValue(data)
                     }
 
                     override fun onFailure(code: Int, msg: String?) {
                         if (isClearDataOnNetworkError) {
                             liveData.value = null
-                            dao.delete(where())
+                            cacheFactory.removeOldCache(where())
                         }
                     }
 
-                    override fun onInterceptNetworkData(data: T) {
+                    override fun onInterceptNetworkData(data: M) {
                         onInterceptData(DataSource.Type.NETWORK, data)
                     }
                 }
             }
 
-            override fun obtainPager(): IDataPager<T>? {
+            override fun obtainPager(): IDataPager<M>? {
                 return null
             }
         }
     }
 
-    override fun installListDataFetcher(): ListDataFetcher<T> {
-        return object : ListDataFetcher<T>() {
+    override fun installListDataFetcher(): ListDataFetcher<M> {
+        return object : ListDataFetcher<M>() {
 
-            override fun fetchListData(): LiveData<List<T>> {
+            override fun fetchListData(): LiveData<List<M>> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType?): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
-                            val entities = dao.select(where())
+                            val entities = listCacheFactory.queryCache(where())
                             if (entities != null && entities.isNotEmpty()) {
                                 onInterceptData(DataSource.Type.CACHE, entities)
                                 liveData.setValue(entities)
@@ -101,39 +100,44 @@ abstract class BaseDatabaseCacheRepository<T : OrmTable>(context: Context, clazz
                 return liveData
             }
 
-            override fun listCallback(): DoraListCallback<T> {
-                return object : DoraListCallback<T>() {
-                    override fun onSuccess(data: List<T>) {
+            override fun listCallback(): DoraListCallback<M> {
+                return object : DoraListCallback<M>() {
+                    override fun onSuccess(data: List<M>) {
                         onInterceptNetworkData(data)
-                        dao.delete(where())
-                        dao.insert(data)
+                        listCacheFactory.removeOldCache(where())
+                        listCacheFactory.addNewCache(data)
                         liveData.setValue(data)
                     }
 
                     override fun onFailure(code: Int, msg: String?) {
                         if (isClearDataOnNetworkError) {
                             liveData.value = null
-                            dao.delete(where())
+                            listCacheFactory.removeOldCache(where())
                         }
                     }
 
-                    override fun onInterceptNetworkData(data: List<T>) {
+                    override fun onInterceptNetworkData(data: List<M>) {
                         onInterceptData(DataSource.Type.NETWORK, data)
                     }
                 }
             }
 
-            override fun obtainPager(): IDataPager<T>? {
+            override fun obtainPager(): IDataPager<M>? {
                 return null
             }
         }
     }
 
-    protected fun onInterceptData(type: DataSource.Type, data: T) {}
-    protected fun onInterceptData(type: DataSource.Type, data: List<T>) {}
+    protected fun onInterceptData(type: DataSource.Type, data: M) {}
+    protected fun onInterceptData(type: DataSource.Type, data: List<M>) {}
 
     init {
-        dao = DaoFactory.getDao(clazz)
-        cacheStrategy = DataSource.CacheStrategy.DATABASE_CACHE
+        cacheFactory.init()
+        listCacheFactory.init()
+        if (isNoNetworkMode) {
+            cacheStrategy = DataSource.CacheStrategy.DATABASE_CACHE_NO_NETWORK
+        } else{
+            cacheStrategy = DataSource.CacheStrategy.DATABASE_CACHE
+        }
     }
-}
+ }

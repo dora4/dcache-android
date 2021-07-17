@@ -231,6 +231,10 @@ class WhereBuilder {
         return this
     }
 
+    fun toCondition() : Condition {
+        return Condition(selection, selectionArgs!!)
+    }
+
     companion object {
         private const val WHERE = " WHERE "
         private const val EQUAL_HOLDER = "=?"

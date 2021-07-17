@@ -25,7 +25,7 @@ object CacheLoader {
         repository?.let {
             val data = it.loadData()
             if (it.cacheName != null && data != null) {
-                MemoryCache.updateCacheAtMemory(it.cacheName!!, data)
+                MemoryCache.updateCacheAtMemory(it.cacheName, data)
             }
         }
     }

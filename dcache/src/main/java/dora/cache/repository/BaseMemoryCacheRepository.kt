@@ -5,42 +5,39 @@ import androidx.lifecycle.LiveData
 import dora.cache.data.DataFetcher
 import dora.cache.data.ListDataFetcher
 import dora.cache.data.page.IDataPager
-import dora.db.OrmTable
 import dora.db.builder.WhereBuilder
-import dora.db.dao.DaoFactory
-import dora.db.dao.OrmDao
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import dora.cache.MemoryCache
+import dora.db.builder.Condition
 
-abstract class BaseMemoryCacheRepository<T : OrmTable>(context: Context, clazz: Class<T>) : BaseRepository<T>(context) {
-    val dao: OrmDao<T>
+abstract class BaseMemoryCacheRepository<M>(context: Context, clazz: Class<M>) : BaseRepository<M>(context) {
 
     /**
      * 根据查询条件进行初步的过滤从数据库加载的数据，过滤不完全则再调用onInterceptData。
      *
      * @return
      */
-    protected fun where(): WhereBuilder {
-        return WhereBuilder.create()
+    protected fun where(): Condition {
+        return WhereBuilder.create().toCondition()
     }
 
     /**
      * 在冷启动时调用，从数据库将数据加载到内存。
      */
     abstract fun loadData(): Any?
-    override fun installDataFetcher(): DataFetcher<T> {
-        return object : DataFetcher<T>() {
-            override fun fetchData(): LiveData<T> {
+    override fun installDataFetcher(): DataFetcher<M> {
+        return object : DataFetcher<M>() {
+            override fun fetchData(): LiveData<M> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType?): Boolean {
                         try {
                             if (type === DataSource.CacheType.MEMORY) {
-                                val model = MemoryCache.getCacheFromMemory(cacheName) as T
+                                val model = MemoryCache.getCacheFromMemory(cacheName) as M
                                 onInterceptData(DataSource.Type.CACHE, model)
                                 liveData.setValue(model)
                             } else if (type === DataSource.CacheType.DATABASE) {
-                                val model = dao.selectOne(where())
+                                val model = cacheFactory.queryCache(where())
                                 if (model != null) {
                                     onInterceptData(DataSource.Type.CACHE, model)
                                     liveData.value = model
@@ -60,13 +57,13 @@ abstract class BaseMemoryCacheRepository<T : OrmTable>(context: Context, clazz: 
                 return liveData
             }
 
-            override fun callback(): DoraCallback<T> {
-                return object : DoraCallback<T>() {
-                    override fun onSuccess(data: T) {
+            override fun callback(): DoraCallback<M> {
+                return object : DoraCallback<M>() {
+                    override fun onSuccess(data: M) {
                         onInterceptNetworkData(data)
-                        MemoryCache.updateCacheAtMemory(cacheName, data)
-                        dao.delete(where())
-                        dao.insert(data)
+                        MemoryCache.updateCacheAtMemory(cacheName, data!!)
+                        cacheFactory.removeOldCache(where())
+                        cacheFactory.addNewCache(data)
                         liveData.value = data
                     }
 
@@ -74,39 +71,39 @@ abstract class BaseMemoryCacheRepository<T : OrmTable>(context: Context, clazz: 
                         if (isClearDataOnNetworkError) {
                             liveData.value = null
                             MemoryCache.removeCacheAtMemory(cacheName)
-                            dao.delete(where())
+                            cacheFactory.removeOldCache(where())
                         }
                     }
 
-                    override fun onInterceptNetworkData(data: T) {
+                    override fun onInterceptNetworkData(data: M) {
                         onInterceptData(DataSource.Type.NETWORK, data)
                     }
                 }
             }
 
-            override fun obtainPager(): IDataPager<T>? {
+            override fun obtainPager(): IDataPager<M>? {
                 return null
             }
         }
     }
 
     abstract val cacheName: String
-    override fun installListDataFetcher(): ListDataFetcher<T> {
-        return object : ListDataFetcher<T>() {
+    override fun installListDataFetcher(): ListDataFetcher<M> {
+        return object : ListDataFetcher<M>() {
 
-            override fun fetchListData(): LiveData<List<T>> {
+            override fun fetchListData(): LiveData<List<M>> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType?): Boolean {
                         try {
                             if (type === DataSource.CacheType.MEMORY) {
-                                val models = MemoryCache.getCacheFromMemory(cacheName) as List<T>
+                                val models = MemoryCache.getCacheFromMemory(cacheName) as List<M>
                                 onInterceptData(DataSource.Type.CACHE, models)
                                 liveData.setValue(models)
                             } else if (type === DataSource.CacheType.DATABASE) {
-                                val models = dao.select(where())
-                                onInterceptData(DataSource.Type.CACHE, models)
+                                val models = listCacheFactory.queryCache(where())
+                                onInterceptData(DataSource.Type.CACHE, models!!)
                                 liveData.value = models
-                                MemoryCache.updateCacheAtMemory(cacheName, models)
+                                MemoryCache.updateCacheAtMemory(cacheName, models!!)
                             }
                         } catch (e: Exception) {
                             return false
@@ -121,42 +118,43 @@ abstract class BaseMemoryCacheRepository<T : OrmTable>(context: Context, clazz: 
                 return liveData
             }
 
-            override fun listCallback(): DoraListCallback<T> {
-                return object : DoraListCallback<T>() {
-                    override fun onSuccess(data: List<T>) {
+            override fun listCallback(): DoraListCallback<M> {
+                return object : DoraListCallback<M>() {
+                    override fun onSuccess(data: List<M>) {
                         onInterceptNetworkData(data)
                         MemoryCache.updateCacheAtMemory(cacheName, data)
-                        dao.delete(where())
-                        dao.insert(data)
+                        listCacheFactory.removeOldCache(where())
+                        listCacheFactory.addNewCache(data)
                         liveData.value = data
                     }
 
                     override fun onFailure(code: Int, msg: String?) {
                         if (isClearDataOnNetworkError) {
-                            dao.delete(where())
+                            listCacheFactory.removeOldCache(where())
                             liveData.value = null
                             MemoryCache.removeCacheAtMemory(cacheName)
                         }
                     }
 
-                    override fun onInterceptNetworkData(data: List<T>) {
+                    override fun onInterceptNetworkData(data: List<M>) {
                         onInterceptData(DataSource.Type.NETWORK, data)
                     }
                 }
             }
 
 
-            override fun obtainPager(): IDataPager<T>? {
+            override fun obtainPager(): IDataPager<M>? {
                 return null
             }
         }
     }
 
-    protected fun onInterceptData(type: DataSource.Type, data: T) {}
-    protected fun onInterceptData(type: DataSource.Type, data: List<T>) {}
+    protected fun onInterceptData(type: DataSource.Type, data: M) {}
+    protected fun onInterceptData(type: DataSource.Type, data: List<M>) {}
 
     init {
-        dao = DaoFactory.getDao(clazz)
+        cacheFactory.init()
+        listCacheFactory.init()
         cacheStrategy = DataSource.CacheStrategy.MEMORY_CACHE
     }
 }

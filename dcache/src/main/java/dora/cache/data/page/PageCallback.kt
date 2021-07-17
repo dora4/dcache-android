@@ -1,5 +1,5 @@
 package dora.cache.data.page
 
-interface PageCallback<T> {
-    fun onResult(data: List<T>?)
+interface PageCallback<M> {
+    fun onResult(model: List<M>?)
 }

@@ -1,16 +1,14 @@
 package dora.cache.data
 
 import androidx.lifecycle.MutableLiveData
-import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
-import dora.db.OrmTable
 
-abstract class ListDataFetcher<T : OrmTable> : IListDataFetcher<T> {
+abstract class ListDataFetcher<M> : IListDataFetcher<M> {
 
-    protected var pager: IDataPager<T>? = null
-    protected var liveData: MutableLiveData<List<T>> = MutableLiveData()
+    protected var pager: IDataPager<M>? = null
+    protected var liveData: MutableLiveData<List<M>> = MutableLiveData()
 
-    override fun obtainPager(): IDataPager<T>? {
+    override fun obtainPager(): IDataPager<M>? {
         return pager
     }
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import dora.cache.data.DataFetcher
 import dora.cache.data.ListDataFetcher
+import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
 import dora.db.builder.Condition
 import dora.db.builder.WhereBuilder
@@ -68,10 +69,6 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context, var clazz: Class
                     }
                 }
             }
-
-            override fun obtainPager(): IDataPager<M>? {
-                return null
-            }
         }
     }
 
@@ -122,8 +119,8 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context, var clazz: Class
                 }
             }
 
-            override fun obtainPager(): IDataPager<M>? {
-                return null
+            override fun obtainPager(): IDataPager<M> {
+                return DataPager(liveData.value as List<M>)
             }
         }
     }

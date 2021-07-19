@@ -237,7 +237,7 @@ abstract class BaseRepository<M> protected constructor(var context: Context) : I
         return listDataFetcher.fetchListData()
     }
 
-    override fun obtainPager(): IDataPager<M>? {
+    override fun obtainPager(): IDataPager<M> {
         return listDataFetcher.obtainPager()
     }
 

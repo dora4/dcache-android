@@ -9,6 +9,7 @@ import dora.db.builder.WhereBuilder
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import dora.cache.MemoryCache
+import dora.cache.data.page.DataPager
 import dora.db.builder.Condition
 
 abstract class BaseMemoryCacheRepository<M>(context: Context, clazz: Class<M>) : BaseRepository<M>(context) {
@@ -80,10 +81,6 @@ abstract class BaseMemoryCacheRepository<M>(context: Context, clazz: Class<M>) :
                     }
                 }
             }
-
-            override fun obtainPager(): IDataPager<M>? {
-                return null
-            }
         }
     }
 
@@ -142,9 +139,8 @@ abstract class BaseMemoryCacheRepository<M>(context: Context, clazz: Class<M>) :
                 }
             }
 
-
-            override fun obtainPager(): IDataPager<M>? {
-                return null
+            override fun obtainPager(): IDataPager<M> {
+                return DataPager(liveData.value as List<M>)
             }
         }
     }

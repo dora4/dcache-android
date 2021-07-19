@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import dora.cache.data.DataFetcher
 import dora.cache.data.ListDataFetcher
+import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
@@ -44,10 +45,6 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                     }
                 }
             }
-
-            override fun obtainPager(): IDataPager<M>? {
-                return null
-            }
         }
     }
 
@@ -86,8 +83,8 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                 }
             }
 
-            override fun obtainPager(): IDataPager<M>? {
-                return null
+            override fun obtainPager(): IDataPager<M> {
+                return DataPager(liveData.value as List<M>)
             }
         }
     }

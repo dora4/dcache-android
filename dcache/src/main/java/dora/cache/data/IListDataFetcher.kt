@@ -9,5 +9,5 @@ interface IListDataFetcher<M> {
 
     fun fetchListData(): LiveData<List<M>>
     fun listCallback(): DoraListCallback<M>
-    fun obtainPager(): IDataPager<M>?
+    fun obtainPager(): IDataPager<M>
 }

@@ -16,7 +16,7 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
         return object : DataFetcher<M>() {
             override fun fetchData(): LiveData<M> {
                 selectData(object : DataSource {
-                    override fun loadFromCache(type: DataSource.CacheType?): Boolean {
+                    override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         return false
                     }
 
@@ -53,7 +53,7 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
 
             override fun fetchListData(): LiveData<List<M>> {
                 selectData(object : DataSource {
-                    override fun loadFromCache(type: DataSource.CacheType?): Boolean {
+                    override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         return false
                     }
 
@@ -89,6 +89,15 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
         }
     }
 
-    protected fun onInterceptData(type: DataSource.Type, data: M) {}
-    protected fun onInterceptData(type: DataSource.Type, data: List<M>) {}
+    /**
+     * 非集合数据模式需要重写它。
+     */
+    override fun onLoadFromNetwork(callback: DoraCallback<M>) {
+    }
+
+    /**
+     * 集合数据模式需要重写它。
+     */
+    override fun onLoadFromNetwork(callback: DoraListCallback<M>) {
+    }
 }

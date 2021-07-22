@@ -22,7 +22,7 @@ class DoraListCacheFactory<M, T : OrmTable>(var clazz: Class<out OrmTable>) : Li
         dao = DaoFactory.getDao(clazz) as OrmDao<T>
     }
 
-    override fun addNewCache(model: List<M>) {
-        dao.insert(model as List<T>)
+    override fun addNewCache(models: List<M>) {
+        dao.insert(models as List<T>)
     }
 }

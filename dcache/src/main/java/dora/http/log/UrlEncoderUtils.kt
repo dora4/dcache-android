@@ -4,8 +4,8 @@ class UrlEncoderUtils private constructor() {
     companion object {
         /**
          * 判断 str 是否已经 URLEncoder.encode() 过
-         * 经常遇到这样的情况, 拿到一个 URL, 但是搞不清楚到底要不要 URLEncoder.encode()
-         * 不做 URLEncoder.encode() 吧, 担心出错, 做 URLEncoder.encode() 吧, 又怕重复了
+         * 经常遇到这样的情况, 拿到一个 URL，但是搞不清楚到底要不要 URLEncoder.encode()
+         * 不做 URLEncoder.encode() 吧，担心出错，做 URLEncoder.encode() 吧，又怕重复了。
          *
          * @param str 需要判断的内容
          * @return 返回 `true` 为被 URLEncoder.encode() 过
@@ -30,7 +30,7 @@ class UrlEncoderUtils private constructor() {
         }
 
         /**
-         * 判断 c 是否是 16 进制的字符
+         * 判断 c 是否是 16 进制的字符。
          *
          * @param c 需要判断的字符
          * @return 返回 `true` 为 16 进制的字符

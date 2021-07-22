@@ -102,14 +102,14 @@ abstract class BaseRepository<M> protected constructor(var context: Context) : I
      *
      * @param callback
      */
-    protected fun onLoadFromNetwork(callback: DoraCallback<M>) {}
+    protected abstract fun onLoadFromNetwork(callback: DoraCallback<M>)
 
     /**
      * 集合数据的API接口调用。
      *
      * @param callback
      */
-    protected fun onLoadFromNetwork(callback: DoraListCallback<M>) {}
+    protected abstract fun onLoadFromNetwork(callback: DoraListCallback<M>)
 
     /**
      * 从三级缓存仓库选择数据。
@@ -175,6 +175,7 @@ abstract class BaseRepository<M> protected constructor(var context: Context) : I
      * 数据的来源。
      */
     interface DataSource {
+
         enum class Type {
             /**
              * 数据来源于网络服务器。
@@ -221,7 +222,7 @@ abstract class BaseRepository<M> protected constructor(var context: Context) : I
          * @param type
          * @return
          */
-        fun loadFromCache(type: CacheType?): Boolean
+        fun loadFromCache(type: CacheType): Boolean
 
         /**
          * 从服务器/网络加载数据。
@@ -263,6 +264,10 @@ abstract class BaseRepository<M> protected constructor(var context: Context) : I
     companion object {
         protected const val TAG = "BaseRepository"
     }
+
+    protected fun onInterceptData(type: DataSource.Type, model: M) {}
+
+    protected fun onInterceptData(type: DataSource.Type, models: List<M>) {}
 
     init {
         val repository = javaClass.getAnnotation(Repository::class.java)

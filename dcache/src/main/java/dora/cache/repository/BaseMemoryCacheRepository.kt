@@ -31,7 +31,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context, clazz: Class<M>) :
         return object : DataFetcher<M>() {
             override fun fetchData(): LiveData<M> {
                 selectData(object : DataSource {
-                    override fun loadFromCache(type: DataSource.CacheType?): Boolean {
+                    override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         try {
                             if (type === DataSource.CacheType.MEMORY) {
                                 val model = MemoryCache.getCacheFromMemory(cacheName) as M
@@ -90,7 +90,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context, clazz: Class<M>) :
 
             override fun fetchListData(): LiveData<List<M>> {
                 selectData(object : DataSource {
-                    override fun loadFromCache(type: DataSource.CacheType?): Boolean {
+                    override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         try {
                             if (type === DataSource.CacheType.MEMORY) {
                                 val models = MemoryCache.getCacheFromMemory(cacheName) as List<M>
@@ -145,12 +145,21 @@ abstract class BaseMemoryCacheRepository<M>(context: Context, clazz: Class<M>) :
         }
     }
 
-    protected fun onInterceptData(type: DataSource.Type, data: M) {}
-    protected fun onInterceptData(type: DataSource.Type, data: List<M>) {}
-
     init {
         cacheFactory.init()
         listCacheFactory.init()
         cacheStrategy = DataSource.CacheStrategy.MEMORY_CACHE
+    }
+
+    /**
+     * 非集合数据模式需要重写它。
+     */
+    override fun onLoadFromNetwork(callback: DoraCallback<M>) {
+    }
+
+    /**
+     * 集合数据模式需要重写它。
+     */
+    override fun onLoadFromNetwork(callback: DoraListCallback<M>) {
     }
 }

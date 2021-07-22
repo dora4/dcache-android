@@ -7,16 +7,6 @@ object MemoryCache {
 
     private val CACHE: Cache<String, Any> = LruCache(Int.MAX_VALUE)
 
-    /**
-     * 添加缓存，如果name重复则会失败。
-     *
-     * @param name
-     * @param cache
-     */
-    private fun setCacheToMemory(name: String, cache: Any) {
-        CACHE.put(name, cache)
-    }
-
     fun getCacheFromMemory(name: String): Any? {
         return CACHE.get(name)
     }
@@ -28,8 +18,7 @@ object MemoryCache {
     }
 
     /**
-     * 推荐使用这个方法而不是[.setCacheToMemory]，[.updateCacheAtMemory]
-     * 这个方法能保证更新成功。
+     * 推荐使用这个方法而不是[setCacheToMemory]，[updateCacheAtMemory]能保证更新成功。
      *
      * @param name
      * @param cache
@@ -39,7 +28,17 @@ object MemoryCache {
         setCacheToMemory(name, cache)
     }
 
-    fun cacheKeys(): Set<String>? {
+    fun cacheKeys(): Set<String> {
         return CACHE.keySet()
+    }
+
+    /**
+     * 添加缓存，如果name重复则会失败。
+     *
+     * @param name
+     * @param cache
+     */
+    private fun setCacheToMemory(name: String, cache: Any) {
+        CACHE.put(name, cache)
     }
 }

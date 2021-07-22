@@ -14,6 +14,8 @@ annotation class Repository(
          * @see BaseRepository.DataSource.CacheStrategy.DATABASE_CACHE
          *
          * @see BaseRepository.DataSource.CacheStrategy.MEMORY_CACHE
+         *
+         * @see BaseRepository.DataSource.CacheStrategy.DATABASE_CACHE_NO_NETWORK
          */
         val cacheStrategy: Int = BaseRepository.DataSource.CacheStrategy.NO_CACHE,
         /**

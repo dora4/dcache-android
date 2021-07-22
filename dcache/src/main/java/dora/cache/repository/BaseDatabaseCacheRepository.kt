@@ -28,7 +28,7 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context, var clazz: Class
         return object : DataFetcher<M>() {
             override fun fetchData(): LiveData<M> {
                 selectData(object : DataSource {
-                    override fun loadFromCache(type: DataSource.CacheType?): Boolean {
+                    override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
                             val entity = cacheFactory.queryCache(where())
                             if (entity != null) {
@@ -77,7 +77,7 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context, var clazz: Class
 
             override fun fetchListData(): LiveData<List<M>> {
                 selectData(object : DataSource {
-                    override fun loadFromCache(type: DataSource.CacheType?): Boolean {
+                    override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
                             val entities = listCacheFactory.queryCache(where())
                             if (entities != null && entities.isNotEmpty()) {
@@ -125,9 +125,6 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context, var clazz: Class
         }
     }
 
-    protected fun onInterceptData(type: DataSource.Type, data: M) {}
-    protected fun onInterceptData(type: DataSource.Type, data: List<M>) {}
-
     init {
         cacheFactory.init()
         listCacheFactory.init()
@@ -136,5 +133,17 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context, var clazz: Class
         } else{
             cacheStrategy = DataSource.CacheStrategy.DATABASE_CACHE
         }
+    }
+
+    /**
+     * 非集合数据模式需要重写它。
+     */
+    override fun onLoadFromNetwork(callback: DoraCallback<M>) {
+    }
+
+    /**
+     * 集合数据模式需要重写它。
+     */
+    override fun onLoadFromNetwork(callback: DoraListCallback<M>) {
     }
  }

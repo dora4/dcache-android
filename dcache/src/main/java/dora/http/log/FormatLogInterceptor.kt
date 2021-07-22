@@ -62,7 +62,7 @@ class FormatLogInterceptor : Interceptor {
     }
 
     /**
-     * 打印响应结果
+     * 打印响应结果。
      *
      * @param request     [Request]
      * @param response    [Response]
@@ -93,7 +93,7 @@ class FormatLogInterceptor : Interceptor {
     }
 
     /**
-     * 解析服务器响应的内容
+     * 解析服务器响应的内容。
      *
      * @param responseBody [ResponseBody]
      * @param encoding     编码类型
@@ -121,29 +121,29 @@ class FormatLogInterceptor : Interceptor {
 
     enum class Level {
         /**
-         * 不打印log
+         * 不打印log。
          */
         NONE,
 
         /**
-         * 只打印请求信息
+         * 只打印请求信息。
          */
         REQUEST,
 
         /**
-         * 只打印响应信息
+         * 只打印响应信息。
          */
         RESPONSE,
 
         /**
-         * 所有数据全部打印
+         * 所有数据全部打印。
          */
         ALL
     }
 
     companion object {
         /**
-         * 解析请求服务器的请求参数
+         * 解析请求服务器的请求参数。
          *
          * @param request [Request]
          * @return 解析后的请求信息
@@ -172,7 +172,7 @@ class FormatLogInterceptor : Interceptor {
         }
 
         /**
-         * 是否可以解析
+         * 是否可以解析。
          *
          * @param mediaType [MediaType]
          * @return `true` 为可以解析

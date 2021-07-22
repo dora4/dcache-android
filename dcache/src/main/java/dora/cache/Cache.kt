@@ -1,7 +1,5 @@
 package dora.cache
 
-import android.content.Context
-
 interface Cache<K, V> {
     /**
      * 返回当前缓存已占用的总 size
@@ -56,14 +54,4 @@ interface Cache<K, V> {
      * 清除缓存中所有的内容
      */
     fun clear()
-
-    interface Factory {
-        /**
-         * Returns a new cache
-         *
-         * @param type 框架中需要缓存的模块类型
-         * @return [Cache]
-         */
-        fun build(type: CacheType, context: Context): Cache<*, *>
-    }
 }

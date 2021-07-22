@@ -19,6 +19,7 @@ import javax.xml.transform.stream.StreamSource
 
 class CharacterHandler private constructor() {
     companion object {
+
         val EMOJI_FILTER: InputFilter = object : InputFilter {
             //emoji过滤器
             var emoji = Pattern.compile(
@@ -35,7 +36,7 @@ class CharacterHandler private constructor() {
         }
 
         /**
-         * 字符串转换成十六进制字符串
+         * 字符串转换成十六进制字符串。
          *
          * @return String 每个Byte之间空格分隔，如: [61 6C 6B]
          */
@@ -54,7 +55,7 @@ class CharacterHandler private constructor() {
         }
 
         /**
-         * json 格式化
+         * json 格式化。
          *
          * @param json
          * @return
@@ -86,7 +87,7 @@ class CharacterHandler private constructor() {
         }
 
         /**
-         * xml 格式化
+         * xml 格式化。
          *
          * @param xml
          * @return

@@ -8,20 +8,9 @@ import java.util.*
 import java.util.zip.*
 
 class ZipHelper private constructor() {
+
     companion object {
-        /**
-         * zlib decompress 2 String
-         *
-         * @param bytesToDecompress
-         * @param charsetName
-         * @return
-         */
-        /**
-         * zlib decompress 2 String
-         *
-         * @param bytesToDecompress
-         * @return
-         */
+
         @JvmOverloads
         fun decompressToStringForZlib(bytesToDecompress: ByteArray, charsetName: String? = "UTF-8"): String? {
             val bytesDecompressed = decompressForZlib(
@@ -41,12 +30,6 @@ class ZipHelper private constructor() {
             return returnValue
         }
 
-        /**
-         * zlib decompress 2 byte
-         *
-         * @param bytesToDecompress
-         * @return
-         */
         fun decompressForZlib(bytesToDecompress: ByteArray): ByteArray? {
             var returnValues: ByteArray? = null
             val inflater = Inflater()
@@ -80,12 +63,6 @@ class ZipHelper private constructor() {
             return returnValues
         }
 
-        /**
-         * zlib compress 2 byte
-         *
-         * @param bytesToCompress
-         * @return
-         */
         fun compressForZlib(bytesToCompress: ByteArray?): ByteArray {
             val deflater = Deflater()
             deflater.setInput(bytesToCompress)
@@ -103,12 +80,6 @@ class ZipHelper private constructor() {
             return returnValues
         }
 
-        /**
-         * zlib compress 2 byte
-         *
-         * @param stringToCompress
-         * @return
-         */
         fun compressForZlib(stringToCompress: String): ByteArray? {
             var returnValues: ByteArray? = null
             try {
@@ -127,13 +98,6 @@ class ZipHelper private constructor() {
             return returnValues
         }
 
-        /**
-         * gzip compress 2 byte
-         *
-         * @param string
-         * @return
-         * @throws IOException
-         */
         fun compressForGzip(string: String): ByteArray? {
             var os: ByteArrayOutputStream? = null
             var gos: GZIPOutputStream? = null
@@ -154,20 +118,7 @@ class ZipHelper private constructor() {
             }
             return null
         }
-        /**
-         * gzip decompress 2 string
-         *
-         * @param compressed
-         * @param charsetName
-         * @return
-         */
-        /**
-         * gzip decompress 2 string
-         *
-         * @param compressed
-         * @return
-         * @throws IOException
-         */
+
         @JvmOverloads
         fun decompressForGzip(compressed: ByteArray, charsetName: String? = "UTF-8"): String? {
             val BUFFER_SIZE = compressed.size

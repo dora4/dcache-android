@@ -9,7 +9,7 @@ import okhttp3.Request
 
 class DefaultFormatPrinter : FormatPrinter {
     /**
-     * 打印网络请求信息, 当网络请求时 {[okhttp3.RequestBody]} 可以解析的情况
+     * 打印网络请求信息，当网络请求时 {[okhttp3.RequestBody]} 可以解析的情况。
      *
      * @param request
      * @param bodyString
@@ -25,7 +25,7 @@ class DefaultFormatPrinter : FormatPrinter {
     }
 
     /**
-     * 打印网络请求信息, 当网络请求时 {[okhttp3.RequestBody]} 为 `null` 或不可解析的情况
+     * 打印网络请求信息，当网络请求时 {[okhttp3.RequestBody]} 为 `null` 或不可解析的情况。
      *
      * @param request
      */
@@ -39,7 +39,7 @@ class DefaultFormatPrinter : FormatPrinter {
     }
 
     /**
-     * 打印网络响应信息, 当网络响应时 {[okhttp3.ResponseBody]} 可以解析的情况
+     * 打印网络响应信息，当网络响应时 {[okhttp3.ResponseBody]} 可以解析的情况。
      *
      * @param chainMs      服务器响应耗时(单位毫秒)
      * @param isSuccessful 请求是否成功
@@ -66,7 +66,7 @@ class DefaultFormatPrinter : FormatPrinter {
     }
 
     /**
-     * 打印网络响应信息, 当网络响应时 {[okhttp3.ResponseBody]} 为 `null` 或不可解析的情况
+     * 打印网络响应信息，当网络响应时 {[okhttp3.ResponseBody]} 为 `null` 或不可解析的情况。
      *
      * @param chainMs      服务器响应耗时(单位毫秒)
      * @param isSuccessful 请求是否成功
@@ -120,11 +120,11 @@ class DefaultFormatPrinter : FormatPrinter {
         }
 
         /**
-         * 对 `lines` 中的信息进行逐行打印
+         * 对 `lines` 中的信息进行逐行打印。
          *
          * @param tag
          * @param lines
-         * @param withLineSize 为 `true` 时, 每行的信息长度不会超过110, 超过则自动换行
+         * @param withLineSize 为 `true` 时，每行的信息长度不会超过110，超过则自动换行
          */
         private fun logLines(tag: String, lines: Array<String>, withLineSize: Boolean) {
             for (line in lines) {
@@ -149,16 +149,16 @@ class DefaultFormatPrinter : FormatPrinter {
         }
 
         /**
-         * 此方法是为了解决在 AndroidStudio v3.1 以上 Logcat 输出的日志无法对齐的问题
+         * 此方法是为了解决在 AndroidStudio v3.1 以上 Logcat 输出的日志无法对齐的问题。
          *
          *
-         * 此问题引起的原因, 可能是因为 AndroidStudio v3.1 以上将极短时间内以相同 tag 输出多次的 log 自动合并为一次输出
-         * 导致本来对称的输出日志, 出现不对称的问题
-         * AndroidStudio v3.1 此次对输出日志的优化, 不小心使市面上所有具有日志格式化输出功能的日志框架无法正常工作
+         * 此问题引起的原因，可能是因为 AndroidStudio v3.1 以上将极短时间内以相同 tag 输出多次的 log 自动合并为一次输出
+         * 导致本来对称的输出日志，出现不对称的问题
+         * AndroidStudio v3.1 此次对输出日志的优化，不小心使市面上所有具有日志格式化输出功能的日志框架无法正常工作
          * 现在暂时能想到的解决方案有两个: 1. 改变每行的 tag (每行 tag 都加一个可变化的 token) 2. 延迟每行日志打印的间隔时间
          *
          *
-         * [.resolveTag] 使用第一种解决方案
+         * [resolveTag] 使用第一种解决方案
          *
          * @param tag
          */
@@ -194,7 +194,7 @@ class DefaultFormatPrinter : FormatPrinter {
         }
 
         /**
-         * 对 `header` 按规定的格式进行处理
+         * 对 `header` 按规定的格式进行处理。
          *
          * @param header
          * @return

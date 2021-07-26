@@ -11,7 +11,7 @@ import dora.db.builder.WhereBuilder
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 
-abstract class BaseDatabaseCacheRepository<M>(context: Context, var clazz: Class<M>) : BaseRepository<M>(context) {
+abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository<M>(context) {
 
     abstract val isNoNetworkMode: Boolean
 
@@ -126,8 +126,6 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context, var clazz: Class
     }
 
     init {
-        cacheFactory.init()
-        listCacheFactory.init()
         if (isNoNetworkMode) {
             cacheStrategy = DataSource.CacheStrategy.DATABASE_CACHE_NO_NETWORK
         } else{

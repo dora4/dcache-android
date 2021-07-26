@@ -232,7 +232,7 @@ class WhereBuilder {
     }
 
     fun toCondition() : Condition {
-        return Condition(selection, selectionArgs!!)
+        return Condition(selection, selectionArgs ?: arrayOf())
     }
 
     companion object {

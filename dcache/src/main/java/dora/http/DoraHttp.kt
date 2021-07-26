@@ -29,15 +29,14 @@ object DoraHttp {
      * 请求失败抛异常。
      */
     suspend fun <T> api(apiMethod: ()-> Call<T>) = suspendCoroutine<T> {
-        continuation ->
         val data = apiMethod()
         data.enqueue(object : DoraCallback<T>() {
             override fun onSuccess(data: T) {
-                continuation.resume(data)
+                it.resume(data)
             }
 
             override fun onFailure(code: Int, msg: String?) {
-                continuation.resumeWith(Result.failure(DoraHttpException(data.request(), msg)))
+                it.resumeWith(Result.failure(DoraHttpException(data.request(), msg)))
             }
         })
     }
@@ -46,15 +45,14 @@ object DoraHttp {
      * 请求失败返回空。
      */
     suspend fun <T> result(apiMethod: ()-> Call<T>) = suspendCoroutine<T?> {
-        continuation ->
         val data = apiMethod()
         data.enqueue(object : DoraCallback<T?>() {
             override fun onSuccess(data: T?) {
-                continuation.resume(data)
+                it.resume(data)
             }
 
             override fun onFailure(code: Int, msg: String?) {
-                continuation.resumeWith(Result.success(null))
+                it.resumeWith(Result.success(null))
             }
         })
     }
@@ -63,9 +61,6 @@ object DoraHttp {
      * 自己执行网络请求代码。
      */
     suspend fun <T> request(block: () -> T) = suspendCoroutine<T> {
-        continuation ->
-        DoraTask {
-            continuation.resume(block())
-        }.execute()
+        it.resume(block())
     }
 }

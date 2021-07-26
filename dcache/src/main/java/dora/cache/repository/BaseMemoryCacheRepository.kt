@@ -12,7 +12,7 @@ import dora.cache.MemoryCache
 import dora.cache.data.page.DataPager
 import dora.db.builder.Condition
 
-abstract class BaseMemoryCacheRepository<M>(context: Context, clazz: Class<M>) : BaseRepository<M>(context) {
+abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M>(context) {
 
     /**
      * 根据查询条件进行初步的过滤从数据库加载的数据，过滤不完全则再调用onInterceptData。
@@ -146,8 +146,6 @@ abstract class BaseMemoryCacheRepository<M>(context: Context, clazz: Class<M>) :
     }
 
     init {
-        cacheFactory.init()
-        listCacheFactory.init()
         cacheStrategy = DataSource.CacheStrategy.MEMORY_CACHE
     }
 

@@ -11,13 +11,16 @@ import dora.cache.data.page.IDataPager
 import dora.cache.factory.CacheFactory
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
+import java.lang.reflect.ParameterizedType
+import kotlin.reflect.KClass
 
 /**
  * 数据仓库，扩展它来支持数据的三级缓存，即从云端服务器的数据库、手机本地数据库和手机内存中读取需要的数据，以支持用户
  * 手机在断网情况下也能显示以前的数据。一个[BaseRepository]要么用于非集合数据，要么用于集合数据。如果要用于
  * 非集合数据，请配置[Repository]注解将[.listData]的值设置为false。
  */
-abstract class BaseRepository<M> protected constructor(var context: Context) : IDataFetcher<M>, IListDataFetcher<M> {
+abstract class BaseRepository<M>(val context: Context) : IDataFetcher<M>, IListDataFetcher<M> {
+
     /**
      * 缓存策略。
      */
@@ -34,9 +37,9 @@ abstract class BaseRepository<M> protected constructor(var context: Context) : I
      */
     lateinit var listDataFetcher: IListDataFetcher<M>
 
-    var cacheFactory: CacheFactory<M>
+    lateinit var cacheFactory: CacheFactory<M>
 
-    var listCacheFactory: CacheFactory<List<M>>
+    lateinit var listCacheFactory: CacheFactory<List<M>>
 
     /**
      * true代表用于集合数据，false用于非集合数据。
@@ -67,9 +70,9 @@ abstract class BaseRepository<M> protected constructor(var context: Context) : I
      */
     protected abstract fun installListDataFetcher(): IListDataFetcher<M>
 
-    protected abstract fun createCacheFactory(): CacheFactory<M>
+    protected abstract fun createCacheFactory(clazz: Class<M>): CacheFactory<M>
 
-    protected abstract fun createListCacheFactory(): CacheFactory<List<M>>
+    protected abstract fun createListCacheFactory(clazz: Class<M>): CacheFactory<List<M>>
 
     override fun callback(): DoraCallback<M> {
         return object : DoraCallback<M>() {
@@ -265,22 +268,25 @@ abstract class BaseRepository<M> protected constructor(var context: Context) : I
         protected const val TAG = "BaseRepository"
     }
 
-    protected fun onInterceptData(type: DataSource.Type, model: M) {}
-
-    protected fun onInterceptData(type: DataSource.Type, models: List<M>) {}
-
     init {
         val repository = javaClass.getAnnotation(Repository::class.java)
         if (repository != null) {
             cacheStrategy = repository.cacheStrategy
             isListData = repository.isListData
+            val MClass = repository.modelClass
+            cacheFactory = createCacheFactory(MClass.java as Class<M>)
+            cacheFactory.init()
+            listCacheFactory = createListCacheFactory(MClass.java as Class<M>)
+            listCacheFactory.init()
         }
-        cacheFactory = createCacheFactory()
-        listCacheFactory = createListCacheFactory()
         if (isListData) {
             listDataFetcher = installListDataFetcher()
         } else {
             dataFetcher = installDataFetcher()
         }
     }
+
+    protected fun onInterceptData(type: DataSource.Type, model: M) {}
+
+    protected fun onInterceptData(type: DataSource.Type, models: List<M>) {}
 }

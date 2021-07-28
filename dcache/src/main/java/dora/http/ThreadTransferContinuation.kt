@@ -5,7 +5,8 @@ import kotlin.Result
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 
-class ThreadTransferContinuation<T>(private val activity: Activity, private val continuation: Continuation<T>) : Continuation<T> {
+class ThreadTransferContinuation<T>(private val activity: Activity, private val continuation:
+    Continuation<T>) : Continuation<T> {
 
     override val context: CoroutineContext = continuation.context
 

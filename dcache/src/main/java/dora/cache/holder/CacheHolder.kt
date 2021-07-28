@@ -1,8 +1,8 @@
-package dora.cache.factory
+package dora.cache.holder
 
 import dora.db.builder.Condition
 
-interface CacheFactory<M> {
+interface CacheHolder<M> {
 
     /**
      * 该类型数据库orm框架的一些初始化操作在这里进行。

@@ -16,6 +16,15 @@ class DataPager<M>(override val models: List<M>) : IDataPager<M> {
 
     private var callback: PageCallback<M>? = null
 
+    /**
+     * 上一页的页数。
+     */
+    val lastPage: Int
+        get() = if (currentPage > 0) { currentPage - 1 } else 0
+
+    /**
+     * 下一页的页数。
+     */
     val nextPage: Int
         get() = currentPage + 1
 

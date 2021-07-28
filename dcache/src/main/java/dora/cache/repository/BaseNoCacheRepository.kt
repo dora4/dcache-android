@@ -2,8 +2,8 @@ package dora.cache.repository
 
 import android.content.Context
 import androidx.lifecycle.LiveData
-import dora.cache.data.DataFetcher
-import dora.cache.data.ListDataFetcher
+import dora.cache.data.fetcher.DataFetcher
+import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
 import dora.http.DoraCallback
@@ -12,7 +12,7 @@ import dora.http.DoraListCallback
 abstract class BaseNoCacheRepository<M> protected constructor(context: Context) :
         BaseRepository<M>(context) {
 
-    override fun installDataFetcher(): DataFetcher<M> {
+    override fun createDataFetcher(): DataFetcher<M> {
         return object : DataFetcher<M>() {
             override fun fetchData(): LiveData<M> {
                 selectData(object : DataSource {
@@ -48,7 +48,7 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
         }
     }
 
-    override fun installListDataFetcher(): ListDataFetcher<M> {
+    override fun createListDataFetcher(): ListDataFetcher<M> {
         return object : ListDataFetcher<M>() {
 
             override fun fetchListData(): LiveData<List<M>> {

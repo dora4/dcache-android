@@ -1,19 +1,19 @@
 package dora.cache.repository
 
 import android.content.Context
-import dora.cache.factory.CacheFactory
-import dora.cache.factory.DoraCacheFactory
-import dora.cache.factory.DoraListCacheFactory
+import dora.cache.holder.CacheHolder
+import dora.cache.holder.DoraCacheHolder
+import dora.cache.holder.DoraListCacheHolder
 import dora.db.OrmTable
 
 abstract class DoraMemoryCacheRepository<T: OrmTable>(context: Context)
     : BaseMemoryCacheRepository<T>(context) {
 
-    override fun createCacheFactory(clazz: Class<T>): CacheFactory<T> {
-        return DoraCacheFactory<T, T>(clazz)
+    override fun createCacheHolder(clazz: Class<T>): CacheHolder<T> {
+        return DoraCacheHolder<T, T>(clazz)
     }
 
-    override fun createListCacheFactory(clazz: Class<T>): CacheFactory<List<T>> {
-        return DoraListCacheFactory<T, T>(clazz)
+    override fun createListCacheHolder(clazz: Class<T>): CacheHolder<List<T>> {
+        return DoraListCacheHolder<T, T>(clazz)
     }
 }

@@ -2,8 +2,8 @@ package dora.cache.repository
 
 import android.content.Context
 import androidx.lifecycle.LiveData
-import dora.cache.data.DataFetcher
-import dora.cache.data.ListDataFetcher
+import dora.cache.data.fetcher.DataFetcher
+import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.page.IDataPager
 import dora.db.builder.WhereBuilder
 import dora.http.DoraCallback
@@ -27,7 +27,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
      * 在冷启动时调用，从数据库将数据加载到内存。
      */
     abstract fun loadData(): Any?
-    override fun installDataFetcher(): DataFetcher<M> {
+    override fun createDataFetcher(): DataFetcher<M> {
         return object : DataFetcher<M>() {
             override fun fetchData(): LiveData<M> {
                 selectData(object : DataSource {
@@ -38,7 +38,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                                 onInterceptData(DataSource.Type.CACHE, model)
                                 liveData.setValue(model)
                             } else if (type === DataSource.CacheType.DATABASE) {
-                                val model = cacheFactory.queryCache(where())
+                                val model = cacheHolder.queryCache(where())
                                 if (model != null) {
                                     onInterceptData(DataSource.Type.CACHE, model)
                                     liveData.value = model
@@ -63,8 +63,8 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                     override fun onSuccess(data: M) {
                         onInterceptNetworkData(data)
                         MemoryCache.updateCacheAtMemory(cacheName, data!!)
-                        cacheFactory.removeOldCache(where())
-                        cacheFactory.addNewCache(data)
+                        cacheHolder.removeOldCache(where())
+                        cacheHolder.addNewCache(data)
                         liveData.value = data
                     }
 
@@ -72,7 +72,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                         if (isClearDataOnNetworkError) {
                             liveData.value = null
                             MemoryCache.removeCacheAtMemory(cacheName)
-                            cacheFactory.removeOldCache(where())
+                            cacheHolder.removeOldCache(where())
                         }
                     }
 
@@ -85,7 +85,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
     }
 
     abstract val cacheName: String
-    override fun installListDataFetcher(): ListDataFetcher<M> {
+    override fun createListDataFetcher(): ListDataFetcher<M> {
         return object : ListDataFetcher<M>() {
 
             override fun fetchListData(): LiveData<List<M>> {
@@ -97,7 +97,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                                 onInterceptData(DataSource.Type.CACHE, models)
                                 liveData.setValue(models)
                             } else if (type === DataSource.CacheType.DATABASE) {
-                                val models = listCacheFactory.queryCache(where())
+                                val models = listCacheHolder.queryCache(where())
                                 onInterceptData(DataSource.Type.CACHE, models!!)
                                 liveData.value = models
                                 MemoryCache.updateCacheAtMemory(cacheName, models!!)
@@ -120,14 +120,14 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                     override fun onSuccess(data: List<M>) {
                         onInterceptNetworkData(data)
                         MemoryCache.updateCacheAtMemory(cacheName, data)
-                        listCacheFactory.removeOldCache(where())
-                        listCacheFactory.addNewCache(data)
+                        listCacheHolder.removeOldCache(where())
+                        listCacheHolder.addNewCache(data)
                         liveData.value = data
                     }
 
                     override fun onFailure(code: Int, msg: String?) {
                         if (isClearDataOnNetworkError) {
-                            listCacheFactory.removeOldCache(where())
+                            listCacheHolder.removeOldCache(where())
                             liveData.value = null
                             MemoryCache.removeCacheAtMemory(cacheName)
                         }
@@ -146,7 +146,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
     }
 
     init {
-        cacheStrategy = DataSource.CacheStrategy.MEMORY_CACHE
+        cacheStrategy = CacheStrategy.MEMORY_CACHE
     }
 
     /**

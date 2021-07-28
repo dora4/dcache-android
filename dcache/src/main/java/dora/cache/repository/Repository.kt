@@ -18,7 +18,7 @@ annotation class Repository(
          *
          * @see BaseRepository.DataSource.CacheStrategy.DATABASE_CACHE_NO_NETWORK
          */
-        val cacheStrategy: Int = BaseRepository.DataSource.CacheStrategy.NO_CACHE,
+        val cacheStrategy: Int = BaseRepository.CacheStrategy.NO_CACHE,
 
         /**
          * model类型，1.0.4开始为必须属性。
@@ -30,4 +30,4 @@ annotation class Repository(
          *
          * @return
          */
-        val isListData: Boolean = true) 
+        val isListMode: Boolean = true)

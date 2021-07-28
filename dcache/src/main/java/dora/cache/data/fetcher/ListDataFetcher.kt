@@ -1,4 +1,4 @@
-package dora.cache.data
+package dora.cache.data.fetcher
 
 import androidx.lifecycle.MutableLiveData
 import dora.cache.data.page.DataPager

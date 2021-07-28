@@ -8,6 +8,7 @@ import dora.cache.data.page.IDataPager
  * @param <M>
  */
 interface IPageDataVisitor<M> {
+
     /**
      * 访问数据分页器。
      *

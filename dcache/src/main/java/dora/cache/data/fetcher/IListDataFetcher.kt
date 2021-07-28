@@ -1,8 +1,7 @@
-package dora.cache.data
+package dora.cache.data.fetcher
 
 import androidx.lifecycle.LiveData
 import dora.cache.data.page.IDataPager
-import dora.db.OrmTable
 import dora.http.DoraListCallback
 
 interface IListDataFetcher<M> {

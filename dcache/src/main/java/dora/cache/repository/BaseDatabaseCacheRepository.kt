@@ -2,8 +2,8 @@ package dora.cache.repository
 
 import android.content.Context
 import androidx.lifecycle.LiveData
-import dora.cache.data.DataFetcher
-import dora.cache.data.ListDataFetcher
+import dora.cache.data.fetcher.DataFetcher
+import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
 import dora.db.builder.Condition
@@ -24,13 +24,13 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
         return WhereBuilder.create().toCondition()
     }
 
-    override fun installDataFetcher(): DataFetcher<M> {
+    override fun createDataFetcher(): DataFetcher<M> {
         return object : DataFetcher<M>() {
             override fun fetchData(): LiveData<M> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
-                            val entity = cacheFactory.queryCache(where())
+                            val entity = cacheHolder.queryCache(where())
                             if (entity != null) {
                                 onInterceptData(DataSource.Type.CACHE, entity)
                                 liveData.setValue(entity)
@@ -52,15 +52,15 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
                 return object : DoraCallback<M>() {
                     override fun onSuccess(data: M) {
                         onInterceptNetworkData(data)
-                        cacheFactory.removeOldCache(where())
-                        cacheFactory.addNewCache(data)
+                        cacheHolder.removeOldCache(where())
+                        cacheHolder.addNewCache(data)
                         liveData.setValue(data)
                     }
 
                     override fun onFailure(code: Int, msg: String?) {
                         if (isClearDataOnNetworkError) {
                             liveData.value = null
-                            cacheFactory.removeOldCache(where())
+                            cacheHolder.removeOldCache(where())
                         }
                     }
 
@@ -72,14 +72,14 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
         }
     }
 
-    override fun installListDataFetcher(): ListDataFetcher<M> {
+    override fun createListDataFetcher(): ListDataFetcher<M> {
         return object : ListDataFetcher<M>() {
 
             override fun fetchListData(): LiveData<List<M>> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
-                            val entities = listCacheFactory.queryCache(where())
+                            val entities = listCacheHolder.queryCache(where())
                             if (entities != null && entities.isNotEmpty()) {
                                 onInterceptData(DataSource.Type.CACHE, entities)
                                 liveData.setValue(entities)
@@ -101,15 +101,15 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
                 return object : DoraListCallback<M>() {
                     override fun onSuccess(data: List<M>) {
                         onInterceptNetworkData(data)
-                        listCacheFactory.removeOldCache(where())
-                        listCacheFactory.addNewCache(data)
+                        listCacheHolder.removeOldCache(where())
+                        listCacheHolder.addNewCache(data)
                         liveData.setValue(data)
                     }
 
                     override fun onFailure(code: Int, msg: String?) {
                         if (isClearDataOnNetworkError) {
                             liveData.value = null
-                            listCacheFactory.removeOldCache(where())
+                            listCacheHolder.removeOldCache(where())
                         }
                     }
 
@@ -127,9 +127,9 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
 
     init {
         if (isNoNetworkMode) {
-            cacheStrategy = DataSource.CacheStrategy.DATABASE_CACHE_NO_NETWORK
+            cacheStrategy = CacheStrategy.DATABASE_CACHE_NO_NETWORK
         } else{
-            cacheStrategy = DataSource.CacheStrategy.DATABASE_CACHE
+            cacheStrategy = CacheStrategy.DATABASE_CACHE
         }
     }
 

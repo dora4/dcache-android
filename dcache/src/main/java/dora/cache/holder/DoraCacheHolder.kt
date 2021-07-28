@@ -1,4 +1,4 @@
-package dora.cache.factory
+package dora.cache.holder
 
 import dora.db.OrmTable
 import dora.db.builder.Condition
@@ -6,7 +6,7 @@ import dora.db.builder.WhereBuilder
 import dora.db.dao.DaoFactory
 import dora.db.dao.OrmDao
 
-class DoraCacheFactory<M, T : OrmTable>(var clazz: Class<out OrmTable>) : CacheFactory<M> {
+class DoraCacheHolder<M, T : OrmTable>(var clazz: Class<out OrmTable>) : CacheHolder<M> {
 
     lateinit var dao: OrmDao<T>
 

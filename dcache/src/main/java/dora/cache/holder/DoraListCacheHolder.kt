@@ -10,16 +10,16 @@ class DoraListCacheHolder<M, T : OrmTable>(var clazz: Class<out OrmTable>) : Lis
 
     lateinit var dao: OrmDao<T>
 
+    override fun init() {
+        dao = DaoFactory.getDao(clazz) as OrmDao<T>
+    }
+
     override fun queryCache(condition: Condition): List<M>? {
         return dao.select(WhereBuilder.create(condition)) as List<M>?
     }
 
     override fun removeOldCache(condition: Condition) {
         dao.delete(WhereBuilder.create(condition))
-    }
-
-    override fun init() {
-        dao = DaoFactory.getDao(clazz) as OrmDao<T>
     }
 
     override fun addNewCache(models: List<M>) {

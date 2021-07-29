@@ -2,13 +2,13 @@ package dora.http
 
 import java.util.concurrent.Executors
 
-class DoraTask<T>(private val task:() -> T) {
+class DoraTask(private val task:() -> Unit) {
 
     private val pool by lazy {
         Executors.newCachedThreadPool()
     }
 
-    fun execute() : T {
-        return pool.submit(task).get()
+    fun execute() {
+        return pool.execute(task)
     }
 }

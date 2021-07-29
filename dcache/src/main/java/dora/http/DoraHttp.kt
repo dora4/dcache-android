@@ -61,6 +61,8 @@ object DoraHttp {
      * 自己执行网络请求代码。
      */
     suspend fun <T> request(block: () -> T) = suspendCoroutine<T> {
-        it.resume(block())
+        DoraTask {
+            it.resume(block())
+        }.execute()
     }
 }

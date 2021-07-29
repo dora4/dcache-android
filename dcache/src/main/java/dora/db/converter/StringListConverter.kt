@@ -14,7 +14,7 @@ class StringListConverter : PropertyConverter<List<String>, String> {
         if (databaseValue == null) {
             return arrayListOf()
         }
-        return listOf(*databaseValue.split(",").toTypedArray())
+        return databaseValue.split(",")
     }
 
     /**

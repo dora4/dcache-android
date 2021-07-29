@@ -12,7 +12,6 @@ class OrmSQLiteOpenHelper(context: Context, name: String, version: Int,
             dbObj -> OrmLog.e(dbObj.toString()) }) {
 
     override fun onCreate(db: SQLiteDatabase) {
-        OrmLog.d("OrmSQLiteOpenHelper onCreate")
         if (tables != null && tables.isNotEmpty()) {
             for (table in tables) {
                 TableManager.createTable(table)

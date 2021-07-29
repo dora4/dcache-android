@@ -3,6 +3,7 @@ package dora.db.dao
 import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.util.Log
 import dora.db.Orm
 import dora.db.OrmLog
 import dora.db.OrmTable
@@ -23,46 +24,60 @@ import java.util.*
 import kotlin.jvm.Throws
 
 class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>) : Dao<T> {
+
     private val database: SQLiteDatabase = Orm.getDB()
+
     private fun isAssignableFromBoolean(fieldType: Class<*>): Boolean {
         return Boolean::class.javaPrimitiveType!!.isAssignableFrom(fieldType) ||
                 Boolean::class.java.isAssignableFrom(fieldType)
     }
 
     private fun isAssignableFromByte(fieldType: Class<*>): Boolean {
-        return Byte::class.javaPrimitiveType!!.isAssignableFrom(fieldType) || Byte::class.java.isAssignableFrom(fieldType)
+        return Byte::class.javaPrimitiveType!!.isAssignableFrom(fieldType) ||
+                Byte::class.java.isAssignableFrom(fieldType)
     }
 
     private fun isAssignableFromShort(fieldType: Class<*>): Boolean {
-        return Short::class.javaPrimitiveType!!.isAssignableFrom(fieldType) || Short::class.java.isAssignableFrom(fieldType)
+        return Short::class.javaPrimitiveType!!.isAssignableFrom(fieldType) ||
+                Short::class.java.isAssignableFrom(fieldType)
     }
 
     private fun isAssignableFromInteger(fieldType: Class<*>): Boolean {
-        return Int::class.javaPrimitiveType!!.isAssignableFrom(fieldType) || Int::class.java.isAssignableFrom(fieldType)
+        return Int::class.javaPrimitiveType!!.isAssignableFrom(fieldType) ||
+                Int::class.java.isAssignableFrom(fieldType)
     }
 
     private fun isAssignableFromLong(fieldType: Class<*>): Boolean {
-        return Long::class.javaPrimitiveType!!.isAssignableFrom(fieldType) || Long::class.java.isAssignableFrom(fieldType)
+        return Long::class.javaPrimitiveType!!.isAssignableFrom(fieldType) ||
+                Long::class.java.isAssignableFrom(fieldType)
     }
 
     private fun isAssignableFromFloat(fieldType: Class<*>): Boolean {
-        return Float::class.javaPrimitiveType!!.isAssignableFrom(fieldType) || Float::class.java.isAssignableFrom(fieldType)
+        return Float::class.javaPrimitiveType!!.isAssignableFrom(fieldType) ||
+                Float::class.java.isAssignableFrom(fieldType)
     }
 
     private fun isAssignableFromDouble(fieldType: Class<*>): Boolean {
-        return Double::class.javaPrimitiveType!!.isAssignableFrom(fieldType) || Double::class.java.isAssignableFrom(fieldType)
+        return Double::class.javaPrimitiveType!!.isAssignableFrom(fieldType) ||
+                Double::class.java.isAssignableFrom(fieldType)
     }
 
     private fun isAssignableFromCharacter(fieldType: Class<*>): Boolean {
-        return Char::class.javaPrimitiveType!!.isAssignableFrom(fieldType) || Char::class.java.isAssignableFrom(fieldType)
+        return Char::class.javaPrimitiveType!!.isAssignableFrom(fieldType) ||
+                Char::class.java.isAssignableFrom(fieldType)
     }
 
     private fun isAssignableFromCharSequence(fieldType: Class<*>): Boolean {
-        return CharSequence::class.java.isAssignableFrom(fieldType)
+        return CharSequence::class.java.isAssignableFrom(fieldType) ||
+                String::class.java.isAssignableFrom(fieldType)
     }
 
     private fun isAssignableFromClass(fieldType: Class<*>): Boolean {
         return Class::class.java.isAssignableFrom(fieldType)
+    }
+
+    private fun convertBooleanToInt(boolean: Boolean) : Int {
+        return if (boolean) 1 else 0
     }
 
     private fun getContentValues(bean: T): ContentValues {
@@ -75,7 +90,6 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
             val column: Column? = field.getAnnotation(Column::class.java)
             val primaryKey: PrimaryKey? = field.getAnnotation(PrimaryKey::class.java)
             val convert: Convert? = field.getAnnotation(Convert::class.java)
-            //优先级最高的是忽略
             if (ignore != null || field.modifiers and Modifier.STATIC != 0) {
                 continue
             }
@@ -85,118 +99,117 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
             if (primaryKey != null && primaryKey.value === AssignType.AUTO_INCREMENT) {
                 continue
             }
-            var columnName: String
-            columnName = if (column != null) {
-                column.value
-            } else {
-                TableManager.generateColumnName(field.name)
-            }
-            var fieldType: Class<*>
-            fieldType = if (convert != null) {
-                convert.columnType.java
-            } else {
-                field.type
-            }
-            try {
-                if (isAssignableFromCharSequence(fieldType)) {
-                    if (convert != null) {
-                        val value = field[bean]
-                        val converter: Class<out PropertyConverter<*,*>> = convert.converter.java
-                        val propertyConverter: PropertyConverter<Any, String> = Proxy.newProxyInstance(converter.classLoader,
-                                converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, String>
-                        value?.let {
-                            values.put(columnName, propertyConverter.convertToDatabaseValue(it))
-                        }
-                    } else {
-                        values.put(columnName, field[bean]?.let { it.toString() } ?: "")
+            var columnName: String = column?.value ?: TableManager.generateColumnName(field.name)
+            var fieldType: Class<*> = convert?.columnType?.java ?: field.type
+            if (isAssignableFromCharSequence(fieldType)) {
+                if (convert != null) {
+                    val value = field[bean]
+                    val converter: Class<out PropertyConverter<*,*>> = convert.converter.java
+                    val propertyConverter: PropertyConverter<Any, String> = Proxy.newProxyInstance(converter.classLoader,
+                            converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, String>
+                    value?.let {
+                        values.put(columnName, propertyConverter.convertToDatabaseValue(it))
                     }
-                } else if (isAssignableFromBoolean(fieldType)) {
-                    if (convert != null) {
-                        val value = field[bean]
-                        val converter: Class<out PropertyConverter<*,*>> = convert.converter.java
-                        val propertyConverter: PropertyConverter<Any, Boolean> = Proxy.newProxyInstance(converter.classLoader,
-                                converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Boolean>
-                        value?.let {
-                            values.put(columnName, propertyConverter.convertToDatabaseValue(it))
-                        }
-                    } else {
-                        values.put(columnName, field.getBoolean(bean))
-                    }
-                } else if (isAssignableFromByte(fieldType)) {
-                    if (convert != null) {
-                        val value = field[bean]
-                        val converter: Class<out PropertyConverter<*,*>> = convert.converter.java
-                        val propertyConverter: PropertyConverter<Any, Byte> = Proxy.newProxyInstance(converter.classLoader,
-                                converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Byte>
-                        value?.let {
-                            values.put(columnName, propertyConverter.convertToDatabaseValue(it))
-                        }
-                    } else {
-                        values.put(columnName, field.getByte(bean))
-                    }
-                } else if (isAssignableFromShort(fieldType)) {
-                    if (convert != null) {
-                        val value = field[bean]
-                        val converter: Class<out PropertyConverter<*,*>> = convert.converter.java
-                        val propertyConverter: PropertyConverter<Any, Short> = Proxy.newProxyInstance(converter.classLoader,
-                                converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Short>
-                        value?.let {
-                            values.put(columnName, propertyConverter.convertToDatabaseValue(it))
-                        }
-                    } else {
-                        values.put(columnName, field.getShort(bean))
-                    }
-                } else if (isAssignableFromInteger(fieldType)) {
-                    if (convert != null) {
-                        val value = field[bean]
-                        val converter: Class<out PropertyConverter<*,*>> = convert.converter.java
-                        val propertyConverter: PropertyConverter<Any, Int> = Proxy.newProxyInstance(converter.classLoader,
-                                converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Int>
-                        value?.let {
-                            values.put(columnName, propertyConverter.convertToDatabaseValue(it))
-                        }
-                    } else {
-                        values.put(columnName, field.getInt(bean))
-                    }
-                } else if (isAssignableFromLong(fieldType)) {
-                    if (convert != null) {
-                        val value = field[bean]
-                        val converter: Class<out PropertyConverter<*,*>> = convert.converter.java
-                        val propertyConverter: PropertyConverter<Any, Long> = Proxy.newProxyInstance(converter.classLoader,
-                                converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Long>
-                        value?.let {
-                            values.put(columnName, propertyConverter.convertToDatabaseValue(it))
-                        }
-                    } else {
-                        values.put(columnName, field.getLong(bean))
-                    }
-                } else if (isAssignableFromFloat(fieldType)) {
-                    if (convert != null) {
-                        val value = field[bean]
-                        val converter: Class<out PropertyConverter<*,*>> = convert.converter.java
-                        val propertyConverter: PropertyConverter<Any, Float> = Proxy.newProxyInstance(converter.classLoader,
-                                converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Float>
-                        value?.let {
-                            values.put(columnName, propertyConverter.convertToDatabaseValue(it))
-                        }
-                    } else {
-                        values.put(columnName, field.getFloat(bean))
-                    }
-                } else if (isAssignableFromDouble(fieldType)) {
-                    if (convert != null) {
-                        val value = field[bean]
-                        val converter: Class<out PropertyConverter<*,*>> = convert.converter.java
-                        val propertyConverter: PropertyConverter<Any, Double> = Proxy.newProxyInstance(converter.classLoader,
-                                converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Double>
-                        value?.let {
-                            values.put(columnName, propertyConverter.convertToDatabaseValue(it))
-                        }
-                    } else {
-                        values.put(columnName, field.getDouble(bean))
-                    }
+                } else {
+                    values.put(columnName, field[bean]?.let { it.toString() } ?: "")
                 }
-            } catch (e: IllegalAccessException) {
-                e.printStackTrace()
+            } else if (isAssignableFromBoolean(fieldType)) {
+                if (convert != null) {
+                    val value = field[bean]
+                    val converter: Class<out PropertyConverter<*,*>> = convert.converter.java
+                    val propertyConverter: PropertyConverter<Any, Boolean> = Proxy.newProxyInstance(converter.classLoader,
+                            converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Boolean>
+                    value?.let {
+                        values.put(columnName, convertBooleanToInt(propertyConverter.convertToDatabaseValue(it) as Boolean))
+                    }
+                } else {
+                    values.put(columnName, convertBooleanToInt(field.getBoolean(bean)))
+                }
+            } else if (isAssignableFromByte(fieldType)) {
+                if (convert != null) {
+                    val value = field[bean]
+                    val converter: Class<out PropertyConverter<*,*>> = convert.converter.java
+                    val propertyConverter: PropertyConverter<Any, Byte> = Proxy.newProxyInstance(converter.classLoader,
+                            converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Byte>
+                    value?.let {
+                        values.put(columnName, propertyConverter.convertToDatabaseValue(it))
+                    }
+                } else {
+                    values.put(columnName, field.getByte(bean))
+                }
+            } else if (isAssignableFromShort(fieldType)) {
+                if (convert != null) {
+                    val value = field[bean]
+                    val converter: Class<out PropertyConverter<*,*>> = convert.converter.java
+                    val propertyConverter: PropertyConverter<Any, Short> = Proxy.newProxyInstance(converter.classLoader,
+                            converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Short>
+                    value?.let {
+                        values.put(columnName, propertyConverter.convertToDatabaseValue(it))
+                    }
+                } else {
+                    values.put(columnName, field.getShort(bean))
+                }
+            } else if (isAssignableFromInteger(fieldType)) {
+                if (convert != null) {
+                    val value = field[bean]
+                    val converter: Class<out PropertyConverter<*,*>> = convert.converter.java
+                    val propertyConverter: PropertyConverter<Any, Int> = Proxy.newProxyInstance(converter.classLoader,
+                            converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Int>
+                    value?.let {
+                        values.put(columnName, propertyConverter.convertToDatabaseValue(it))
+                    }
+                } else {
+                    values.put(columnName, field.getInt(bean))
+                }
+            } else if (isAssignableFromLong(fieldType)) {
+                if (convert != null) {
+                    val value = field[bean]
+                    val converter: Class<out PropertyConverter<*,*>> = convert.converter.java
+                    val propertyConverter: PropertyConverter<Any, Long> = Proxy.newProxyInstance(converter.classLoader,
+                            converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Long>
+                    value?.let {
+                        values.put(columnName, propertyConverter.convertToDatabaseValue(it))
+                    }
+                } else {
+                    values.put(columnName, field.getLong(bean))
+                }
+            } else if (isAssignableFromFloat(fieldType)) {
+                if (convert != null) {
+                    val value = field[bean]
+                    val converter: Class<out PropertyConverter<*,*>> = convert.converter.java
+                    val propertyConverter: PropertyConverter<Any, Float> = Proxy.newProxyInstance(converter.classLoader,
+                            converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Float>
+                    value?.let {
+                        values.put(columnName, propertyConverter.convertToDatabaseValue(it))
+                    }
+                } else {
+                    values.put(columnName, field.getFloat(bean))
+                }
+            } else if (isAssignableFromDouble(fieldType)) {
+                if (convert != null) {
+                    val value = field[bean]
+                    val converter: Class<out PropertyConverter<*,*>> = convert.converter.java
+                    val propertyConverter: PropertyConverter<Any, Double> = Proxy.newProxyInstance(converter.classLoader,
+                            converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Double>
+                    value?.let {
+                        values.put(columnName, propertyConverter.convertToDatabaseValue(it))
+                    }
+                } else {
+                    values.put(columnName, field.getDouble(bean))
+                }
+            } else {    // object
+                if (convert != null) {
+                    val value = field[bean]
+                    val converter: Class<out PropertyConverter<*,*>> = convert.converter.java
+                    val propertyConverter: PropertyConverter<Any, String> = Proxy.newProxyInstance(converter.classLoader,
+                            converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, String>
+                    value?.let {
+                        // object进行toString()后再保存
+                        values.put(columnName, propertyConverter.convertToDatabaseValue(it.toString()))
+                    }
+                } else {
+                    values.put(columnName, field[bean]?.let { it.toString() } ?: "")
+                }
             }
         }
         return values
@@ -282,7 +295,6 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
                 bean, database)
     }
 
-    @Deprecated("")
     override fun updateAll(newBean: T): Boolean {
         return updateAllInternal(newBean, database)
     }
@@ -325,7 +337,8 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
 
     override fun selectOne(): T? {
         val tableName: String = TableManager.getTableName(beanClass)
-        val cursor = database.query(tableName, null, null, null, null, null, null)
+        val cursor = database.query(tableName, null, null, null,
+                null, null, null)
         if (cursor.moveToFirst()) {
             try {
                 return createResult(cursor)
@@ -473,22 +486,13 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
             var columnName: String
             val id: Id? = field.getAnnotation(Id::class.java)
             val column: Column? = field.getAnnotation(Column::class.java)
-            columnName = if (id != null) {
+            (if (id != null) {
                 OrmTable.INDEX_ID
-            } else if (column != null) {
-                column.value
-            } else {
-                TableManager.generateColumnName(field.name)
-            }
+            } else column?.value ?: TableManager.generateColumnName(field.name)).also { columnName = it }
             val convert: Convert? = field.getAnnotation(Convert::class.java)
             val columnIndex = cursor.getColumnIndex(columnName)
             if (columnIndex != -1) {
-                var fieldType: Class<*>
-                fieldType = if (convert != null) {
-                    convert.columnType.java
-                } else {
-                    field.type
-                }
+                var fieldType: Class<*> = convert?.columnType?.java ?: field.type
                 if (isAssignableFromCharSequence(fieldType)) {
                     if (convert != null) {
                         val converter: Class<out PropertyConverter<*,*>> = convert.converter.java
@@ -589,14 +593,15 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     internal class PropertyHandler(clazz: Class<out PropertyConverter<*,*>>) : InvocationHandler {
-        private val clazz: Class<out PropertyConverter<*,*>>
+
+        private val clazz: Class<out PropertyConverter<*,*>> = clazz
 
         private fun <T> newInstance(clazz: Class<T>): T? {
             val constructors = clazz.declaredConstructors
             for (c in constructors) {
                 c.isAccessible = true
                 val cls = c.parameterTypes
-                if (cls.size == 0) {
+                if (cls.isEmpty()) {
                     try {
                         return c.newInstance() as T
                     } catch (e: InstantiationException) {
@@ -632,12 +637,8 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
         }
 
         @Throws(Throwable::class)
-        override fun invoke(proxy: Any, method: Method, args: Array<Any>): Any? {
-            return method.invoke(newInstance(clazz), args)
-        }
-
-        init {
-            this.clazz = clazz
+        override fun invoke(proxy: Any?, method: Method, args: Array<out Any>): Any {
+            return method.invoke(newInstance(clazz), *args)
         }
     }
 }

@@ -5,10 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import dora.db.constraint.*
 import dora.db.dao.DaoFactory.removeDao
 import dora.db.exception.ConstraintException
-import dora.db.table.Column
-import dora.db.table.Id
-import dora.db.table.Ignore
-import dora.db.table.Table
+import dora.db.table.*
 import dora.db.type.BaseDataType
 import dora.db.type.BooleanType
 import dora.db.type.ByteArrayType
@@ -118,10 +115,10 @@ object TableManager {
             return dataTypes
         }
 
-    private fun matchDataType(field: Field): BaseDataType {
+    private fun matchDataType(fieldType: Class<*>): BaseDataType {
         val dataTypes: List<BaseDataType> = declaredDataTypes
         for (dataType in dataTypes) {
-            if (dataType.matches(field)) {
+            if (dataType.matches(fieldType)) {
                 return dataType
             }
         }
@@ -231,9 +228,14 @@ object TableManager {
     }
 
     private fun createColumnBuilder(field: Field): ColumnBuilder {
-        val dataType: BaseDataType = matchDataType(field)
+        val dataType: BaseDataType = matchDataType(field.type)
         val sqlType: SqlType = dataType.sqlType
-        val columnType: String = sqlType.name
+        var columnType: String = sqlType.name
+        val convert: Convert? = field.getAnnotation(Convert::class.java)
+        if (convert != null) {
+            // 使用convert的columnType的值再次匹配
+            columnType = matchDataType(convert.columnType.java).sqlType.name
+        }
         val columnName = getColumnName(field)
         val fieldBuilder = ColumnBuilder(columnName + SPACE + columnType, field)
         fieldBuilder.buildColumnUnique()

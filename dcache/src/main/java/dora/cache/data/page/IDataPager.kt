@@ -19,7 +19,7 @@ interface IDataPager<M> : PageCallback<M> {
     var pageSize: Int
     val models: List<M>
 
-    fun setPageCallback(callback: PageCallback<M>)
+    fun setPageCallback(callback: PageCallback<M>) : IDataPager<M>
 
     fun accept(visitor: IPageDataVisitor<M>)
 }

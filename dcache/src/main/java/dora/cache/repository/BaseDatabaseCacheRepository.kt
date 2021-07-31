@@ -11,9 +11,8 @@ import dora.db.builder.WhereBuilder
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 
+@RepositoryType(BaseRepository.CacheStrategy.DATABASE_CACHE)
 abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository<M>(context) {
-
-    abstract val isNoNetworkMode: Boolean
 
     /**
      * 根据查询条件进行初步的过滤从数据库加载的数据，过滤不完全则再调用onInterceptData。
@@ -33,7 +32,7 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
                             val entity = cacheHolder.queryCache(where())
                             if (entity != null) {
                                 onInterceptData(DataSource.Type.CACHE, entity)
-                                liveData.setValue(entity)
+                                liveData.value = entity
                             }
                             return true
                         }
@@ -50,11 +49,11 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
 
             override fun callback(): DoraCallback<M> {
                 return object : DoraCallback<M>() {
-                    override fun onSuccess(data: M) {
-                        onInterceptNetworkData(data)
+                    override fun onSuccess(model: M) {
+                        onInterceptNetworkData(model)
                         cacheHolder.removeOldCache(where())
-                        cacheHolder.addNewCache(data)
-                        liveData.setValue(data)
+                        cacheHolder.addNewCache(model)
+                        liveData.value = model
                     }
 
                     override fun onFailure(code: Int, msg: String?) {
@@ -82,7 +81,7 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
                             val entities = listCacheHolder.queryCache(where())
                             if (entities != null && entities.isNotEmpty()) {
                                 onInterceptData(DataSource.Type.CACHE, entities)
-                                liveData.setValue(entities)
+                                liveData.value = entities
                             }
                             return true
                         }
@@ -99,11 +98,11 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
 
             override fun listCallback(): DoraListCallback<M> {
                 return object : DoraListCallback<M>() {
-                    override fun onSuccess(data: List<M>) {
-                        onInterceptNetworkData(data)
+                    override fun onSuccess(models: List<M>) {
+                        onInterceptNetworkData(models)
                         listCacheHolder.removeOldCache(where())
-                        listCacheHolder.addNewCache(data)
-                        liveData.setValue(data)
+                        listCacheHolder.addNewCache(models)
+                        liveData.value = models
                     }
 
                     override fun onFailure(code: Int, msg: String?) {
@@ -120,16 +119,8 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
             }
 
             override fun obtainPager(): IDataPager<M> {
-                return DataPager(liveData.value as List<M>)
+                return DataPager(liveData.value ?: arrayListOf())
             }
-        }
-    }
-
-    init {
-        if (isNoNetworkMode) {
-            cacheStrategy = CacheStrategy.DATABASE_CACHE_NO_NETWORK
-        } else{
-            cacheStrategy = CacheStrategy.DATABASE_CACHE
         }
     }
 

@@ -3,6 +3,7 @@ package dora.db
 import android.database.sqlite.SQLiteException
 import dora.db.dao.DaoFactory
 import dora.db.dao.OrmDao
+import dora.db.table.OrmTable
 import java.lang.IllegalArgumentException
 
 object Transaction {

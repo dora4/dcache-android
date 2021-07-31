@@ -1,11 +1,13 @@
-package dora.db
+package dora.db.table
 
 import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
+import dora.db.Orm
+import dora.db.OrmLog
+import dora.db.Transaction
 import dora.db.constraint.*
 import dora.db.dao.DaoFactory.removeDao
 import dora.db.exception.ConstraintException
-import dora.db.table.*
 import dora.db.type.BaseDataType
 import dora.db.type.BooleanType
 import dora.db.type.ByteArrayType

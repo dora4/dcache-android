@@ -4,6 +4,8 @@ import android.content.Context
 import android.database.DatabaseErrorHandler
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import dora.db.table.OrmTable
+import dora.db.table.TableManager
 import java.lang.reflect.InvocationTargetException
 
 class OrmSQLiteOpenHelper(context: Context, name: String, version: Int,

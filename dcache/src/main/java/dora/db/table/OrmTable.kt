@@ -1,4 +1,4 @@
-package dora.db
+package dora.db.table
 
 interface OrmTable {
     /**

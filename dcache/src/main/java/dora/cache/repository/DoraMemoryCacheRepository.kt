@@ -4,8 +4,9 @@ import android.content.Context
 import dora.cache.holder.CacheHolder
 import dora.cache.holder.DoraCacheHolder
 import dora.cache.holder.DoraListCacheHolder
-import dora.db.OrmTable
+import dora.db.table.OrmTable
 
+@RepositoryType(BaseRepository.CacheStrategy.MEMORY_CACHE)
 abstract class DoraMemoryCacheRepository<T: OrmTable>(context: Context)
     : BaseMemoryCacheRepository<T>(context) {
 

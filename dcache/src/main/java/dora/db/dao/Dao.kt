@@ -1,6 +1,6 @@
 package dora.db.dao
 
-import dora.db.OrmTable
+import dora.db.table.OrmTable
 import dora.db.builder.QueryBuilder
 import dora.db.builder.WhereBuilder
 

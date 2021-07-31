@@ -28,7 +28,7 @@ class DataPager<M>(override val models: List<M>) : IDataPager<M> {
     val nextPage: Int
         get() = currentPage + 1
 
-    override fun setPageCallback(callback: PageCallback<M>) {
+    override fun setPageCallback(callback: PageCallback<M>): IDataPager<M> = apply {
         this.callback = callback
     }
 

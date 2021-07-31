@@ -1,5 +1,7 @@
 package dora.db
 
+import dora.db.table.OrmTable
+
 class OrmConfig private constructor(builder: Builder) {
 
     val databaseName: String

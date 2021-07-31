@@ -1,6 +1,6 @@
 package dora.db.dao
 
-import dora.db.OrmTable
+import dora.db.table.OrmTable
 import java.lang.IllegalArgumentException
 import java.util.*
 

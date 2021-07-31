@@ -1,6 +1,6 @@
 package dora.cache.holder
 
-import dora.db.OrmTable
+import dora.db.table.OrmTable
 import dora.db.builder.Condition
 import dora.db.builder.WhereBuilder
 import dora.db.dao.DaoFactory

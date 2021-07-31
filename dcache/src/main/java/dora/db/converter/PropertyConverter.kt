@@ -1,4 +1,4 @@
-package dora.db.table
+package dora.db.converter
 
 interface PropertyConverter<P, D> {
     fun convertToEntityProperty(databaseValue: D?): P?

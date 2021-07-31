@@ -4,15 +4,15 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-abstract class DoraListCallback<T> : Callback<List<T>> {
+abstract class DoraListCallback<M> : Callback<List<M>> {
 
-    abstract fun onSuccess(data: List<T>)
+    abstract fun onSuccess(models: List<M>)
 
     abstract fun onFailure(code: Int, msg: String?)
 
-    protected open fun onInterceptNetworkData(data: List<T>) {}
+    protected open fun onInterceptNetworkData(data: List<M>) {}
 
-    override fun onResponse(call: Call<List<T>>, response: Response<List<T>>) {
+    override fun onResponse(call: Call<List<M>>, response: Response<List<M>>) {
         if (response.isSuccessful) {
             val body = response.body()
             if (body != null) {
@@ -23,7 +23,7 @@ abstract class DoraListCallback<T> : Callback<List<T>> {
         }
     }
 
-    override fun onFailure(call: Call<List<T>>, t: Throwable) {
+    override fun onFailure(call: Call<List<M>>, t: Throwable) {
         onFailure(-1, t.message)
     }
 }

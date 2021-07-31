@@ -25,7 +25,7 @@ api "com.github.dora4:dcache-android:$latest_version"
 
 捐赠虚拟货币支持开源项目
 
-| 代币           | 钱包地址                                   | 备注                                                        |
+| 币种           | 钱包地址                                   | 备注                                                        |
 | -------------- | ------------------------------------------ | ----------------------------------------------------------- |
 | 柚子(EOS)      | doramusic123                               | TAG中直接填写你的github用户名                               |
 | USDT(TRC-20链) | TYVXzqctSSPSTeVPYg7i7qbEtSxwrAJQ5y         | 发送你的钱包地址和github用户名至邮箱dora924666990@gmail.com |

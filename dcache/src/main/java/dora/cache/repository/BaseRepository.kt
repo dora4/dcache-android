@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.util.Log
+import androidx.annotation.IntDef
 import androidx.lifecycle.LiveData
 import dora.cache.data.fetcher.IDataFetcher
 import dora.cache.data.fetcher.IListDataFetcher
@@ -11,19 +12,20 @@ import dora.cache.data.page.IDataPager
 import dora.cache.holder.CacheHolder
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
+import java.lang.RuntimeException
+import java.lang.reflect.ParameterizedType
 
 /**
  * 数据仓库，扩展它来支持数据的三级缓存，即从云端服务器的数据库、手机本地数据库和手机内存中读取需要的数据，以支持用户
  * 手机在断网情况下也能显示以前的数据。一个[BaseRepository]要么用于非集合数据，要么用于集合数据。如果要用于
- * 非集合数据，请配置[Repository]注解将[.listData]的值设置为false。
+ * 非集合数据，请配置[Repository]注解将[.isListMode]的值设置为false。
  */
 abstract class BaseRepository<M>(val context: Context) : IDataFetcher<M>, IListDataFetcher<M> {
 
     /**
      * 缓存策略。
      */
-    @JvmField
-    protected var cacheStrategy = CacheStrategy.NO_CACHE
+    var cacheStrategy = CacheStrategy.NO_CACHE
 
     /**
      * 非集合数据获取接口。
@@ -64,8 +66,8 @@ abstract class BaseRepository<M>(val context: Context) : IDataFetcher<M>, IListD
 
     override fun callback(): DoraCallback<M> {
         return object : DoraCallback<M>() {
-            override fun onSuccess(data: M) {
-                Log.d(TAG, data.toString())
+            override fun onSuccess(model: M) {
+                Log.d(TAG, model.toString())
             }
 
             override fun onFailure(code: Int, msg: String?) {
@@ -76,8 +78,8 @@ abstract class BaseRepository<M>(val context: Context) : IDataFetcher<M>, IListD
 
     override fun listCallback(): DoraListCallback<M> {
         return object : DoraListCallback<M>() {
-            override fun onSuccess(data: List<M>) {
-                for (t in data) {
+            override fun onSuccess(models: List<M>) {
+                for (t in models) {
                     Log.d(TAG, t.toString())
                 }
             }
@@ -162,6 +164,12 @@ abstract class BaseRepository<M>(val context: Context) : IDataFetcher<M>, IListD
         return false
     }
 
+    @Target(AnnotationTarget.FIELD)
+    @Retention(AnnotationRetention.SOURCE)
+    @IntDef(CacheStrategy.NO_CACHE, CacheStrategy.DATABASE_CACHE,
+            CacheStrategy.MEMORY_CACHE, CacheStrategy.DATABASE_CACHE_NO_NETWORK)
+    annotation class Strategy
+
     interface CacheStrategy {
         companion object {
             /**
@@ -182,6 +190,7 @@ abstract class BaseRepository<M>(val context: Context) : IDataFetcher<M>, IListD
             /**
              * 和[.DATABASE_CACHE]的不同之处在于，只有在没网的情况下才会加载数据库的缓存数据。
              */
+            @Deprecated("")
             const val DATABASE_CACHE_NO_NETWORK = 3
         }
     }
@@ -252,24 +261,37 @@ abstract class BaseRepository<M>(val context: Context) : IDataFetcher<M>, IListD
         return connectivityManager.activeNetworkInfo
     }
 
+    private fun getGenericType(obj: Any): Class<*>? {
+        return if (obj.javaClass.genericSuperclass is ParameterizedType &&
+                (obj.javaClass.genericSuperclass as ParameterizedType).actualTypeArguments.isNotEmpty()) {
+            (obj.javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<*>
+        } else (obj.javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<*>
+    }
+
     companion object {
-        protected const val TAG = "BaseRepository"
+        private const val TAG = "BaseRepository"
     }
 
     init {
+        val repositoryType = javaClass.superclass.getAnnotation(RepositoryType::class.java)
+        if (repositoryType != null) {
+            cacheStrategy = repositoryType.cacheStrategy
+        } else {
+            throw RuntimeException("RepositoryType is not defined")
+        }
         val repository = javaClass.getAnnotation(Repository::class.java)
         if (repository != null) {
-            cacheStrategy = repository.cacheStrategy
             isListMode = repository.isListMode
-            val MClass = repository.modelClass
-            cacheHolder = createCacheHolder(MClass.java as Class<M>)
-            cacheHolder.init()
-            listCacheHolder = createListCacheHolder(MClass.java as Class<M>)
-            listCacheHolder.init()
         }
+        val MClass: Class<M> = getGenericType(this) as Class<M>
+        Log.d(TAG, "MClass:$MClass,isListMode:$isListMode")
         if (isListMode) {
+            listCacheHolder = createListCacheHolder(MClass)
+            listCacheHolder.init()
             listDataFetcher = createListDataFetcher()
         } else {
+            cacheHolder = createCacheHolder(MClass)
+            cacheHolder.init()
             dataFetcher = createDataFetcher()
         }
     }

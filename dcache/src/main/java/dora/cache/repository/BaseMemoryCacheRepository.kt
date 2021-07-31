@@ -12,6 +12,7 @@ import dora.cache.MemoryCache
 import dora.cache.data.page.DataPager
 import dora.db.builder.Condition
 
+@RepositoryType(BaseRepository.CacheStrategy.MEMORY_CACHE)
 abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M>(context) {
 
     /**
@@ -60,12 +61,12 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
 
             override fun callback(): DoraCallback<M> {
                 return object : DoraCallback<M>() {
-                    override fun onSuccess(data: M) {
-                        onInterceptNetworkData(data)
-                        MemoryCache.updateCacheAtMemory(cacheName, data!!)
+                    override fun onSuccess(model: M) {
+                        onInterceptNetworkData(model)
+                        MemoryCache.updateCacheAtMemory(cacheName, model!!)
                         cacheHolder.removeOldCache(where())
-                        cacheHolder.addNewCache(data)
-                        liveData.value = data
+                        cacheHolder.addNewCache(model)
+                        liveData.value = model
                     }
 
                     override fun onFailure(code: Int, msg: String?) {
@@ -117,12 +118,12 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
 
             override fun listCallback(): DoraListCallback<M> {
                 return object : DoraListCallback<M>() {
-                    override fun onSuccess(data: List<M>) {
-                        onInterceptNetworkData(data)
-                        MemoryCache.updateCacheAtMemory(cacheName, data)
+                    override fun onSuccess(models: List<M>) {
+                        onInterceptNetworkData(models)
+                        MemoryCache.updateCacheAtMemory(cacheName, models)
                         listCacheHolder.removeOldCache(where())
-                        listCacheHolder.addNewCache(data)
-                        liveData.value = data
+                        listCacheHolder.addNewCache(models)
+                        liveData.value = models
                     }
 
                     override fun onFailure(code: Int, msg: String?) {
@@ -140,13 +141,9 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
             }
 
             override fun obtainPager(): IDataPager<M> {
-                return DataPager(liveData.value as List<M>)
+                return DataPager(liveData.value ?: arrayListOf())
             }
         }
-    }
-
-    init {
-        cacheStrategy = CacheStrategy.MEMORY_CACHE
     }
 
     /**

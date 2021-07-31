@@ -1,7 +1,6 @@
 package dora.db.converter
 
 import com.google.gson.Gson
-import dora.db.table.PropertyConverter
 import java.lang.reflect.ParameterizedType
 
 /**

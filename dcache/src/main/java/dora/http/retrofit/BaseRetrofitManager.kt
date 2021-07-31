@@ -10,7 +10,7 @@ abstract class BaseRetrofitManager protected constructor() {
 
     private var config: Config
     private var retrofitMap: MutableMap<Class<*>, Retrofit> = HashMap()
-    protected var urlMap: MutableMap<Class<*>, String> = HashMap()
+    private var urlMap: MutableMap<Class<*>, String> = HashMap()
     private var client: OkHttpClient
     private var clientBuilder: OkHttpClient.Builder = OkHttpClient.Builder()
 

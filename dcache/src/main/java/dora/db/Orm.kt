@@ -4,6 +4,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import dora.db.exception.OrmStateException
+import dora.db.table.OrmTable
 
 object Orm {
     private var database: SQLiteDatabase? = null

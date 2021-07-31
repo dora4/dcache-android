@@ -1,7 +1,5 @@
 package dora.db.converter
 
-import dora.db.table.PropertyConverter
-
 class StringListConverter : PropertyConverter<List<String>, String> {
 
     /**

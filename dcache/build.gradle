@@ -72,4 +72,8 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.5.10"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.2'
+    implementation files('libs/ipfs.jar')
+    implementation files('libs/multiaddr.jar')
+    implementation files('libs/multibase.jar')
+    implementation files('libs/multihash.jar')
 }

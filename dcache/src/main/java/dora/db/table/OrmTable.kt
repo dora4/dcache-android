@@ -1,6 +1,7 @@
 package dora.db.table
 
 interface OrmTable {
+
     /**
      * Gets the unique identifier's value.
      *
@@ -15,6 +16,7 @@ interface OrmTable {
     val isUpgradeRecreated: Boolean
 
     companion object {
+
         const val INDEX_ID = "_id"
     }
 }

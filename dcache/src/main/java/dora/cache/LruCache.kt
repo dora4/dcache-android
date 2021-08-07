@@ -3,6 +3,7 @@ package dora.cache
 import java.util.*
 
 class LruCache<K, V>(private val initialMaxSize: Int) : Cache<K, V> {
+
     private val cache = LinkedHashMap<K, V?>(100, 0.75f, true)
 
     private var currentSize = 0

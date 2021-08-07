@@ -1,6 +1,6 @@
 package dora.db.type
 
-class IntType : BaseDataType(SqlType.INTEGER) {
+class IntType : DataType(SqlType.INTEGER) {
 
     override val types: Array<Class<*>>
         get() = arrayOf(Int::class.java)

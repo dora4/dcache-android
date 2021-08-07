@@ -1,6 +1,6 @@
 package dora.db.type
 
-class FloatType : BaseDataType(SqlType.REAL) {
+class FloatType : DataType(SqlType.REAL) {
 
     override val types: Array<Class<*>>
         get() = arrayOf(Float::class.java)

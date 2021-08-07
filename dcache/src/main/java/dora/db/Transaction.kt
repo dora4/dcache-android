@@ -27,7 +27,7 @@ object Transaction {
         val dao = DaoFactory.getDao(tableClass) ?: throw IllegalArgumentException("DAO not found.")
         try {
             db.beginTransaction()
-            block(dao!!)
+            block(dao)
             db.setTransactionSuccessful()
         } catch (e: SQLiteException) {
             e.printStackTrace()

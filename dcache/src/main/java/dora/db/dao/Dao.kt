@@ -12,7 +12,6 @@ interface Dao<T : OrmTable> {
     fun deleteAll(): Boolean
     fun update(builder: WhereBuilder, newBean: T): Boolean
     fun update(bean: T): Boolean
-
     @Deprecated("")
     fun updateAll(newBean: T): Boolean
     fun selectAll(): List<T>

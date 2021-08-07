@@ -17,6 +17,7 @@ interface IDataPager<M> : PageCallback<M> {
      * @return 不要返回0，0不能做除数
      */
     var pageSize: Int
+
     val models: List<M>
 
     fun setPageCallback(callback: PageCallback<M>) : IDataPager<M>

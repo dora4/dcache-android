@@ -8,7 +8,7 @@ import dora.db.Transaction
 import dora.db.constraint.*
 import dora.db.dao.DaoFactory.removeDao
 import dora.db.exception.ConstraintException
-import dora.db.type.BaseDataType
+import dora.db.type.DataType
 import dora.db.type.BooleanType
 import dora.db.type.ByteArrayType
 import dora.db.type.ByteType
@@ -26,6 +26,7 @@ import java.lang.reflect.Modifier
 import java.util.*
 
 object TableManager {
+
     private val A = 'A'
     private val Z = 'Z'
     private val CREATE_TABLE = "CREATE TABLE"
@@ -48,6 +49,7 @@ object TableManager {
     private val SEMICOLON = ";"
     private val UNDERLINE = "_"
     private val TABLE_NAME_HEADER = "t$UNDERLINE"
+
     fun <T : OrmTable> getTableName(tableClass: Class<T>): String {
         val table = tableClass.getAnnotation(Table::class.java)
         val tableName: String
@@ -101,9 +103,9 @@ object TableManager {
         return sb.toString().toLowerCase()
     }
 
-    val declaredDataTypes: List<BaseDataType>
+    private val declaredDataTypes: List<DataType>
         get() {
-            val dataTypes: MutableList<BaseDataType> = arrayListOf()
+            val dataTypes: MutableList<DataType> = arrayListOf()
             dataTypes.add(BooleanType.INSTANCE)
             dataTypes.add(ByteType.INSTANCE)
             dataTypes.add(ShortType.INSTANCE)
@@ -117,8 +119,8 @@ object TableManager {
             return dataTypes
         }
 
-    private fun matchDataType(fieldType: Class<*>): BaseDataType {
-        val dataTypes: List<BaseDataType> = declaredDataTypes
+    private fun matchDataType(fieldType: Class<*>): DataType {
+        val dataTypes: List<DataType> = declaredDataTypes
         for (dataType in dataTypes) {
             if (dataType.matches(fieldType)) {
                 return dataType
@@ -230,7 +232,7 @@ object TableManager {
     }
 
     private fun createColumnBuilder(field: Field): ColumnBuilder {
-        val dataType: BaseDataType = matchDataType(field.type)
+        val dataType: DataType = matchDataType(field.type)
         val sqlType: SqlType = dataType.sqlType
         var columnType: String = sqlType.name
         val convert: Convert? = field.getAnnotation(Convert::class.java)

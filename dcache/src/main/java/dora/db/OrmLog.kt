@@ -3,6 +3,7 @@ package dora.db
 import android.util.Log
 
 object OrmLog {
+
     private var ORM_DEBUG = true
     private const val TAG = "dora-db"
 

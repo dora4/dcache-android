@@ -51,8 +51,8 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                         }
                     }
 
-                    override fun onInterceptNetworkData(data: M) {
-                        onInterceptData(DataSource.Type.NETWORK, data)
+                    override fun onInterceptNetworkData(model: M) {
+                        onInterceptData(DataSource.Type.NETWORK, model)
                     }
                 }
             }
@@ -92,8 +92,8 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                         }
                     }
 
-                    override fun onInterceptNetworkData(data: List<M>) {
-                        onInterceptData(DataSource.Type.NETWORK, data)
+                    override fun onInterceptNetworkData(models: List<M>) {
+                        onInterceptData(DataSource.Type.NETWORK, models)
                     }
                 }
             }

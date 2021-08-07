@@ -6,6 +6,7 @@ import android.net.NetworkInfo
 import android.util.Log
 import androidx.annotation.IntDef
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
 import dora.cache.data.fetcher.IDataFetcher
 import dora.cache.data.fetcher.IListDataFetcher
 import dora.cache.data.page.IDataPager
@@ -20,31 +21,31 @@ import java.lang.reflect.ParameterizedType
  * 手机在断网情况下也能显示以前的数据。一个[BaseRepository]要么用于非集合数据，要么用于集合数据。如果要用于
  * 非集合数据，请配置[Repository]注解将[.isListMode]的值设置为false。
  */
-abstract class BaseRepository<M>(val context: Context) : IDataFetcher<M>, IListDataFetcher<M> {
+abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetcher<M>, IListDataFetcher<M> {
 
     /**
      * 缓存策略。
      */
-    var cacheStrategy = CacheStrategy.NO_CACHE
+    protected var cacheStrategy = CacheStrategy.NO_CACHE
 
     /**
      * 非集合数据获取接口。
      */
-    lateinit var dataFetcher: IDataFetcher<M>
+    private lateinit var dataFetcher: IDataFetcher<M>
 
     /**
      * 集合数据获取接口。
      */
-    lateinit var listDataFetcher: IListDataFetcher<M>
+    private lateinit var listDataFetcher: IListDataFetcher<M>
 
-    lateinit var cacheHolder: CacheHolder<M>
+    protected lateinit var cacheHolder: CacheHolder<M>
 
-    lateinit var listCacheHolder: CacheHolder<List<M>>
+    protected lateinit var listCacheHolder: CacheHolder<List<M>>
 
     /**
      * true代表用于集合数据，false用于非集合数据。
      */
-    var isListMode = true
+    protected var isListMode = true
         protected set
 
     /**

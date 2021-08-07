@@ -1,6 +1,6 @@
 package dora.db.type
 
-class ClassType : BaseDataType(SqlType.TEXT) {
+class ClassType : DataType(SqlType.TEXT) {
 
     override val types: Array<Class<*>>
         get() = arrayOf(Class::class.java)

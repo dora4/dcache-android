@@ -76,12 +76,14 @@ class QueryBuilder private constructor() {
     }
 
     companion object {
+
         private const val GROUP_BY = " GROUP BY "
         private const val HAVING = " HAVING "
         private const val ORDER_BY = " ORDER BY "
         private const val LIMIT = " LIMIT "
         private const val COMMA = ","
         private const val SPACE = ""
+
         fun create(): QueryBuilder {
             return QueryBuilder()
         }

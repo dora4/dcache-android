@@ -1,6 +1,7 @@
 package dora.cache
 
 interface Cache<K, V> {
+    
     /**
      * 返回当前缓存已占用的总 size
      *

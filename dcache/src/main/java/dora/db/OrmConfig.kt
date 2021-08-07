@@ -4,14 +4,16 @@ import dora.db.table.OrmTable
 
 class OrmConfig private constructor(builder: Builder) {
 
-    val databaseName: String
-    val versionCode: Int
-    val tables: Array<Class<out OrmTable>>?
+    internal val databaseName: String
+    internal val versionCode: Int
+    internal val tables: Array<Class<out OrmTable>>?
 
     class Builder {
-        lateinit var databaseName: String
-        var versionCode = 1
-        var tables: Array<Class<out OrmTable>>? = null
+
+        internal lateinit var databaseName: String
+        internal var versionCode = 1
+        internal var tables: Array<Class<out OrmTable>>? = null
+
         fun database(name: String): Builder {
             databaseName = name
             return this

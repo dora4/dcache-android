@@ -5,6 +5,7 @@ package dora.db.type
  * will eventually become the following five.
  */
 enum class SqlType {
+
     /**
      * The value is the null value.
      */

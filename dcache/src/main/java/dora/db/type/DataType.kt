@@ -1,17 +1,21 @@
 package dora.db.type
 
 import dora.db.DataMatcher
+import java.lang.reflect.Field
 
-enum class DataType /* package */(val matcher: DataMatcher) {
+abstract class DataType(val sqlType: SqlType) : DataMatcher {
 
-    STRING(StringType.INSTANCE),
-    BOOLEAN(BooleanType.INSTANCE),
-    CHAR(CharType.INSTANCE),
-    BYTE(ByteType.INSTANCE),
-    SHORT(ShortType.INSTANCE),
-    INT(IntType.INSTANCE),
-    LONG(LongType.INSTANCE),
-    FLOAT(FloatType.INSTANCE),
-    DOUBLE(DoubleType.INSTANCE),
-    OTHER(ByteArrayType.INSTANCE);
+    override fun matches(field: Field): Boolean {
+        return matches(field.type)
+    }
+
+    override fun matches(fieldType: Class<*>): Boolean {
+        val types = types
+        for (type in types) {
+            if (type.isAssignableFrom(fieldType)) {
+                return true
+            }
+        }
+        return false
+    }
 }

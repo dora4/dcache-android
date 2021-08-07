@@ -28,6 +28,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
      * 在冷启动时调用，从数据库将数据加载到内存。
      */
     abstract fun loadData(): Any?
+
     override fun createDataFetcher(): DataFetcher<M> {
         return object : DataFetcher<M>() {
             override fun fetchData(): LiveData<M> {
@@ -77,8 +78,8 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                         }
                     }
 
-                    override fun onInterceptNetworkData(data: M) {
-                        onInterceptData(DataSource.Type.NETWORK, data)
+                    override fun onInterceptNetworkData(model: M) {
+                        onInterceptData(DataSource.Type.NETWORK, model)
                     }
                 }
             }
@@ -134,8 +135,8 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                         }
                     }
 
-                    override fun onInterceptNetworkData(data: List<M>) {
-                        onInterceptData(DataSource.Type.NETWORK, data)
+                    override fun onInterceptNetworkData(models: List<M>) {
+                        onInterceptData(DataSource.Type.NETWORK, models)
                     }
                 }
             }

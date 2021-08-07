@@ -23,7 +23,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
      *
      * @return
      */
-    protected fun where(): Condition {
+    open fun where(): Condition {
         return WhereBuilder.create().toCondition()
     }
 

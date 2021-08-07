@@ -6,7 +6,7 @@ import dora.cache.data.page.IDataPager
 
 abstract class ListDataFetcher<M> : IListDataFetcher<M> {
 
-    protected var liveData: MutableLiveData<List<M>> = MutableLiveData()
+    internal var liveData: MutableLiveData<List<M>> = MutableLiveData()
     private var pager: IDataPager<M> = DataPager(liveData.value ?: arrayListOf())
 
     override fun obtainPager(): IDataPager<M> {

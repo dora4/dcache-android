@@ -18,7 +18,7 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
 
     override fun createDataFetcher(): DataFetcher<M> {
         return object : DataFetcher<M>() {
-            override fun fetchData(): LiveData<M> {
+            override fun fetchData(): LiveData<M?> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         return false

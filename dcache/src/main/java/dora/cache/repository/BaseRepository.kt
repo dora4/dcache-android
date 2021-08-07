@@ -246,7 +246,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
         fun loadFromNetwork()
     }
 
-    override fun fetchData(): LiveData<M> {
+    override fun fetchData(): LiveData<M?> {
         return dataFetcher.fetchData()
     }
 

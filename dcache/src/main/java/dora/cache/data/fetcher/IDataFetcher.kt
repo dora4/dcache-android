@@ -6,5 +6,5 @@ import dora.http.DoraCallback
 interface IDataFetcher<M> {
 
     fun callback(): DoraCallback<M>
-    fun fetchData(): LiveData<M>
+    fun fetchData(): LiveData<M?>
 }

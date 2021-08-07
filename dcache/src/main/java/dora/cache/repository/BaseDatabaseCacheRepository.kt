@@ -26,7 +26,7 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
 
     override fun createDataFetcher(): DataFetcher<M> {
         return object : DataFetcher<M>() {
-            override fun fetchData(): LiveData<M> {
+            override fun fetchData(): LiveData<M?> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {

@@ -31,12 +31,12 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
     /**
      * 非集合数据获取接口。
      */
-    private lateinit var dataFetcher: IDataFetcher<M>
+    protected lateinit var dataFetcher: IDataFetcher<M>
 
     /**
      * 集合数据获取接口。
      */
-    private lateinit var listDataFetcher: IListDataFetcher<M>
+    protected lateinit var listDataFetcher: IListDataFetcher<M>
 
     protected lateinit var cacheHolder: CacheHolder<M>
 
@@ -46,6 +46,9 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
      * true代表用于集合数据，false用于非集合数据。
      */
     protected var isListMode = true
+        protected set
+
+    protected var isLogPrint = false
         protected set
 
     /**
@@ -68,11 +71,17 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
     override fun callback(): DoraCallback<M> {
         return object : DoraCallback<M>() {
             override fun onSuccess(model: M) {
-                Log.d(TAG, model.toString())
+                if (isLogPrint) {
+                    model.let {
+                        Log.d(TAG, it.toString())
+                    }
+                }
             }
 
             override fun onFailure(code: Int, msg: String?) {
-                Log.d(TAG, "$code:$msg")
+                if (isLogPrint) {
+                    Log.d(TAG, "$code:$msg")
+                }
             }
         }
     }
@@ -80,13 +89,19 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
     override fun listCallback(): DoraListCallback<M> {
         return object : DoraListCallback<M>() {
             override fun onSuccess(models: List<M>) {
-                for (t in models) {
-                    Log.d(TAG, t.toString())
+                if (isLogPrint) {
+                    models.let {
+                        for (model in it) {
+                            Log.d(TAG, model.toString())
+                        }
+                    }
                 }
             }
 
             override fun onFailure(code: Int, msg: String?) {
-                Log.d(TAG, "$code:$msg")
+                if (isLogPrint) {
+                    Log.d(TAG, "$code:$msg")
+                }
             }
         }
     }
@@ -118,7 +133,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
                     ds.loadFromNetwork()
                     true
                 } catch (e: Exception) {
-                    Log.e(TAG, e.message!!)
+                    Log.e(TAG, e.toString())
                     false
                 }
             }
@@ -129,7 +144,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
                     ds.loadFromNetwork()
                     true
                 } catch (e: Exception) {
-                    Log.e(TAG, e.message!!)
+                    Log.e(TAG, e.toString())
                     false
                 }
             } else isLoaded
@@ -143,7 +158,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
                     ds.loadFromNetwork()
                     true
                 } catch (e: Exception) {
-                    Log.e(TAG, e.message!!)
+                    Log.e(TAG, e.toString())
                     false
                 }
             } else isLoaded
@@ -157,7 +172,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
                     ds.loadFromNetwork()
                     true
                 } catch (e: Exception) {
-                    Log.e(TAG, e.message!!)
+                    Log.e(TAG, e.toString())
                     false
                 }
             } else isLoaded
@@ -270,7 +285,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
     }
 
     companion object {
-        private const val TAG = "BaseRepository"
+        internal const val TAG = "dcache"
     }
 
     init {
@@ -283,6 +298,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
         val repository = javaClass.getAnnotation(Repository::class.java)
         if (repository != null) {
             isListMode = repository.isListMode
+            isLogPrint = repository.isLogPrint
         }
         val MClass: Class<M> = getGenericType(this) as Class<M>
         Log.d(TAG, "MClass:$MClass,isListMode:$isListMode")

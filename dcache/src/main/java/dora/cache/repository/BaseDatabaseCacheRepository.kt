@@ -1,6 +1,7 @@
 package dora.cache.repository
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.LiveData
 import dora.cache.data.fetcher.DataFetcher
 import dora.cache.data.fetcher.ListDataFetcher
@@ -29,12 +30,12 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
-                            val entity = cacheHolder.queryCache(where())
-                            if (entity != null) {
-                                onInterceptData(DataSource.Type.CACHE, entity)
-                                liveData.value = entity
+                            val model = cacheHolder.queryCache(where())
+                            model?.let {
+                                onInterceptData(DataSource.Type.CACHE, it)
+                                liveData.value = it
+                                return true
                             }
-                            return true
                         }
                         liveData.value = null
                         return false
@@ -50,13 +51,21 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
             override fun callback(): DoraCallback<M> {
                 return object : DoraCallback<M>() {
                     override fun onSuccess(model: M) {
-                        onInterceptNetworkData(model)
-                        cacheHolder.removeOldCache(where())
-                        cacheHolder.addNewCache(model)
-                        liveData.value = model
+                        model.let {
+                            if (isLogPrint) {
+                                Log.d(TAG, it.toString())
+                            }
+                            onInterceptNetworkData(it)
+                            cacheHolder.removeOldCache(where())
+                            cacheHolder.addNewCache(it)
+                            liveData.value = it
+                        }
                     }
 
                     override fun onFailure(code: Int, msg: String?) {
+                        if (isLogPrint) {
+                            Log.d(TAG, "$code:$msg")
+                        }
                         if (isClearDataOnNetworkError) {
                             liveData.value = null
                             cacheHolder.removeOldCache(where())
@@ -78,12 +87,12 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
-                            val entities = listCacheHolder.queryCache(where())
-                            if (entities != null && entities.isNotEmpty()) {
-                                onInterceptData(DataSource.Type.CACHE, entities)
-                                liveData.value = entities
+                            val models = listCacheHolder.queryCache(where())
+                            models?.let {
+                                onInterceptData(DataSource.Type.CACHE, it)
+                                liveData.value = it
+                                return true
                             }
-                            return true
                         }
                         liveData.value = null
                         return false
@@ -99,13 +108,23 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
             override fun listCallback(): DoraListCallback<M> {
                 return object : DoraListCallback<M>() {
                     override fun onSuccess(models: List<M>) {
-                        onInterceptNetworkData(models)
-                        listCacheHolder.removeOldCache(where())
-                        listCacheHolder.addNewCache(models)
-                        liveData.value = models
+                        models.let {
+                            if (isLogPrint) {
+                                for (model in it) {
+                                    Log.d(TAG, model.toString())
+                                }
+                            }
+                            onInterceptNetworkData(it)
+                            listCacheHolder.removeOldCache(where())
+                            listCacheHolder.addNewCache(it)
+                            liveData.value = it
+                        }
                     }
 
                     override fun onFailure(code: Int, msg: String?) {
+                        if (isLogPrint) {
+                            Log.d(TAG, "$code:$msg")
+                        }
                         if (isClearDataOnNetworkError) {
                             liveData.value = null
                             listCacheHolder.removeOldCache(where())

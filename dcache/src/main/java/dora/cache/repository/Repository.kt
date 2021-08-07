@@ -12,4 +12,9 @@ annotation class Repository(
          *
          * @return
          */
-        val isListMode: Boolean = true)
+        val isListMode: Boolean = true,
+
+        /**
+         * 是否打印调试日志。
+         */
+        val isLogPrint: Boolean = false)

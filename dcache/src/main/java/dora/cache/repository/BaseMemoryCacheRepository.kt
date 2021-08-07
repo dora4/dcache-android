@@ -1,6 +1,7 @@
 package dora.cache.repository
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.LiveData
 import dora.cache.data.fetcher.DataFetcher
 import dora.cache.data.fetcher.ListDataFetcher
@@ -15,6 +16,8 @@ import dora.db.builder.Condition
 @RepositoryType(BaseRepository.CacheStrategy.MEMORY_CACHE)
 abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M>(context) {
 
+    abstract val cacheName: String
+
     /**
      * 根据查询条件进行初步的过滤从数据库加载的数据，过滤不完全则再调用onInterceptData。
      *
@@ -27,7 +30,21 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
     /**
      * 在冷启动时调用，从数据库将数据加载到内存。
      */
-    abstract fun loadData(): Any?
+    internal fun loadCacheInternal(): Any? {
+        return if (isListMode) {
+            onLoadListData()
+        } else {
+            onLoadData()
+        }
+    }
+
+    fun onLoadData() : M? {
+        return null
+    }
+
+    fun onLoadListData() : List<M>? {
+        return null
+    }
 
     override fun createDataFetcher(): DataFetcher<M> {
         return object : DataFetcher<M>() {
@@ -37,15 +54,19 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                         try {
                             if (type === DataSource.CacheType.MEMORY) {
                                 val model = MemoryCache.getCacheFromMemory(cacheName) as M
-                                onInterceptData(DataSource.Type.CACHE, model)
-                                liveData.setValue(model)
+                                model.let {
+                                    onInterceptData(DataSource.Type.CACHE, it)
+                                    liveData.setValue(it)
+                                }
                             } else if (type === DataSource.CacheType.DATABASE) {
                                 val model = cacheHolder.queryCache(where())
-                                if (model != null) {
-                                    onInterceptData(DataSource.Type.CACHE, model)
-                                    liveData.value = model
-                                    MemoryCache.updateCacheAtMemory(cacheName, model)
+                                model?.let {
+                                    onInterceptData(DataSource.Type.CACHE, it)
+                                    liveData.value = it
+                                    MemoryCache.updateCacheAtMemory(cacheName, it)
+                                    return true
                                 }
+                                return false
                             }
                         } catch (e: Exception) {
                             return false
@@ -63,14 +84,22 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
             override fun callback(): DoraCallback<M> {
                 return object : DoraCallback<M>() {
                     override fun onSuccess(model: M) {
-                        onInterceptNetworkData(model)
-                        MemoryCache.updateCacheAtMemory(cacheName, model!!)
-                        cacheHolder.removeOldCache(where())
-                        cacheHolder.addNewCache(model)
-                        liveData.value = model
+                        model.let {
+                            if (isLogPrint) {
+                                Log.d(TAG, it.toString())
+                            }
+                            onInterceptNetworkData(it)
+                            MemoryCache.updateCacheAtMemory(cacheName, it as Any)
+                            cacheHolder.removeOldCache(where())
+                            cacheHolder.addNewCache(it)
+                            liveData.value = it
+                        }
                     }
 
                     override fun onFailure(code: Int, msg: String?) {
+                        if (isLogPrint) {
+                            Log.d(TAG, "$code:$msg")
+                        }
                         if (isClearDataOnNetworkError) {
                             liveData.value = null
                             MemoryCache.removeCacheAtMemory(cacheName)
@@ -86,7 +115,6 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
         }
     }
 
-    abstract val cacheName: String
     override fun createListDataFetcher(): ListDataFetcher<M> {
         return object : ListDataFetcher<M>() {
 
@@ -96,13 +124,19 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                         try {
                             if (type === DataSource.CacheType.MEMORY) {
                                 val models = MemoryCache.getCacheFromMemory(cacheName) as List<M>
-                                onInterceptData(DataSource.Type.CACHE, models)
-                                liveData.setValue(models)
+                                models.let {
+                                    onInterceptData(DataSource.Type.CACHE, it)
+                                    liveData.setValue(it)
+                                }
                             } else if (type === DataSource.CacheType.DATABASE) {
                                 val models = listCacheHolder.queryCache(where())
-                                onInterceptData(DataSource.Type.CACHE, models!!)
-                                liveData.value = models
-                                MemoryCache.updateCacheAtMemory(cacheName, models!!)
+                                models?.let {
+                                    onInterceptData(DataSource.Type.CACHE, it)
+                                    liveData.value = it
+                                    MemoryCache.updateCacheAtMemory(cacheName, it)
+                                    return true
+                                }
+                                return false
                             }
                         } catch (e: Exception) {
                             return false
@@ -120,14 +154,24 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
             override fun listCallback(): DoraListCallback<M> {
                 return object : DoraListCallback<M>() {
                     override fun onSuccess(models: List<M>) {
-                        onInterceptNetworkData(models)
-                        MemoryCache.updateCacheAtMemory(cacheName, models)
-                        listCacheHolder.removeOldCache(where())
-                        listCacheHolder.addNewCache(models)
-                        liveData.value = models
+                        models.let {
+                            if (isLogPrint) {
+                                for (model in it) {
+                                    Log.d(TAG, model.toString())
+                                }
+                            }
+                            onInterceptNetworkData(it)
+                            MemoryCache.updateCacheAtMemory(cacheName, it)
+                            listCacheHolder.removeOldCache(where())
+                            listCacheHolder.addNewCache(it)
+                            liveData.value = it
+                        }
                     }
 
                     override fun onFailure(code: Int, msg: String?) {
+                        if (isLogPrint) {
+                            Log.d(TAG, "$code:$msg")
+                        }
                         if (isClearDataOnNetworkError) {
                             listCacheHolder.removeOldCache(where())
                             liveData.value = null

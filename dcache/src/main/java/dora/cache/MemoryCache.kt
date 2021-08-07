@@ -27,7 +27,7 @@ object MemoryCache {
     private fun loadCache(repositoryClazz: Class<out BaseMemoryCacheRepository<*>>) {
         val repository = newInstance(repositoryClazz)
         repository?.let {
-            val data = it.loadData()
+            val data = it.loadCacheInternal()
             if (it.cacheName != null && data != null) {
                 updateCacheAtMemory(it.cacheName, data)
             }

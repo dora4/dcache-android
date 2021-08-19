@@ -56,13 +56,17 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                                 val model = MemoryCache.getCacheFromMemory(cacheName) as M
                                 model.let {
                                     onInterceptData(DataSource.Type.CACHE, it)
-                                    liveData.setValue(it)
+                                    updateLiveDataValue {
+                                        liveData.setValue(it)
+                                    }
                                 }
                             } else if (type === DataSource.CacheType.DATABASE) {
                                 val model = cacheHolder.queryCache(where())
                                 model?.let {
                                     onInterceptData(DataSource.Type.CACHE, it)
-                                    liveData.value = it
+                                    updateLiveDataValue {
+                                        liveData.value = it
+                                    }
                                     MemoryCache.updateCacheAtMemory(cacheName, it)
                                     return true
                                 }
@@ -92,7 +96,9 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                             MemoryCache.updateCacheAtMemory(cacheName, it as Any)
                             cacheHolder.removeOldCache(where())
                             cacheHolder.addNewCache(it)
-                            liveData.value = it
+                            updateLiveDataValue {
+                                liveData.value = it
+                            }
                         }
                     }
 
@@ -101,7 +107,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                             Log.d(TAG, "$code:$msg")
                         }
                         if (isClearDataOnNetworkError) {
-                            liveData.value = null
+                            clearData()
                             MemoryCache.removeCacheAtMemory(cacheName)
                             cacheHolder.removeOldCache(where())
                         }
@@ -110,6 +116,12 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                     override fun onInterceptNetworkData(model: M) {
                         onInterceptData(DataSource.Type.NETWORK, model)
                     }
+                }
+            }
+
+            override fun clearData() {
+                updateLiveDataValue {
+                    liveData.value = null
                 }
             }
         }
@@ -126,13 +138,17 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                                 val models = MemoryCache.getCacheFromMemory(cacheName) as List<M>
                                 models.let {
                                     onInterceptData(DataSource.Type.CACHE, it)
-                                    liveData.setValue(it)
+                                    updateLiveDataValue {
+                                        liveData.setValue(it)
+                                    }
                                 }
                             } else if (type === DataSource.CacheType.DATABASE) {
                                 val models = listCacheHolder.queryCache(where())
                                 models?.let {
                                     onInterceptData(DataSource.Type.CACHE, it)
-                                    liveData.value = it
+                                    updateLiveDataValue {
+                                        liveData.value = it
+                                    }
                                     MemoryCache.updateCacheAtMemory(cacheName, it)
                                     return true
                                 }
@@ -164,7 +180,9 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                             MemoryCache.updateCacheAtMemory(cacheName, it)
                             listCacheHolder.removeOldCache(where())
                             listCacheHolder.addNewCache(it)
-                            liveData.value = it
+                            updateLiveDataValue {
+                                liveData.value = it
+                            }
                         }
                     }
 
@@ -174,7 +192,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                         }
                         if (isClearDataOnNetworkError) {
                             listCacheHolder.removeOldCache(where())
-                            liveData.value = null
+                            clearListData()
                             MemoryCache.removeCacheAtMemory(cacheName)
                         }
                     }
@@ -187,6 +205,12 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
 
             override fun obtainPager(): IDataPager<M> {
                 return DataPager(liveData.value ?: arrayListOf())
+            }
+
+            override fun clearListData() {
+                updateLiveDataValue {
+                    liveData.value = arrayListOf()
+                }
             }
         }
     }

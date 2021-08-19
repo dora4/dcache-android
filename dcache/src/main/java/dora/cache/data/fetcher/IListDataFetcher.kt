@@ -6,7 +6,9 @@ import dora.http.DoraListCallback
 
 interface IListDataFetcher<M> {
 
-    fun fetchListData(): LiveData<List<M>>
+    fun clearListData()
     fun listCallback(): DoraListCallback<M>
+    fun fetchListData(): LiveData<List<M>>
+    fun getListLiveData() : LiveData<List<M>>
     fun obtainPager(): IDataPager<M>
 }

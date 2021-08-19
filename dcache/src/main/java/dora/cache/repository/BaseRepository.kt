@@ -3,6 +3,8 @@ package dora.cache.repository
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.annotation.IntDef
 import androidx.lifecycle.LiveData
@@ -59,6 +61,12 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
     @Deprecated("")
     protected val isClearDataOnNetworkError: Boolean
         protected get() = false
+
+    protected fun updateLiveDataValue(call: () -> Unit) {
+        Handler(Looper.getMainLooper()).post {
+            call()
+        }
+    }
 
     protected abstract fun createDataFetcher(): IDataFetcher<M>
 
@@ -252,6 +260,22 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
 
     override fun fetchListData(): LiveData<List<M>> {
         return listDataFetcher.fetchListData()
+    }
+
+    override fun clearData() {
+        dataFetcher.clearData()
+    }
+
+    override fun clearListData() {
+        listDataFetcher.clearListData()
+    }
+
+    override fun getLiveData(): LiveData<M?> {
+        return dataFetcher.getLiveData()
+    }
+
+    override fun getListLiveData(): LiveData<List<M>> {
+        return listDataFetcher.getListLiveData()
     }
 
     override fun obtainPager(): IDataPager<M> {

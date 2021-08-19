@@ -33,11 +33,15 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
                             val model = cacheHolder.queryCache(where())
                             model?.let {
                                 onInterceptData(DataSource.Type.CACHE, it)
-                                liveData.value = it
+                                updateLiveDataValue {
+                                    liveData.value = it
+                                }
                                 return true
                             }
                         }
-                        liveData.value = null
+                        updateLiveDataValue {
+                            liveData.value = null
+                        }
                         return false
                     }
 
@@ -58,7 +62,9 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
                             onInterceptNetworkData(it)
                             cacheHolder.removeOldCache(where())
                             cacheHolder.addNewCache(it)
-                            liveData.value = it
+                            updateLiveDataValue {
+                                liveData.value = it
+                            }
                         }
                     }
 
@@ -67,7 +73,7 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
                             Log.d(TAG, "$code:$msg")
                         }
                         if (isClearDataOnNetworkError) {
-                            liveData.value = null
+                            clearData()
                             cacheHolder.removeOldCache(where())
                         }
                     }
@@ -75,6 +81,12 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
                     override fun onInterceptNetworkData(model: M) {
                         onInterceptData(DataSource.Type.NETWORK, model)
                     }
+                }
+            }
+
+            override fun clearData() {
+                updateLiveDataValue {
+                    liveData.value = null
                 }
             }
         }
@@ -90,11 +102,15 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
                             val models = listCacheHolder.queryCache(where())
                             models?.let {
                                 onInterceptData(DataSource.Type.CACHE, it)
-                                liveData.value = it
+                                updateLiveDataValue {
+                                    liveData.value = it
+                                }
                                 return true
                             }
                         }
-                        liveData.value = null
+                        updateLiveDataValue {
+                            liveData.value = arrayListOf()
+                        }
                         return false
                     }
 
@@ -117,7 +133,9 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
                             onInterceptNetworkData(it)
                             listCacheHolder.removeOldCache(where())
                             listCacheHolder.addNewCache(it)
-                            liveData.value = it
+                            updateLiveDataValue {
+                                liveData.value = it
+                            }
                         }
                     }
 
@@ -126,7 +144,7 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
                             Log.d(TAG, "$code:$msg")
                         }
                         if (isClearDataOnNetworkError) {
-                            liveData.value = null
+                            clearListData()
                             listCacheHolder.removeOldCache(where())
                         }
                     }
@@ -139,6 +157,12 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
 
             override fun obtainPager(): IDataPager<M> {
                 return DataPager(liveData.value ?: arrayListOf())
+            }
+
+            override fun clearListData() {
+                updateLiveDataValue {
+                    liveData.value = arrayListOf()
+                }
             }
         }
     }

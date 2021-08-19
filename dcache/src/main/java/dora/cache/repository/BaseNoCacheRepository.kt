@@ -39,7 +39,9 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                                 Log.d(TAG, it.toString())
                             }
                             onInterceptNetworkData(it)
-                            liveData.value = it
+                            updateLiveDataValue {
+                                liveData.value = it
+                            }
                         }
                     }
 
@@ -48,13 +50,19 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                             Log.d(TAG, "$code:$msg")
                         }
                         if (isClearDataOnNetworkError) {
-                            liveData.value = null
+                            clearData()
                         }
                     }
 
                     override fun onInterceptNetworkData(model: M) {
                         onInterceptData(DataSource.Type.NETWORK, model)
                     }
+                }
+            }
+
+            override fun clearData() {
+                updateLiveDataValue {
+                    liveData.value = null
                 }
             }
         }
@@ -86,7 +94,9 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                                 }
                             }
                             onInterceptNetworkData(it)
-                            liveData.value = it
+                            updateLiveDataValue {
+                                liveData.value = it
+                            }
                         }
                     }
 
@@ -95,7 +105,7 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                             Log.d(TAG, "$code:$msg")
                         }
                         if (isClearDataOnNetworkError) {
-                            liveData.value = null
+                            clearListData()
                         }
                     }
 
@@ -107,6 +117,12 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
 
             override fun obtainPager(): IDataPager<M> {
                 return DataPager(liveData.value ?: arrayListOf())
+            }
+
+            override fun clearListData() {
+                updateLiveDataValue {
+                    liveData.value = arrayListOf()
+                }
             }
         }
     }

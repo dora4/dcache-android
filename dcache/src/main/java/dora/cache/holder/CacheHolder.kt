@@ -1,6 +1,5 @@
 package dora.cache.holder
 
-import dora.cache.repository.block.BlockWrapper
 import dora.db.builder.Condition
 
 interface CacheHolder<M> {

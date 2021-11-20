@@ -38,10 +38,8 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                             if (isLogPrint) {
                                 Log.d(TAG, it.toString())
                             }
-                            onInterceptNetworkData(it)
-                            updateLiveDataValue {
-                                liveData.value = it
-                            }
+                            onInterceptData(DataSource.Type.NETWORK, it)
+                            liveData.postValue(it)
                         }
                     }
 
@@ -53,17 +51,11 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                             clearData()
                         }
                     }
-
-                    override fun onInterceptNetworkData(model: M) {
-                        onInterceptData(DataSource.Type.NETWORK, model)
-                    }
                 }
             }
 
             override fun clearData() {
-                updateLiveDataValue {
-                    liveData.value = null
-                }
+                liveData.postValue(null)
             }
         }
     }
@@ -93,10 +85,8 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                                     Log.d(TAG, model.toString())
                                 }
                             }
-                            onInterceptNetworkData(it)
-                            updateLiveDataValue {
-                                liveData.value = it
-                            }
+                            onInterceptData(DataSource.Type.NETWORK, it)
+                            liveData.postValue(it)
                         }
                     }
 
@@ -108,10 +98,6 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                             clearListData()
                         }
                     }
-
-                    override fun onInterceptNetworkData(models: List<M>) {
-                        onInterceptData(DataSource.Type.NETWORK, models)
-                    }
                 }
             }
 
@@ -120,9 +106,7 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
             }
 
             override fun clearListData() {
-                updateLiveDataValue {
-                    liveData.value = arrayListOf()
-                }
+                liveData.postValue(arrayListOf())
             }
         }
     }

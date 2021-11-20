@@ -10,8 +10,6 @@ abstract class DoraCallback<M> : Callback<M> {
 
     abstract fun onFailure(code: Int, msg: String?)
 
-    protected open fun onInterceptNetworkData(data: M) {}
-
     override fun onResponse(call: Call<M>, response: Response<M>) {
         if (response.isSuccessful) {
             val body = response.body()

@@ -3,8 +3,6 @@ package dora.cache.repository
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import androidx.annotation.IntDef
 import androidx.lifecycle.LiveData
@@ -61,12 +59,6 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
     @Deprecated("")
     protected val isClearDataOnNetworkError: Boolean
         protected get() = false
-
-    protected fun updateLiveDataValue(call: () -> Unit) {
-        Handler(Looper.getMainLooper()).post {
-            call()
-        }
-    }
 
     protected abstract fun createDataFetcher(): IDataFetcher<M>
 
@@ -153,7 +145,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
                     true
                 } catch (e: Exception) {
                     Log.e(TAG, e.toString())
-                    false
+                    isLoaded
                 }
             } else isLoaded
         } else if (cacheStrategy == CacheStrategy.MEMORY_CACHE) {
@@ -167,7 +159,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
                     true
                 } catch (e: Exception) {
                     Log.e(TAG, e.toString())
-                    false
+                    isLoaded
                 }
             } else isLoaded
         } else if (cacheStrategy == CacheStrategy.DATABASE_CACHE_NO_NETWORK) {
@@ -181,7 +173,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
                     true
                 } catch (e: Exception) {
                     Log.e(TAG, e.toString())
-                    false
+                    isLoaded
                 }
             } else isLoaded
         }

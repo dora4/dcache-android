@@ -56,17 +56,13 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                                 val model = MemoryCache.getCacheFromMemory(cacheName) as M
                                 model.let {
                                     onInterceptData(DataSource.Type.CACHE, it)
-                                    updateLiveDataValue {
-                                        liveData.setValue(it)
-                                    }
+                                    liveData.postValue(it)
                                 }
                             } else if (type === DataSource.CacheType.DATABASE) {
                                 val model = cacheHolder.queryCache(where())
                                 model?.let {
                                     onInterceptData(DataSource.Type.CACHE, it)
-                                    updateLiveDataValue {
-                                        liveData.value = it
-                                    }
+                                    liveData.postValue(it)
                                     MemoryCache.updateCacheAtMemory(cacheName, it)
                                     return true
                                 }
@@ -92,13 +88,11 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                             if (isLogPrint) {
                                 Log.d(TAG, it.toString())
                             }
-                            onInterceptNetworkData(it)
+                            onInterceptData(DataSource.Type.NETWORK, it)
                             MemoryCache.updateCacheAtMemory(cacheName, it as Any)
                             cacheHolder.removeOldCache(where())
                             cacheHolder.addNewCache(it)
-                            updateLiveDataValue {
-                                liveData.value = it
-                            }
+                            liveData.postValue(it)
                         }
                     }
 
@@ -112,17 +106,11 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                             cacheHolder.removeOldCache(where())
                         }
                     }
-
-                    override fun onInterceptNetworkData(model: M) {
-                        onInterceptData(DataSource.Type.NETWORK, model)
-                    }
                 }
             }
 
             override fun clearData() {
-                updateLiveDataValue {
-                    liveData.value = null
-                }
+                liveData.postValue(null)
             }
         }
     }
@@ -138,17 +126,13 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                                 val models = MemoryCache.getCacheFromMemory(cacheName) as List<M>
                                 models.let {
                                     onInterceptData(DataSource.Type.CACHE, it)
-                                    updateLiveDataValue {
-                                        liveData.setValue(it)
-                                    }
+                                    liveData.postValue(it)
                                 }
                             } else if (type === DataSource.CacheType.DATABASE) {
                                 val models = listCacheHolder.queryCache(where())
                                 models?.let {
                                     onInterceptData(DataSource.Type.CACHE, it)
-                                    updateLiveDataValue {
-                                        liveData.value = it
-                                    }
+                                    liveData.postValue(it)
                                     MemoryCache.updateCacheAtMemory(cacheName, it)
                                     return true
                                 }
@@ -176,13 +160,11 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                                     Log.d(TAG, model.toString())
                                 }
                             }
-                            onInterceptNetworkData(it)
+                            onInterceptData(DataSource.Type.NETWORK, it)
                             MemoryCache.updateCacheAtMemory(cacheName, it)
                             listCacheHolder.removeOldCache(where())
                             listCacheHolder.addNewCache(it)
-                            updateLiveDataValue {
-                                liveData.value = it
-                            }
+                            liveData.postValue(it)
                         }
                     }
 
@@ -196,10 +178,6 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                             MemoryCache.removeCacheAtMemory(cacheName)
                         }
                     }
-
-                    override fun onInterceptNetworkData(models: List<M>) {
-                        onInterceptData(DataSource.Type.NETWORK, models)
-                    }
                 }
             }
 
@@ -208,9 +186,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
             }
 
             override fun clearListData() {
-                updateLiveDataValue {
-                    liveData.value = arrayListOf()
-                }
+                liveData.postValue(arrayListOf())
             }
         }
     }

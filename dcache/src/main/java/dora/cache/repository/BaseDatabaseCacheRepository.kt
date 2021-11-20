@@ -13,7 +13,8 @@ import dora.http.DoraCallback
 import dora.http.DoraListCallback
 
 @RepositoryType(BaseRepository.CacheStrategy.DATABASE_CACHE)
-abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository<M>(context) {
+abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
+    constructor(context: Context, protected var blockStorage: Boolean = false) : BaseRepository<M>(context) {
 
     /**
      * 根据查询条件进行初步的过滤从数据库加载的数据，过滤不完全则再调用onInterceptData。
@@ -33,15 +34,11 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
                             val model = cacheHolder.queryCache(where())
                             model?.let {
                                 onInterceptData(DataSource.Type.CACHE, it)
-                                updateLiveDataValue {
-                                    liveData.value = it
-                                }
+                                liveData.postValue(it)
                                 return true
                             }
                         }
-                        updateLiveDataValue {
-                            liveData.value = null
-                        }
+                        liveData.postValue(null)
                         return false
                     }
 
@@ -59,12 +56,12 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
                             if (isLogPrint) {
                                 Log.d(TAG, it.toString())
                             }
-                            onInterceptNetworkData(it)
-                            cacheHolder.removeOldCache(where())
-                            cacheHolder.addNewCache(it)
-                            updateLiveDataValue {
-                                liveData.value = it
+                            onInterceptData(DataSource.Type.NETWORK, it)
+                            if (!blockStorage) {
+                                cacheHolder.removeOldCache(where())
                             }
+                            cacheHolder.addNewCache(it)
+                            liveData.postValue(it)
                         }
                     }
 
@@ -77,17 +74,11 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
                             cacheHolder.removeOldCache(where())
                         }
                     }
-
-                    override fun onInterceptNetworkData(model: M) {
-                        onInterceptData(DataSource.Type.NETWORK, model)
-                    }
                 }
             }
 
             override fun clearData() {
-                updateLiveDataValue {
-                    liveData.value = null
-                }
+                liveData.postValue(null)
             }
         }
     }
@@ -102,15 +93,11 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
                             val models = listCacheHolder.queryCache(where())
                             models?.let {
                                 onInterceptData(DataSource.Type.CACHE, it)
-                                updateLiveDataValue {
-                                    liveData.value = it
-                                }
+                                liveData.postValue(it)
                                 return true
                             }
                         }
-                        updateLiveDataValue {
-                            liveData.value = arrayListOf()
-                        }
+                        liveData.postValue(arrayListOf())
                         return false
                     }
 
@@ -130,12 +117,12 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
                                     Log.d(TAG, model.toString())
                                 }
                             }
-                            onInterceptNetworkData(it)
-                            listCacheHolder.removeOldCache(where())
-                            listCacheHolder.addNewCache(it)
-                            updateLiveDataValue {
-                                liveData.value = it
+                            onInterceptData(DataSource.Type.NETWORK, it)
+                            if (!blockStorage) {
+                                listCacheHolder.removeOldCache(where())
                             }
+                            listCacheHolder.addNewCache(it)
+                            liveData.postValue(it)
                         }
                     }
 
@@ -148,10 +135,6 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
                             listCacheHolder.removeOldCache(where())
                         }
                     }
-
-                    override fun onInterceptNetworkData(models: List<M>) {
-                        onInterceptData(DataSource.Type.NETWORK, models)
-                    }
                 }
             }
 
@@ -160,9 +143,7 @@ abstract class BaseDatabaseCacheRepository<M>(context: Context) : BaseRepository
             }
 
             override fun clearListData() {
-                updateLiveDataValue {
-                    liveData.value = arrayListOf()
-                }
+                liveData.postValue(arrayListOf())
             }
         }
     }

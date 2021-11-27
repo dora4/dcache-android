@@ -1,4 +1,5 @@
 # dcache-android![Release](https://jitpack.io/v/dora4/dcache-android.svg)
+![GitHub all releases](https://img.shields.io/github/downloads/dora4/dcache-android/total)
 简介：一个使用在Android平台的数据缓存框架，支持将model数据从后端接口下载后，简单的配置即可自动映射到数据库，并在断网的情况下可以离线读取。
 
 

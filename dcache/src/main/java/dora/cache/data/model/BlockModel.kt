@@ -16,7 +16,7 @@ open class BlockModel : Comparable<BlockModel> {
     /**
      * 判断数据的内容是否相同，不区分保存时间。
      */
-    lateinit var hash: String
+    lateinit var contentHash: String
 
     override fun compareTo(other: BlockModel): Int {
         return this.timestamp.compareTo(other.timestamp)
@@ -37,7 +37,7 @@ open class BlockModel : Comparable<BlockModel> {
     override fun equals(other: Any?): Boolean {
         other?.let {
             if (it is BlockModel) {
-                return this.hash == it.hash
+                return this.contentHash == it.contentHash
             }
         }
         return false

@@ -25,5 +25,5 @@ interface IPageDataVisitor<M> {
      * @param pageSize    每页数据条数
      * @return 该页的数据
      */
-    fun getResult(models: List<M>, totalCount: Int, currentPage: Int, pageSize: Int): List<M>
+    fun filterPageData(models: List<M>, totalCount: Int, currentPage: Int, pageSize: Int): List<M>
 }

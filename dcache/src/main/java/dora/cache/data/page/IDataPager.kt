@@ -2,7 +2,7 @@ package dora.cache.data.page
 
 import dora.cache.data.visitor.IPageDataVisitor
 
-interface IDataPager<M> : PageCallback<M> {
+interface IDataPager<M> {
 
     /**
      * 设置当前是第几页。
@@ -20,7 +20,18 @@ interface IDataPager<M> : PageCallback<M> {
 
     val models: List<M>
 
-    fun setPageCallback(callback: PageCallback<M>) : IDataPager<M>
+    /**
+     * 加载过滤后的页面数据。
+     */
+    fun loadData(models: List<M>)
 
+    /**
+     * 页面数据改变后，会回调它。
+     */
+    fun onResult(result: (models: List<M>) -> Unit) : IDataPager<M>
+
+    /**
+     * 接收具体访问者的访问，不同的访问者将会以不同的规则呈现页面数据。
+     */
     fun accept(visitor: IPageDataVisitor<M>)
 }

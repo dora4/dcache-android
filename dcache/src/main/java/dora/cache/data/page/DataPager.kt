@@ -14,7 +14,7 @@ class DataPager<M>(override val models: List<M>) : IDataPager<M> {
      */
     override var pageSize = 1
 
-    private var callback: PageCallback<M>? = null
+    private var result: ((models: List<M>) -> Unit)? = null
 
     /**
      * 上一页的页数。
@@ -28,15 +28,16 @@ class DataPager<M>(override val models: List<M>) : IDataPager<M> {
     val nextPage: Int
         get() = currentPage + 1
 
-    override fun setPageCallback(callback: PageCallback<M>): IDataPager<M> = apply {
-        this.callback = callback
+    override fun onResult(result: (models: List<M>) -> Unit): IDataPager<M> {
+        this.result = result
+        return this
     }
 
     override fun accept(visitor: IPageDataVisitor<M>) {
         visitor.visitDataPager(this)
     }
 
-    override fun onResult(models: List<M>) {
-        callback?.onResult(models)
+    override fun loadData(models: List<M>) {
+        result?.invoke(models)
     }
 }

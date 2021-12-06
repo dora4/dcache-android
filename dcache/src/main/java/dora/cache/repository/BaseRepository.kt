@@ -56,7 +56,6 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
      *
      * @return
      */
-    @Deprecated("")
     protected val isClearDataOnNetworkError: Boolean
         protected get() = false
 

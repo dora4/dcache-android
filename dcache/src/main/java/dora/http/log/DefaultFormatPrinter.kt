@@ -108,7 +108,7 @@ class DefaultFormatPrinter : FormatPrinter {
         private const val CORNER_BOTTOM = "└ "
         private const val CENTER_LINE = "├ "
         private const val DEFAULT_LINE = "│ "
-        private val ARMS = arrayOf("-A-", "-R-", "-M-", "-S-")
+        private val DORA = arrayOf("-D-", "-O-", "-R-", "-A-")
         private val last: ThreadLocal<Int> = object : ThreadLocal<Int>() {
             override fun initialValue(): Int {
                 return 0
@@ -143,7 +143,7 @@ class DefaultFormatPrinter : FormatPrinter {
             if (last.get() >= 4) {
                 last.set(0)
             }
-            val s = ARMS[last.get()]
+            val s = DORA[last.get()]
             last.set(last.get() + 1)
             return s
         }

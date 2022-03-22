@@ -6,12 +6,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.*
 import kotlin.collections.HashMap
 
-abstract class BaseRetrofitManager protected constructor() {
+abstract class RetrofitManager protected constructor() {
 
-    private var config: Config
-    private var retrofitMap: MutableMap<Class<*>, Retrofit> = HashMap()
-    private var urlMap: MutableMap<Class<*>, String> = HashMap()
-    private var client: OkHttpClient
     private var clientBuilder: OkHttpClient.Builder = OkHttpClient.Builder()
 
     init {
@@ -20,36 +16,39 @@ abstract class BaseRetrofitManager protected constructor() {
         config = Config()
     }
 
-    fun init(block: Config.() -> Unit) {
-        block(config)
-    }
-
     fun getConfig() : Config {
         return config
-    }
-
-    fun setClient(client: OkHttpClient) {
-        this.client = client
     }
 
     protected abstract fun createHttpClient(): OkHttpClient
 
     protected abstract fun initBaseUrl(client: OkHttpClient)
 
-    fun <T : ApiService> getService(clazz: Class<T>): T {
-        val retrofit: Retrofit?
-        if (retrofitMap.containsKey(clazz)) {
-            retrofit = retrofitMap[clazz]
-            return retrofit!!.create(clazz)
-        } else {
-            retrofit = Retrofit.Builder()
-                    .baseUrl(Objects.requireNonNull(urlMap[clazz]))
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .client(client)
-                    .build()
-            retrofitMap[clazz] = retrofit
+    companion object {
+
+        private var retrofitMap: MutableMap<Class<*>, Retrofit> = HashMap()
+        private var urlMap: MutableMap<Class<*>, String> = HashMap()
+        lateinit var client: OkHttpClient
+        private lateinit var config: Config
+
+        fun init(block: Config.() -> Unit) {
+            block(config)
         }
-        return retrofit.create(clazz)
+        fun <T : ApiService> getService(clazz: Class<T>): T {
+            val retrofit: Retrofit?
+            if (retrofitMap.containsKey(clazz)) {
+                retrofit = retrofitMap[clazz]
+                return retrofit!!.create(clazz)
+            } else {
+                retrofit = Retrofit.Builder()
+                        .baseUrl(Objects.requireNonNull(urlMap[clazz]))
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .client(client)
+                        .build()
+                retrofitMap[clazz] = retrofit
+            }
+            return retrofit.create(clazz)
+        }
     }
 
     inner class Config {

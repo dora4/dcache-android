@@ -1,4 +1,4 @@
-package dora.cache.data.result
+package dora.cache.data.adapter
 
 import dora.http.DoraCallback
 

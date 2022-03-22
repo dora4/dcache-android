@@ -16,10 +16,6 @@ abstract class RetrofitManager protected constructor() {
         config = Config()
     }
 
-    fun getConfig() : Config {
-        return config
-    }
-
     protected abstract fun createHttpClient(): OkHttpClient
 
     protected abstract fun initBaseUrl(client: OkHttpClient)
@@ -28,12 +24,13 @@ abstract class RetrofitManager protected constructor() {
 
         private var retrofitMap: MutableMap<Class<*>, Retrofit> = HashMap()
         private var urlMap: MutableMap<Class<*>, String> = HashMap()
-        lateinit var client: OkHttpClient
-        private lateinit var config: Config
+        internal lateinit var client: OkHttpClient
+        internal lateinit var config: Config
 
         fun init(block: Config.() -> Unit) {
             block(config)
         }
+
         fun <T : ApiService> getService(clazz: Class<T>): T {
             val retrofit: Retrofit?
             if (retrofitMap.containsKey(clazz)) {

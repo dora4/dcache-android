@@ -8,7 +8,6 @@ import kotlin.collections.HashMap
 
 object RetrofitManager {
 
-    private lateinit var client: OkHttpClient
     private var retrofitMap: MutableMap<Class<*>, Retrofit> = HashMap()
     private var urlMap: MutableMap<Class<*>, String> = HashMap()
     private var config: Config = Config()
@@ -30,7 +29,7 @@ object RetrofitManager {
             retrofit = Retrofit.Builder()
                     .baseUrl(Objects.requireNonNull(urlMap[clazz]))
                     .addConverterFactory(GsonConverterFactory.create())
-                    .client(client)
+                    .client(getConfig().getClient())
                     .build()
             retrofitMap[clazz] = retrofit
         }

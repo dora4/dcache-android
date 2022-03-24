@@ -38,11 +38,11 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
         }
     }
 
-    fun onLoadData() : M? {
+    open fun onLoadData() : M? {
         return null
     }
 
-    fun onLoadListData() : List<M>? {
+    open fun onLoadListData() : List<M>? {
         return null
     }
 

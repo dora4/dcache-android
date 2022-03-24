@@ -52,7 +52,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
             override fun callback(): DoraCallback<M> {
                 return object : DoraCallback<M>() {
                     override fun onSuccess(model: M) {
-                        model.let {
+                        model?.let {
                             if (isLogPrint) {
                                 Log.d(TAG, it.toString())
                             }
@@ -111,7 +111,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
             override fun listCallback(): DoraListCallback<M> {
                 return object : DoraListCallback<M>() {
                     override fun onSuccess(models: List<M>) {
-                        models.let {
+                        models?.let {
                             if (isLogPrint) {
                                 for (model in it) {
                                     Log.d(TAG, model.toString())

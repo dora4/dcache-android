@@ -54,7 +54,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                         try {
                             if (type === DataSource.CacheType.MEMORY) {
                                 val model = MemoryCache.getCacheFromMemory(cacheName) as M
-                                model.let {
+                                model?.let {
                                     onInterceptData(DataSource.Type.CACHE, it)
                                     liveData.postValue(it)
                                 }
@@ -84,7 +84,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
             override fun callback(): DoraCallback<M> {
                 return object : DoraCallback<M>() {
                     override fun onSuccess(model: M) {
-                        model.let {
+                        model?.let {
                             if (isLogPrint) {
                                 Log.d(TAG, it.toString())
                             }
@@ -124,7 +124,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                         try {
                             if (type === DataSource.CacheType.MEMORY) {
                                 val models = MemoryCache.getCacheFromMemory(cacheName) as List<M>
-                                models.let {
+                                models?.let {
                                     onInterceptData(DataSource.Type.CACHE, it)
                                     liveData.postValue(it)
                                 }
@@ -154,7 +154,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
             override fun listCallback(): DoraListCallback<M> {
                 return object : DoraListCallback<M>() {
                     override fun onSuccess(models: List<M>) {
-                        models.let {
+                        models?.let {
                             if (isLogPrint) {
                                 for (model in it) {
                                     Log.d(TAG, model.toString())

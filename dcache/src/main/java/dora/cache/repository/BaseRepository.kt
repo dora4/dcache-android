@@ -67,7 +67,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
 
     protected abstract fun createListCacheHolder(clazz: Class<M>): CacheHolder<List<M>>
 
-    override fun callback(): DoraCallback<M> {
+    override fun callback(listener: IDataFetcher.OnLoadListener?): DoraCallback<M> {
         return object : DoraCallback<M>() {
             override fun onSuccess(model: M) {
                 if (isLogPrint) {
@@ -75,17 +75,19 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
                         Log.d(TAG, it.toString())
                     }
                 }
+                listener?.onSuccess()
             }
 
             override fun onFailure(code: Int, msg: String?) {
                 if (isLogPrint) {
                     Log.d(TAG, "$code:$msg")
                 }
+                listener?.onFailure(code, msg)
             }
         }
     }
 
-    override fun listCallback(): DoraListCallback<M> {
+    override fun listCallback(listener: IListDataFetcher.OnLoadListener?): DoraListCallback<M> {
         return object : DoraListCallback<M>() {
             override fun onSuccess(models: List<M>) {
                 if (isLogPrint) {
@@ -95,12 +97,14 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
                         }
                     }
                 }
+                listener?.onSuccess()
             }
 
             override fun onFailure(code: Int, msg: String?) {
                 if (isLogPrint) {
                     Log.d(TAG, "$code:$msg")
                 }
+                listener?.onFailure(code, msg)
             }
         }
     }
@@ -245,12 +249,12 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
         fun loadFromNetwork()
     }
 
-    override fun fetchData(): LiveData<M?> {
-        return dataFetcher.fetchData()
+    override fun fetchData(listener: IDataFetcher.OnLoadListener?): LiveData<M?> {
+        return dataFetcher.fetchData(listener)
     }
 
-    override fun fetchListData(): LiveData<List<M>> {
-        return listDataFetcher.fetchListData()
+    override fun fetchListData(listener: IListDataFetcher.OnLoadListener?): LiveData<List<M>> {
+        return listDataFetcher.fetchListData(listener)
     }
 
     override fun clearData() {

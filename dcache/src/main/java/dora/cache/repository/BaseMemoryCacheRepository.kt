@@ -10,6 +10,8 @@ import dora.db.builder.WhereBuilder
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import dora.cache.MemoryCache
+import dora.cache.data.fetcher.IDataFetcher
+import dora.cache.data.fetcher.IListDataFetcher
 import dora.cache.data.page.DataPager
 import dora.db.builder.Condition
 
@@ -48,7 +50,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
 
     override fun createDataFetcher(): DataFetcher<M> {
         return object : DataFetcher<M>() {
-            override fun fetchData(): LiveData<M?> {
+            override fun fetchData(listener: IDataFetcher.OnLoadListener?): LiveData<M?> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         try {
@@ -81,7 +83,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                 return liveData
             }
 
-            override fun callback(): DoraCallback<M> {
+            override fun callback(listener: IDataFetcher.OnLoadListener?): DoraCallback<M> {
                 return object : DoraCallback<M>() {
                     override fun onSuccess(model: M) {
                         model?.let {
@@ -94,6 +96,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                             cacheHolder.addNewCache(it)
                             liveData.postValue(it)
                         }
+                        listener?.onSuccess()
                     }
 
                     override fun onFailure(code: Int, msg: String?) {
@@ -105,6 +108,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                             MemoryCache.removeCacheAtMemory(cacheName)
                             cacheHolder.removeOldCache(where())
                         }
+                        listener?.onFailure(code, msg)
                     }
                 }
             }
@@ -118,7 +122,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
     override fun createListDataFetcher(): ListDataFetcher<M> {
         return object : ListDataFetcher<M>() {
 
-            override fun fetchListData(): LiveData<List<M>> {
+            override fun fetchListData(listener: IListDataFetcher.OnLoadListener?): LiveData<List<M>> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         try {
@@ -151,7 +155,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                 return liveData
             }
 
-            override fun listCallback(): DoraListCallback<M> {
+            override fun listCallback(listener: IListDataFetcher.OnLoadListener?): DoraListCallback<M> {
                 return object : DoraListCallback<M>() {
                     override fun onSuccess(models: List<M>) {
                         models?.let {
@@ -166,6 +170,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                             listCacheHolder.addNewCache(it)
                             liveData.postValue(it)
                         }
+                        listener?.onSuccess()
                     }
 
                     override fun onFailure(code: Int, msg: String?) {
@@ -177,6 +182,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                             clearListData()
                             MemoryCache.removeCacheAtMemory(cacheName)
                         }
+                        listener?.onFailure(code, msg)
                     }
                 }
             }

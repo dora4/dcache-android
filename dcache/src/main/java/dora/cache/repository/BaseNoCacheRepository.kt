@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import dora.cache.data.fetcher.DataFetcher
+import dora.cache.data.fetcher.IDataFetcher
+import dora.cache.data.fetcher.IListDataFetcher
 import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
@@ -18,7 +20,7 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
 
     override fun createDataFetcher(): DataFetcher<M> {
         return object : DataFetcher<M>() {
-            override fun fetchData(): LiveData<M?> {
+            override fun fetchData(listener: IDataFetcher.OnLoadListener?): LiveData<M?> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         return false
@@ -31,7 +33,7 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                 return liveData
             }
 
-            override fun callback(): DoraCallback<M> {
+            override fun callback(listener: IDataFetcher.OnLoadListener?): DoraCallback<M> {
                 return object : DoraCallback<M>() {
                     override fun onSuccess(model: M) {
                         model.let {
@@ -41,6 +43,7 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                             onInterceptData(DataSource.Type.NETWORK, it)
                             liveData.postValue(it)
                         }
+                        listener?.onSuccess()
                     }
 
                     override fun onFailure(code: Int, msg: String?) {
@@ -50,6 +53,7 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                         if (isClearDataOnNetworkError) {
                             clearData()
                         }
+                        listener?.onFailure(code, msg)
                     }
                 }
             }
@@ -63,7 +67,7 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
     override fun createListDataFetcher(): ListDataFetcher<M> {
         return object : ListDataFetcher<M>() {
 
-            override fun fetchListData(): LiveData<List<M>> {
+            override fun fetchListData(listener: IListDataFetcher.OnLoadListener?): LiveData<List<M>> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         return false
@@ -76,7 +80,7 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                 return liveData
             }
 
-            override fun listCallback(): DoraListCallback<M> {
+            override fun listCallback(listener: IListDataFetcher.OnLoadListener?): DoraListCallback<M> {
                 return object : DoraListCallback<M>() {
                     override fun onSuccess(models: List<M>) {
                         models.let {
@@ -88,6 +92,7 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                             onInterceptData(DataSource.Type.NETWORK, it)
                             liveData.postValue(it)
                         }
+                        listener?.onSuccess()
                     }
 
                     override fun onFailure(code: Int, msg: String?) {
@@ -97,6 +102,7 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                         if (isClearDataOnNetworkError) {
                             clearListData()
                         }
+                        listener?.onFailure(code, msg)
                     }
                 }
             }

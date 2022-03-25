@@ -6,7 +6,12 @@ import dora.http.DoraCallback
 interface IDataFetcher<M> {
 
     fun clearData()
-    fun callback(): DoraCallback<M>
-    fun fetchData(): LiveData<M?>
+    fun callback(listener: OnLoadListener? = null): DoraCallback<M>
+    fun fetchData(listener: OnLoadListener? = null): LiveData<M?>
     fun getLiveData(): LiveData<M?>
+
+    interface OnLoadListener {
+        fun onSuccess()
+        fun onFailure(code: Int, msg: String?)
+    }
 }

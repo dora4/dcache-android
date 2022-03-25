@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import dora.cache.data.fetcher.DataFetcher
+import dora.cache.data.fetcher.IDataFetcher
+import dora.cache.data.fetcher.IListDataFetcher
 import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
@@ -27,7 +29,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
 
     override fun createDataFetcher(): DataFetcher<M> {
         return object : DataFetcher<M>() {
-            override fun fetchData(): LiveData<M?> {
+            override fun fetchData(listener: IDataFetcher.OnLoadListener?): LiveData<M?> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
@@ -49,7 +51,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                 return liveData
             }
 
-            override fun callback(): DoraCallback<M> {
+            override fun callback(listener: IDataFetcher.OnLoadListener?): DoraCallback<M> {
                 return object : DoraCallback<M>() {
                     override fun onSuccess(model: M) {
                         model?.let {
@@ -63,6 +65,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                             cacheHolder.addNewCache(it)
                             liveData.postValue(it)
                         }
+                        listener?.onSuccess()
                     }
 
                     override fun onFailure(code: Int, msg: String?) {
@@ -73,6 +76,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                             clearData()
                             cacheHolder.removeOldCache(where())
                         }
+                        listener?.onFailure(code, msg)
                     }
                 }
             }
@@ -86,7 +90,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
     override fun createListDataFetcher(): ListDataFetcher<M> {
         return object : ListDataFetcher<M>() {
 
-            override fun fetchListData(): LiveData<List<M>> {
+            override fun fetchListData(listener: IListDataFetcher.OnLoadListener?): LiveData<List<M>> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
@@ -102,13 +106,13 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                     }
 
                     override fun loadFromNetwork() {
-                        onLoadFromNetwork(listCallback())
+                        onLoadFromNetwork(listCallback(listener))
                     }
                 })
                 return liveData
             }
 
-            override fun listCallback(): DoraListCallback<M> {
+            override fun listCallback(listener: IListDataFetcher.OnLoadListener?): DoraListCallback<M> {
                 return object : DoraListCallback<M>() {
                     override fun onSuccess(models: List<M>) {
                         models?.let {
@@ -124,6 +128,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                             listCacheHolder.addNewCache(it)
                             liveData.postValue(it)
                         }
+                        listener?.onSuccess()
                     }
 
                     override fun onFailure(code: Int, msg: String?) {
@@ -134,6 +139,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                             clearListData()
                             listCacheHolder.removeOldCache(where())
                         }
+                        listener?.onFailure(code, msg)
                     }
                 }
             }

@@ -18,7 +18,10 @@ import dora.db.builder.Condition
 @RepositoryType(BaseRepository.CacheStrategy.MEMORY_CACHE)
 abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M>(context) {
 
-    abstract val cacheName: String
+    /**
+     * 不要随意修改。
+     */
+    abstract var cacheName: String
 
     /**
      * 根据查询条件进行初步的过滤从数据库加载的数据，过滤不完全则再调用onInterceptData。

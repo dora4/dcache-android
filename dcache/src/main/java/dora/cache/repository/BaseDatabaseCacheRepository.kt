@@ -35,18 +35,21 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
     protected open fun checkValuesNotNull() : Boolean { return true }
 
     /**
-     * 仅list模式使用。
+     * 手动放入缓存数据，仅list模式使用，。
      */
-    fun putCacheDataIntoList(data: M) {
+    fun putDataIntoCache(data: M) {
         getListLiveData().value?.let {
             it.add(data)
         }
         cacheHolder.addNewCache(data)
     }
 
-    fun putCacheDataIntoList(data: MutableList<M>) {
+    /**
+     * 手动放入一堆缓存数据，仅list模式使用。
+     */
+    fun putDataIntoCache(data: List<M>) {
         for (i in data) {
-            putCacheDataIntoList(i)
+            putDataIntoCache(i)
         }
     }
 

@@ -7,6 +7,7 @@ import dora.cache.data.fetcher.DataFetcher
 import dora.cache.data.fetcher.IDataFetcher
 import dora.cache.data.fetcher.IListDataFetcher
 import dora.cache.data.fetcher.ListDataFetcher
+import dora.cache.data.model.BlockModel
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
 import dora.db.builder.Condition
@@ -35,21 +36,19 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
     protected open fun checkValuesNotNull() : Boolean { return true }
 
     /**
-     * 手动放入缓存数据，仅list模式使用，。
+     * 手动放入缓存数据，仅listMode为true时使用。
      */
-    fun putDataIntoCache(data: M) {
-        getListLiveData().value?.let {
-            it.add(data)
-        }
-        cacheHolder.addNewCache(data)
+    fun addData(data: M) {
+        addData(arrayListOf(data))
     }
 
     /**
-     * 手动放入一堆缓存数据，仅list模式使用。
+     * 手动放入一堆缓存数据，仅listMode为true时使用。
      */
-    fun putDataIntoCache(data: List<M>) {
-        for (i in data) {
-            putDataIntoCache(i)
+    fun addData(data: MutableList<M>) {
+        getListLiveData().value?.let {
+            it.addAll(data)
+            listCacheHolder.addNewCache(data)
         }
     }
 

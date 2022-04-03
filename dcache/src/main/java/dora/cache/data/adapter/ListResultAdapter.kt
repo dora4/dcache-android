@@ -7,7 +7,7 @@ class ListResultAdapter<M, R : Result<M>>(val callback: DoraListCallback<M>) : D
 
     override fun onSuccess(model: R) {
         callback.onSuccess(if (model.getRealModel() != null &&
-                (model.getRealModel() is List<*>)) model.getRealModel() as List<M> else arrayListOf())
+                (model.getRealModel() is MutableList<*>)) model.getRealModel() as MutableList<M> else arrayListOf())
     }
     override fun onFailure(code: Int, msg: String?) {
         callback.onFailure(code, msg)

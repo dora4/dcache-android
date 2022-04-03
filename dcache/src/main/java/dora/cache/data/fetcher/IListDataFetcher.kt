@@ -8,8 +8,8 @@ interface IListDataFetcher<M> {
 
     fun clearListData()
     fun listCallback(listener: OnLoadListener? = null): DoraListCallback<M>
-    fun fetchListData(listener: OnLoadListener? = null): LiveData<List<M>>
-    fun getListLiveData() : LiveData<List<M>>
+    fun fetchListData(listener: OnLoadListener? = null): LiveData<MutableList<M>>
+    fun getListLiveData() : LiveData<MutableList<M>>
     fun obtainPager(): IDataPager<M>
 
     interface OnLoadListener {

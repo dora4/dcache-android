@@ -40,7 +40,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
 
     protected lateinit var cacheHolder: CacheHolder<M>
 
-    protected lateinit var listCacheHolder: CacheHolder<List<M>>
+    protected lateinit var listCacheHolder: CacheHolder<MutableList<M>>
 
     /**
      * true代表用于集合数据，false用于非集合数据。
@@ -65,7 +65,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
 
     protected abstract fun createCacheHolder(clazz: Class<M>): CacheHolder<M>
 
-    protected abstract fun createListCacheHolder(clazz: Class<M>): CacheHolder<List<M>>
+    protected abstract fun createListCacheHolder(clazz: Class<M>): CacheHolder<MutableList<M>>
 
     override fun callback(listener: IDataFetcher.OnLoadListener?): DoraCallback<M> {
         return object : DoraCallback<M>() {
@@ -89,7 +89,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
 
     override fun listCallback(listener: IListDataFetcher.OnLoadListener?): DoraListCallback<M> {
         return object : DoraListCallback<M>() {
-            override fun onSuccess(models: List<M>) {
+            override fun onSuccess(models: MutableList<M>) {
                 if (isLogPrint) {
                     models.let {
                         for (model in it) {
@@ -249,11 +249,13 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
         fun loadFromNetwork()
     }
 
+    @JvmOverloads
     override fun fetchData(listener: IDataFetcher.OnLoadListener?): LiveData<M?> {
         return dataFetcher.fetchData(listener)
     }
 
-    override fun fetchListData(listener: IListDataFetcher.OnLoadListener?): LiveData<List<M>> {
+    @JvmOverloads
+    override fun fetchListData(listener: IListDataFetcher.OnLoadListener?): LiveData<MutableList<M>> {
         return listDataFetcher.fetchListData(listener)
     }
 
@@ -269,7 +271,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
         return dataFetcher.getLiveData()
     }
 
-    override fun getListLiveData(): LiveData<List<M>> {
+    override fun getListLiveData(): LiveData<MutableList<M>> {
         return listDataFetcher.getListLiveData()
     }
 

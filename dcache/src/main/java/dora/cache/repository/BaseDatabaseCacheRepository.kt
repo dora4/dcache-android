@@ -23,8 +23,31 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
      *
      * @return
      */
-    open fun where(): Condition {
+    protected open fun where(): Condition {
         return WhereBuilder.create().toCondition()
+    }
+
+    /**
+     * 保证成员属性不为空，而成功调用where方法。
+     *
+     * @see BaseDatabaseCacheRepository.where
+     */
+    protected open fun checkValuesNotNull() : Boolean { return true }
+
+    /**
+     * 仅list模式使用。
+     */
+    fun putCacheDataIntoList(data: M) {
+        getListLiveData().value?.let {
+            it.add(data)
+        }
+        cacheHolder.addNewCache(data)
+    }
+
+    fun putCacheDataIntoList(data: MutableList<M>) {
+        for (i in data) {
+            putCacheDataIntoList(i)
+        }
     }
 
     override fun createDataFetcher(): DataFetcher<M> {
@@ -33,11 +56,13 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
-                            val model = cacheHolder.queryCache(where())
-                            model?.let {
-                                onInterceptData(DataSource.Type.CACHE, it)
-                                liveData.postValue(it)
-                                return true
+                            if (checkValuesNotNull()) {
+                                val model = cacheHolder.queryCache(where())
+                                model?.let {
+                                    onInterceptData(DataSource.Type.CACHE, it)
+                                    liveData.postValue(it)
+                                    return true
+                                }
                             }
                         }
                         liveData.postValue(null)
@@ -60,7 +85,9 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                             }
                             onInterceptData(DataSource.Type.NETWORK, it)
                             if (!blockStorage) {
-                                cacheHolder.removeOldCache(where())
+                                if (checkValuesNotNull()) {
+                                    cacheHolder.removeOldCache(where())
+                                }
                             }
                             cacheHolder.addNewCache(it)
                             liveData.postValue(it)
@@ -73,8 +100,10 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                             Log.d(TAG, "$code:$msg")
                         }
                         if (isClearDataOnNetworkError) {
-                            clearData()
-                            cacheHolder.removeOldCache(where())
+                            if (checkValuesNotNull()) {
+                                clearData()
+                                cacheHolder.removeOldCache(where())
+                            }
                         }
                         listener?.onFailure(code, msg)
                     }
@@ -90,15 +119,17 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
     override fun createListDataFetcher(): ListDataFetcher<M> {
         return object : ListDataFetcher<M>() {
 
-            override fun fetchListData(listener: IListDataFetcher.OnLoadListener?): LiveData<List<M>> {
+            override fun fetchListData(listener: IListDataFetcher.OnLoadListener?): LiveData<MutableList<M>> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
-                            val models = listCacheHolder.queryCache(where())
-                            models?.let {
-                                onInterceptData(DataSource.Type.CACHE, it)
-                                liveData.postValue(it)
-                                return true
+                            if (checkValuesNotNull()) {
+                                val models = listCacheHolder.queryCache(where())
+                                models?.let {
+                                    onInterceptData(DataSource.Type.CACHE, it)
+                                    liveData.postValue(it)
+                                    return true
+                                }
                             }
                         }
                         liveData.postValue(arrayListOf())
@@ -114,7 +145,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
 
             override fun listCallback(listener: IListDataFetcher.OnLoadListener?): DoraListCallback<M> {
                 return object : DoraListCallback<M>() {
-                    override fun onSuccess(models: List<M>) {
+                    override fun onSuccess(models: MutableList<M>) {
                         models?.let {
                             if (isLogPrint) {
                                 for (model in it) {
@@ -123,7 +154,9 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                             }
                             onInterceptData(DataSource.Type.NETWORK, it)
                             if (!blockStorage) {
-                                listCacheHolder.removeOldCache(where())
+                                if (checkValuesNotNull()) {
+                                    listCacheHolder.removeOldCache(where())
+                                }
                             }
                             listCacheHolder.addNewCache(it)
                             liveData.postValue(it)
@@ -136,8 +169,10 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                             Log.d(TAG, "$code:$msg")
                         }
                         if (isClearDataOnNetworkError) {
-                            clearListData()
-                            listCacheHolder.removeOldCache(where())
+                            if (checkValuesNotNull()) {
+                                clearListData()
+                                listCacheHolder.removeOldCache(where())
+                            }
                         }
                         listener?.onFailure(code, msg)
                     }

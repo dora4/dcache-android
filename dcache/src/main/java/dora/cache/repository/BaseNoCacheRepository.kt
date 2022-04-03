@@ -67,7 +67,7 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
     override fun createListDataFetcher(): ListDataFetcher<M> {
         return object : ListDataFetcher<M>() {
 
-            override fun fetchListData(listener: IListDataFetcher.OnLoadListener?): LiveData<List<M>> {
+            override fun fetchListData(listener: IListDataFetcher.OnLoadListener?): LiveData<MutableList<M>> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         return false
@@ -82,7 +82,7 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
 
             override fun listCallback(listener: IListDataFetcher.OnLoadListener?): DoraListCallback<M> {
                 return object : DoraListCallback<M>() {
-                    override fun onSuccess(models: List<M>) {
+                    override fun onSuccess(models: MutableList<M>) {
                         models.let {
                             if (isLogPrint) {
                                 for (model in it) {
@@ -121,7 +121,7 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
         return EmptyCacheHolder()
     }
 
-    override fun createListCacheHolder(clazz: Class<M>): CacheHolder<List<M>> {
+    override fun createListCacheHolder(clazz: Class<M>): CacheHolder<MutableList<M>> {
         return EmptyCacheHolder()
     }
 

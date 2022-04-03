@@ -125,12 +125,12 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
     override fun createListDataFetcher(): ListDataFetcher<M> {
         return object : ListDataFetcher<M>() {
 
-            override fun fetchListData(listener: IListDataFetcher.OnLoadListener?): LiveData<List<M>> {
+            override fun fetchListData(listener: IListDataFetcher.OnLoadListener?): LiveData<MutableList<M>> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         try {
                             if (type === DataSource.CacheType.MEMORY) {
-                                val models = MemoryCache.getCacheFromMemory(cacheName) as List<M>
+                                val models = MemoryCache.getCacheFromMemory(cacheName) as MutableList<M>
                                 models?.let {
                                     onInterceptData(DataSource.Type.CACHE, it)
                                     liveData.postValue(it)
@@ -160,7 +160,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
 
             override fun listCallback(listener: IListDataFetcher.OnLoadListener?): DoraListCallback<M> {
                 return object : DoraListCallback<M>() {
-                    override fun onSuccess(models: List<M>) {
+                    override fun onSuccess(models: MutableList<M>) {
                         models?.let {
                             if (isLogPrint) {
                                 for (model in it) {

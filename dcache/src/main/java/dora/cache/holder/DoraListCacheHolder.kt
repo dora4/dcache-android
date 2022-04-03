@@ -14,15 +14,15 @@ class DoraListCacheHolder<M, T : OrmTable>(var clazz: Class<out OrmTable>) : Lis
         dao = DaoFactory.getDao(clazz) as OrmDao<T>
     }
 
-    override fun queryCache(condition: Condition): List<M>? {
-        return dao.select(WhereBuilder.create(condition)) as List<M>?
+    override fun queryCache(condition: Condition): MutableList<M>? {
+        return dao.select(WhereBuilder.create(condition)) as MutableList<M>?
     }
 
     override fun removeOldCache(condition: Condition) {
         dao.delete(WhereBuilder.create(condition))
     }
 
-    override fun addNewCache(models: List<M>) {
-        dao.insert(models as List<T>)
+    override fun addNewCache(models: MutableList<M>) {
+        dao.insert(models as MutableList<T>)
     }
 }

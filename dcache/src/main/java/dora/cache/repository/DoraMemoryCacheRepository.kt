@@ -14,7 +14,7 @@ abstract class DoraMemoryCacheRepository<T: OrmTable>(context: Context)
         return DoraCacheHolder<T, T>(clazz)
     }
 
-    override fun createListCacheHolder(clazz: Class<T>): CacheHolder<List<T>> {
+    override fun createListCacheHolder(clazz: Class<T>): CacheHolder<MutableList<T>> {
         return DoraListCacheHolder<T, T>(clazz)
     }
 }

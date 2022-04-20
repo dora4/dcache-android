@@ -7,7 +7,6 @@ import dora.cache.data.fetcher.DataFetcher
 import dora.cache.data.fetcher.IDataFetcher
 import dora.cache.data.fetcher.IListDataFetcher
 import dora.cache.data.fetcher.ListDataFetcher
-import dora.cache.data.model.BlockModel
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
 import dora.db.builder.Condition
@@ -17,7 +16,25 @@ import dora.http.DoraListCallback
 
 @RepositoryType(BaseRepository.CacheStrategy.DATABASE_CACHE)
 abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
-    constructor(context: Context, protected var blockStorage: Boolean = false) : BaseRepository<M>(context) {
+    constructor(context: Context) : BaseRepository<M>(context) {
+
+    protected val dataMap = HashMap<String, M>()
+    protected val listDataMap = HashMap<String, MutableList<M>>()
+
+    /**
+     * 如果返回true，则放弃强制覆盖原有数据的模式，而采用map映射。
+     */
+    protected open fun disallowForceUpdate() : Boolean {
+        return false
+    }
+
+    /**
+     * 只要mapKey的值不冲突即可追加缓存。
+     */
+    protected open fun mapKey() : String {
+        // 默认的mapKey
+        return "BaseDatabaseCacheRepository.mapKey"
+    }
 
     /**
      * 根据查询条件进行初步的过滤从数据库加载的数据，过滤不完全则再调用onInterceptData。
@@ -86,13 +103,23 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                                 Log.d(TAG, it.toString())
                             }
                             onInterceptData(DataSource.Type.NETWORK, it)
-                            if (!blockStorage) {
+                            if (!disallowForceUpdate()) {
                                 if (checkValuesNotNull()) {
                                     cacheHolder.removeOldCache(where())
                                 }
+                            } else {
+                                if (dataMap.containsKey(mapKey())) {
+                                    if (checkValuesNotNull()) {
+                                        cacheHolder.removeOldCache(where())
+                                    }
+                                }
                             }
                             cacheHolder.addNewCache(it)
-                            liveData.postValue(it)
+                            if (disallowForceUpdate()) {
+                                liveData.postValue(dataMap.get(mapKey()))
+                            } else {
+                                liveData.postValue(it)
+                            }
                         }
                         listener?.onSuccess()
                     }
@@ -155,13 +182,23 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                                 }
                             }
                             onInterceptData(DataSource.Type.NETWORK, it)
-                            if (!blockStorage) {
+                            if (!disallowForceUpdate()) {
                                 if (checkValuesNotNull()) {
                                     listCacheHolder.removeOldCache(where())
                                 }
+                            } else {
+                                if (listDataMap.containsKey(mapKey())) {
+                                    if (checkValuesNotNull()) {
+                                        listCacheHolder.removeOldCache(where())
+                                    }
+                                }
                             }
                             listCacheHolder.addNewCache(it)
-                            liveData.postValue(it)
+                            if (disallowForceUpdate()) {
+                                liveData.postValue(listDataMap.get(mapKey()))
+                            } else {
+                                liveData.postValue(it)
+                            }
                         }
                         listener?.onSuccess()
                     }

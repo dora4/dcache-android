@@ -29,11 +29,12 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
     }
 
     /**
-     * 只要mapKey的值不冲突即可追加缓存。
+     * 只要mapKey的值不冲突即可追加缓存，读取的时候则通过mapKey取不同条件（如接口的参数不同，请求的时间不同等）
+     * 接口返回的数据的缓存。
      */
     protected open fun mapKey() : String {
-        // 默认的mapKey
-        return "BaseDatabaseCacheRepository.mapKey"
+        // 通过时间戳保证打开disallowForceUpdate后每次接口返回的数据都被缓存到map，而不是livedata
+        return System.currentTimeMillis().toString()
     }
 
     /**
@@ -116,7 +117,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                             }
                             cacheHolder.addNewCache(it)
                             if (disallowForceUpdate()) {
-                                liveData.postValue(dataMap.get(mapKey()))
+                                liveData.postValue(dataMap[mapKey()])
                             } else {
                                 liveData.postValue(it)
                             }
@@ -195,7 +196,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                             }
                             listCacheHolder.addNewCache(it)
                             if (disallowForceUpdate()) {
-                                liveData.postValue(listDataMap.get(mapKey()))
+                                liveData.postValue(listDataMap[mapKey()])
                             } else {
                                 liveData.postValue(it)
                             }

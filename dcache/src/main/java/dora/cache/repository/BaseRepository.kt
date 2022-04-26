@@ -336,5 +336,5 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
 
     protected open fun onInterceptData(type: DataSource.Type, model: M) {}
 
-    protected open fun onInterceptData(type: DataSource.Type, models: List<M>) {}
+    protected open fun onInterceptData(type: DataSource.Type, models: MutableList<M>) {}
 }

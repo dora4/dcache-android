@@ -13,6 +13,10 @@ import dora.cache.holder.CacheHolder
 import dora.cache.holder.EmptyCacheHolder
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
+import dora.rx.RxTransformer
+import io.reactivex.Observable
+import io.reactivex.Observer
+import io.reactivex.disposables.Disposable
 
 @RepositoryType
 abstract class BaseNoCacheRepository<M> protected constructor(context: Context) :
@@ -27,6 +31,35 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                     }
 
                     override fun loadFromNetwork() {
+                        RxTransformer.doApi(onLoadFromNetworkObservable(), object : Observer<M> {
+                            override fun onSubscribe(d: Disposable?) {
+                            }
+
+                            override fun onNext(model: M) {
+                                model.let {
+                                    if (isLogPrint) {
+                                        Log.d(TAG, it.toString())
+                                    }
+                                    onInterceptData(DataSource.Type.NETWORK, it)
+                                    liveData.postValue(it)
+                                }
+                                listener?.onSuccess()
+                            }
+
+                            override fun onError(e: Throwable?) {
+                                if (isLogPrint) {
+                                    Log.d(TAG, e.toString())
+                                }
+                                if (isClearDataOnNetworkError) {
+                                    clearData()
+                                }
+                                listener?.onFailure(-1, e.toString())
+                            }
+
+                            override fun onComplete() {
+                            }
+
+                        })
                         onLoadFromNetwork(callback())
                     }
                 })
@@ -126,14 +159,28 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
     }
 
     /**
-     * 非集合数据模式需要重写它。
+     * 非集合数据模式需要重写它，callback和observable二选一。
      */
     override fun onLoadFromNetwork(callback: DoraCallback<M>) {
     }
 
     /**
-     * 集合数据模式需要重写它。
+     * 集合数据模式需要重写它，callback和observable二选一。
      */
     override fun onLoadFromNetwork(callback: DoraListCallback<M>) {
+    }
+
+    /**
+     * 非集合数据模式需要重写它，callback和observable二选一。
+     */
+    override fun onLoadFromNetworkObservable() : Observable<M> {
+        return Observable.empty()
+    }
+
+    /**
+     * 集合数据模式需要重写它，callback和observable二选一。
+     */
+    override fun onLoadFromNetworkObservableList() : Observable<MutableList<M>> {
+        return Observable.empty()
     }
 }

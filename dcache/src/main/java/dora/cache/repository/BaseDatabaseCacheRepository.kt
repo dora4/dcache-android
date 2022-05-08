@@ -13,6 +13,10 @@ import dora.db.builder.Condition
 import dora.db.builder.WhereBuilder
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
+import dora.rx.RxTransformer
+import io.reactivex.Observable
+import io.reactivex.Observer
+import io.reactivex.disposables.Disposable
 
 @RepositoryType(BaseRepository.CacheStrategy.DATABASE_CACHE)
 abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
@@ -90,7 +94,45 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                     }
 
                     override fun loadFromNetwork() {
-                        onLoadFromNetwork(callback())
+                        RxTransformer.doApi(onLoadFromNetworkObservable(), object : Observer<M> {
+                            override fun onSubscribe(d: Disposable?) {
+                            }
+
+                            override fun onNext(model: M) {
+                                model?.let {
+                                    if (isLogPrint) {
+                                        Log.d(TAG, it.toString())
+                                    }
+                                    onInterceptData(DataSource.Type.NETWORK, it)
+                                    if (!disallowForceUpdate()) {
+                                        if (checkValuesNotNull()) {
+                                            cacheHolder.removeOldCache(where())
+                                        }
+                                    } else {
+                                        if (dataMap.containsKey(mapKey())) {
+                                            if (checkValuesNotNull()) {
+                                                cacheHolder.removeOldCache(where())
+                                            }
+                                        }
+                                    }
+                                    cacheHolder.addNewCache(it)
+                                    if (disallowForceUpdate()) {
+                                        liveData.postValue(dataMap[mapKey()])
+                                    } else {
+                                        liveData.postValue(it)
+                                    }
+                                }
+                                listener?.onSuccess()
+                            }
+
+                            override fun onError(e: Throwable?) {
+                            }
+
+                            override fun onComplete() {
+                            }
+
+                        })
+                        onLoadFromNetwork(callback(listener))
                     }
                 })
                 return liveData
@@ -167,6 +209,55 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                     }
 
                     override fun loadFromNetwork() {
+                        RxTransformer.doApi(onLoadFromNetworkObservableList(), object : Observer<MutableList<M>> {
+                            override fun onSubscribe(d: Disposable?) {
+                            }
+
+                            override fun onNext(models: MutableList<M>?) {
+                                models?.let {
+                                    if (isLogPrint) {
+                                        for (model in it) {
+                                            Log.d(TAG, model.toString())
+                                        }
+                                    }
+                                    onInterceptData(DataSource.Type.NETWORK, it)
+                                    if (!disallowForceUpdate()) {
+                                        if (checkValuesNotNull()) {
+                                            listCacheHolder.removeOldCache(where())
+                                        }
+                                    } else {
+                                        if (listDataMap.containsKey(mapKey())) {
+                                            if (checkValuesNotNull()) {
+                                                listCacheHolder.removeOldCache(where())
+                                            }
+                                        }
+                                    }
+                                    listCacheHolder.addNewCache(it)
+                                    if (disallowForceUpdate()) {
+                                        liveData.postValue(listDataMap[mapKey()])
+                                    } else {
+                                        liveData.postValue(it)
+                                    }
+                                }
+                                listener?.onSuccess()
+                            }
+
+                            override fun onError(e: Throwable?) {
+                                if (isLogPrint) {
+                                    Log.d(TAG, e.toString())
+                                }
+                                if (isClearDataOnNetworkError) {
+                                    if (checkValuesNotNull()) {
+                                        clearListData()
+                                        listCacheHolder.removeOldCache(where())
+                                    }
+                                }
+                                listener?.onFailure(-1, e.toString())
+                            }
+
+                            override fun onComplete() {
+                            }
+                        })
                         onLoadFromNetwork(listCallback(listener))
                     }
                 })
@@ -230,14 +321,28 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
     }
 
     /**
-     * 非集合数据模式需要重写它。
+     * 非集合数据模式需要重写它，callback和observable二选一。
      */
     override fun onLoadFromNetwork(callback: DoraCallback<M>) {
     }
 
     /**
-     * 集合数据模式需要重写它。
+     * 集合数据模式需要重写它，callback和observable二选一。
      */
     override fun onLoadFromNetwork(callback: DoraListCallback<M>) {
+    }
+
+    /**
+     * 非集合数据模式需要重写它，callback和observable二选一。
+     */
+    override fun onLoadFromNetworkObservable() : Observable<M> {
+        return Observable.empty()
+    }
+
+    /**
+     * 集合数据模式需要重写它，callback和observable二选一。
+     */
+    override fun onLoadFromNetworkObservableList() : Observable<MutableList<M>> {
+        return Observable.empty()
     }
  }

@@ -13,6 +13,7 @@ import dora.cache.data.page.IDataPager
 import dora.cache.holder.CacheHolder
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
+import io.reactivex.Observable
 import java.lang.RuntimeException
 import java.lang.reflect.ParameterizedType
 
@@ -122,6 +123,10 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
      * @param callback
      */
     protected abstract fun onLoadFromNetwork(callback: DoraListCallback<M>)
+
+    protected abstract fun onLoadFromNetworkObservable() : Observable<M>
+
+    protected abstract fun onLoadFromNetworkObservableList() : Observable<MutableList<M>>
 
     /**
      * 从三级缓存仓库选择数据。

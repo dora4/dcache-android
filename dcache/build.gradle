@@ -64,13 +64,16 @@ void packagingAar(project, android) {
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
 
     implementation 'com.squareup.okhttp3:okhttp:4.8.0'
     implementation 'com.squareup.retrofit2:retrofit:2.7.2'
     implementation 'com.squareup.retrofit2:converter-gson:2.7.2'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.6.2'
+    implementation 'io.reactivex.rxjava2:rxjava:2.0.4'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.5.10"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.2'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
 }

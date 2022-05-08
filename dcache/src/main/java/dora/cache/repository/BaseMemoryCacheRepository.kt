@@ -14,6 +14,10 @@ import dora.cache.data.fetcher.IDataFetcher
 import dora.cache.data.fetcher.IListDataFetcher
 import dora.cache.data.page.DataPager
 import dora.db.builder.Condition
+import dora.rx.RxTransformer
+import io.reactivex.Observable
+import io.reactivex.Observer
+import io.reactivex.disposables.Disposable
 
 @RepositoryType(BaseRepository.CacheStrategy.MEMORY_CACHE)
 abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M>(context) {
@@ -80,6 +84,40 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                     }
 
                     override fun loadFromNetwork() {
+                        RxTransformer.doApi(onLoadFromNetworkObservable(), object : Observer<M> {
+                            override fun onSubscribe(d: Disposable?) {
+                            }
+
+                            override fun onNext(model: M) {
+                                model?.let {
+                                    if (isLogPrint) {
+                                        Log.d(TAG, it.toString())
+                                    }
+                                    onInterceptData(DataSource.Type.NETWORK, it)
+                                    MemoryCache.updateCacheAtMemory(cacheName, it as Any)
+                                    cacheHolder.removeOldCache(where())
+                                    cacheHolder.addNewCache(it)
+                                    liveData.postValue(it)
+                                }
+                                listener?.onSuccess()
+                            }
+
+                            override fun onError(e: Throwable?) {
+                                if (isLogPrint) {
+                                    Log.d(TAG, e.toString())
+                                }
+                                if (isClearDataOnNetworkError) {
+                                    clearData()
+                                    MemoryCache.removeCacheAtMemory(cacheName)
+                                    cacheHolder.removeOldCache(where())
+                                }
+                                listener?.onFailure(-1, e.toString())
+                            }
+
+                            override fun onComplete() {
+                            }
+
+                        })
                         onLoadFromNetwork(callback())
                     }
                 })
@@ -152,6 +190,41 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                     }
 
                     override fun loadFromNetwork() {
+                        RxTransformer.doApi(onLoadFromNetworkObservableList(), object : Observer<MutableList<M>> {
+                            override fun onSubscribe(d: Disposable?) {
+                            }
+
+                            override fun onNext(models: MutableList<M>?) {
+                                models?.let {
+                                    if (isLogPrint) {
+                                        for (model in it) {
+                                            Log.d(TAG, model.toString())
+                                        }
+                                    }
+                                    onInterceptData(DataSource.Type.NETWORK, it)
+                                    MemoryCache.updateCacheAtMemory(cacheName, it)
+                                    listCacheHolder.removeOldCache(where())
+                                    listCacheHolder.addNewCache(it)
+                                    liveData.postValue(it)
+                                }
+                                listener?.onSuccess()
+                            }
+
+                            override fun onError(e: Throwable?) {
+                                if (isLogPrint) {
+                                    Log.d(TAG, e.toString())
+                                }
+                                if (isClearDataOnNetworkError) {
+                                    listCacheHolder.removeOldCache(where())
+                                    clearListData()
+                                    MemoryCache.removeCacheAtMemory(cacheName)
+                                }
+                                listener?.onFailure(-1, e.toString())
+                            }
+
+                            override fun onComplete() {
+                            }
+                        })
                         onLoadFromNetwork(listCallback())
                     }
                 })
@@ -201,14 +274,28 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
     }
 
     /**
-     * 非集合数据模式需要重写它。
+     * 非集合数据模式需要重写它，callback和observable二选一。
      */
     override fun onLoadFromNetwork(callback: DoraCallback<M>) {
     }
 
     /**
-     * 集合数据模式需要重写它。
+     * 集合数据模式需要重写它，callback和observable二选一。
      */
     override fun onLoadFromNetwork(callback: DoraListCallback<M>) {
+    }
+
+    /**
+     * 非集合数据模式需要重写它，callback和observable二选一。
+     */
+    override fun onLoadFromNetworkObservable() : Observable<M> {
+        return Observable.empty()
+    }
+
+    /**
+     * 集合数据模式需要重写它，callback和observable二选一。
+     */
+    override fun onLoadFromNetworkObservableList() : Observable<MutableList<M>> {
+        return Observable.empty()
     }
 }

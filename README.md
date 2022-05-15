@@ -27,12 +27,16 @@ api "com.github.dora4:dcache-android:$latest_version"
 #### 代码混淆配置
 
 ```
+-keep class dora.cache.repository.** {
+    *;
+}
 -keep class dora.db.dao.** {
     *;
 }
 -keep class dora.db.converter.** {
     *;
 }
+-dontwarn dora.cache.repository.**
 -dontwarn dora.db.dao.**
 -dontwarn dora.db.converter.**
 ```

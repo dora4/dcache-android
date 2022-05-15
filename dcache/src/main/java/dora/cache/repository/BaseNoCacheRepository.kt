@@ -53,7 +53,7 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                                 if (isClearDataOnNetworkError) {
                                     clearData()
                                 }
-                                listener?.onFailure(-1, e.toString())
+                                listener?.onFailure(e.toString())
                             }
 
                             override fun onComplete() {
@@ -79,14 +79,14 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                         listener?.onSuccess()
                     }
 
-                    override fun onFailure(code: Int, msg: String?) {
+                    override fun onFailure(msg: String) {
                         if (isLogPrint) {
-                            Log.d(TAG, "$code:$msg")
+                            Log.d(TAG, msg)
                         }
                         if (isClearDataOnNetworkError) {
                             clearData()
                         }
-                        listener?.onFailure(code, msg)
+                        listener?.onFailure(msg)
                     }
                 }
             }
@@ -128,14 +128,14 @@ abstract class BaseNoCacheRepository<M> protected constructor(context: Context) 
                         listener?.onSuccess()
                     }
 
-                    override fun onFailure(code: Int, msg: String?) {
+                    override fun onFailure(msg: String) {
                         if (isLogPrint) {
-                            Log.d(TAG, "$code:$msg")
+                            Log.d(TAG, msg)
                         }
                         if (isClearDataOnNetworkError) {
                             clearListData()
                         }
-                        listener?.onFailure(code, msg)
+                        listener?.onFailure(msg)
                     }
                 }
             }

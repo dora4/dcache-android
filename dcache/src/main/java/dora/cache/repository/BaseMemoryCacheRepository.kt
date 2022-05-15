@@ -111,7 +111,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                                     MemoryCache.removeCacheAtMemory(cacheName)
                                     cacheHolder.removeOldCache(where())
                                 }
-                                listener?.onFailure(-1, e.toString())
+                                listener?.onFailure(e.toString())
                             }
 
                             override fun onComplete() {
@@ -140,16 +140,16 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                         listener?.onSuccess()
                     }
 
-                    override fun onFailure(code: Int, msg: String?) {
+                    override fun onFailure(msg: String) {
                         if (isLogPrint) {
-                            Log.d(TAG, "$code:$msg")
+                            Log.d(TAG, msg)
                         }
                         if (isClearDataOnNetworkError) {
                             clearData()
                             MemoryCache.removeCacheAtMemory(cacheName)
                             cacheHolder.removeOldCache(where())
                         }
-                        listener?.onFailure(code, msg)
+                        listener?.onFailure(msg)
                     }
                 }
             }
@@ -219,7 +219,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                                     clearListData()
                                     MemoryCache.removeCacheAtMemory(cacheName)
                                 }
-                                listener?.onFailure(-1, e.toString())
+                                listener?.onFailure(e.toString())
                             }
 
                             override fun onComplete() {
@@ -249,16 +249,16 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                         listener?.onSuccess()
                     }
 
-                    override fun onFailure(code: Int, msg: String?) {
+                    override fun onFailure(msg: String) {
                         if (isLogPrint) {
-                            Log.d(TAG, "$code:$msg")
+                            Log.d(TAG, msg)
                         }
                         if (isClearDataOnNetworkError) {
                             listCacheHolder.removeOldCache(where())
                             clearListData()
                             MemoryCache.removeCacheAtMemory(cacheName)
                         }
-                        listener?.onFailure(code, msg)
+                        listener?.onFailure(msg)
                     }
                 }
             }

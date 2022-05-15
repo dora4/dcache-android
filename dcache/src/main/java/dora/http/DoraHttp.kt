@@ -35,7 +35,7 @@ object DoraHttp {
                 it.resume(data)
             }
 
-            override fun onFailure(code: Int, msg: String?) {
+            override fun onFailure(msg: String) {
                 it.resumeWith(Result.failure(DoraHttpException(data.request(), msg)))
             }
         })
@@ -51,7 +51,7 @@ object DoraHttp {
                 it.resume(data)
             }
 
-            override fun onFailure(code: Int, msg: String?) {
+            override fun onFailure(msg: String) {
                 it.resumeWith(Result.success(null))
             }
         })

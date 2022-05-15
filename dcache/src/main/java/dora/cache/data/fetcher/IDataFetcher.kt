@@ -12,13 +12,13 @@ interface IDataFetcher<M> {
         override fun onSuccess() {
         }
 
-        override fun onFailure(code: Int, msg: String?) {
+        override fun onFailure(msg: String) {
         }
     }): LiveData<M?>
     fun getLiveData(): LiveData<M?>
 
     interface OnLoadListener {
         fun onSuccess()
-        fun onFailure(code: Int, msg: String?)
+        fun onFailure(msg: String)
     }
 }

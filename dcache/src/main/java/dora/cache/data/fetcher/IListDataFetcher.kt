@@ -12,7 +12,7 @@ interface IListDataFetcher<M> {
     fun fetchListData(listener: OnLoadListener? = object : OnLoadListener {
         override fun onSuccess() {
         }
-        override fun onFailure(code: Int, msg: String?) {
+        override fun onFailure(msg: String) {
         }
     }): LiveData<MutableList<M>>
     fun getListLiveData() : LiveData<MutableList<M>>
@@ -20,6 +20,6 @@ interface IListDataFetcher<M> {
 
     interface OnLoadListener {
         fun onSuccess()
-        fun onFailure(code: Int, msg: String?)
+        fun onFailure(msg: String)
     }
 }

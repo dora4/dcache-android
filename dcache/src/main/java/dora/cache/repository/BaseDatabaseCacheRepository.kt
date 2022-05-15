@@ -167,9 +167,9 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                         listener?.onSuccess()
                     }
 
-                    override fun onFailure(code: Int, msg: String?) {
+                    override fun onFailure(msg: String) {
                         if (isLogPrint) {
-                            Log.d(TAG, "$code:$msg")
+                            Log.d(TAG, msg)
                         }
                         if (isClearDataOnNetworkError) {
                             if (checkValuesNotNull()) {
@@ -177,7 +177,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                                 cacheHolder.removeOldCache(where())
                             }
                         }
-                        listener?.onFailure(code, msg)
+                        listener?.onFailure(msg)
                     }
                 }
             }
@@ -252,7 +252,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                                         listCacheHolder.removeOldCache(where())
                                     }
                                 }
-                                listener?.onFailure(-1, e.toString())
+                                listener?.onFailure(e.toString())
                             }
 
                             override fun onComplete() {
@@ -295,9 +295,9 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                         listener?.onSuccess()
                     }
 
-                    override fun onFailure(code: Int, msg: String?) {
+                    override fun onFailure(msg: String) {
                         if (isLogPrint) {
-                            Log.d(TAG, "$code:$msg")
+                            Log.d(TAG, msg)
                         }
                         if (isClearDataOnNetworkError) {
                             if (checkValuesNotNull()) {
@@ -305,7 +305,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                                 listCacheHolder.removeOldCache(where())
                             }
                         }
-                        listener?.onFailure(code, msg)
+                        listener?.onFailure(msg)
                     }
                 }
             }

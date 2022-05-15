@@ -8,7 +8,7 @@ abstract class DoraCallback<M> : Callback<M> {
 
     abstract fun onSuccess(model: M)
 
-    abstract fun onFailure(code: Int, msg: String?)
+    abstract fun onFailure(msg: String)
 
     override fun onResponse(call: Call<M>, response: Response<M>) {
         if (response.isSuccessful) {
@@ -16,12 +16,16 @@ abstract class DoraCallback<M> : Callback<M> {
             if (body != null) {
                 onSuccess(body)
             } else {
-                onFailure(-1, "Empty Body")
+                onFailure(EMPTY_BODY)
             }
         }
     }
 
     override fun onFailure(call: Call<M>, t: Throwable) {
-        onFailure(-1, t.message)
+        onFailure(t.toString())
+    }
+
+    companion object {
+        const val EMPTY_BODY = "Empty Body"
     }
 }

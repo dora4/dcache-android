@@ -8,7 +8,7 @@ abstract class DoraListCallback<M> : Callback<MutableList<M>> {
 
     abstract fun onSuccess(models: MutableList<M>)
 
-    abstract fun onFailure(code: Int, msg: String?)
+    abstract fun onFailure(msg: String)
 
     override fun onResponse(call: Call<MutableList<M>>, response: Response<MutableList<M>>) {
         if (response.isSuccessful) {
@@ -16,12 +16,16 @@ abstract class DoraListCallback<M> : Callback<MutableList<M>> {
             if (body != null) {
                 onSuccess(body)
             } else {
-                onFailure(-1, "Empty Body")
+                onFailure(EMPTY_BODY)
             }
         }
     }
 
     override fun onFailure(call: Call<MutableList<M>>, t: Throwable) {
-        onFailure(-1, t.message)
+        onFailure(t.toString())
+    }
+
+    companion object {
+        const val EMPTY_BODY = "Empty Body"
     }
 }

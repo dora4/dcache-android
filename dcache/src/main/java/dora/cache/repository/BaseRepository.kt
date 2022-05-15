@@ -79,11 +79,11 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
                 listener?.onSuccess()
             }
 
-            override fun onFailure(code: Int, msg: String?) {
+            override fun onFailure(msg: String) {
                 if (isLogPrint) {
-                    Log.d(TAG, "$code:$msg")
+                    Log.d(TAG, msg)
                 }
-                listener?.onFailure(code, msg)
+                listener?.onFailure(msg)
             }
         }
     }
@@ -101,11 +101,11 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
                 listener?.onSuccess()
             }
 
-            override fun onFailure(code: Int, msg: String?) {
+            override fun onFailure(msg: String) {
                 if (isLogPrint) {
-                    Log.d(TAG, "$code:$msg")
+                    Log.d(TAG, msg)
                 }
-                listener?.onFailure(code, msg)
+                listener?.onFailure(msg)
             }
         }
     }

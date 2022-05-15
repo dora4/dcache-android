@@ -23,6 +23,16 @@ def latest_version = 'x.x.x'
 api "com.github.dora4:dcache-android:$latest_version"
 ```
 
+#### 代码混淆配置
+-keep class dora.db.dao.** {
+    *;
+}
+-keep class dora.db.converter.** {
+    *;
+}
+-dontwarn dora.db.dao.**
+-dontwarn dora.db.converter.**
+
 捐赠虚拟货币支持开源项目
 
 | 币种           | 钱包地址                                   | 备注                                                        |

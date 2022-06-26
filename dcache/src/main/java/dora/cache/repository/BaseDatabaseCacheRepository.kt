@@ -122,6 +122,8 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                                             if (checkValuesNotNull()) {
                                                 cacheHolder.removeOldCache(query())
                                             }
+                                        } else {
+                                            dataMap.put(mapKey(), it)
                                         }
                                     }
                                     cacheHolder.addNewCache(it)
@@ -164,6 +166,8 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                                     if (checkValuesNotNull()) {
                                         cacheHolder.removeOldCache(query())
                                     }
+                                } else {
+                                    dataMap.put(mapKey(), it)
                                 }
                             }
                             cacheHolder.addNewCache(it)
@@ -239,6 +243,8 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                                             if (checkValuesNotNull()) {
                                                 listCacheHolder.removeOldCache(query())
                                             }
+                                        } else {
+                                            listDataMap.put(mapKey(), it)
                                         }
                                     }
                                     listCacheHolder.addNewCache(it)
@@ -292,6 +298,8 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                                     if (checkValuesNotNull()) {
                                         listCacheHolder.removeOldCache(query())
                                     }
+                                } else {
+                                    listDataMap.put(mapKey(), it)
                                 }
                             }
                             listCacheHolder.addNewCache(it)

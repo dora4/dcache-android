@@ -25,4 +25,8 @@ class DoraListCacheHolder<M, T : OrmTable>(var clazz: Class<out OrmTable>) : Lis
     override fun addNewCache(models: MutableList<M>) {
         dao.insert(models as MutableList<T>)
     }
+
+    override fun queryCacheSize(condition: Condition): Long {
+        return dao.selectCount(WhereBuilder.create(condition))
+    }
 }

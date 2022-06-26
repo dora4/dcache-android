@@ -16,4 +16,8 @@ class EmptyCacheHolder<M> : CacheHolder<M> {
 
     override fun addNewCache(model: M) {
     }
+
+    override fun queryCacheSize(condition: Condition): Long {
+        return 0
+    }
 }

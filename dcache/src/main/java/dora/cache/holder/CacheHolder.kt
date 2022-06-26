@@ -15,6 +15,11 @@ interface CacheHolder<M> {
     fun queryCache(condition: Condition) : M?
 
     /**
+     * 查询缓存记录数量。
+     */
+    fun queryCacheSize(condition: Condition) : Long
+
+    /**
      * 移除旧的数据库缓存。
      */
     fun removeOldCache(condition: Condition)

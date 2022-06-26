@@ -6,7 +6,6 @@ import dora.cache.holder.DoraCacheHolder
 import dora.cache.holder.DoraListCacheHolder
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
-import dora.db.builder.WhereBuilder
 import dora.db.table.OrmTable
 
 @RepositoryType(BaseRepository.CacheStrategy.DATABASE_CACHE_NO_NETWORK)
@@ -24,6 +23,14 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
         return pageSize
     }
 
+    override fun disallowForceUpdate(): Boolean {
+        return true
+    }
+
+    override fun mapKey(): String {
+        return "page-$pageNo($pageSize)"
+    }
+
     open fun setCurrentPage(pageNo: Int, pageSize: Int): DoraPageDatabaseCacheRepository<T> {
         this.pageNo = pageNo
         this.pageSize = pageSize
@@ -31,20 +38,11 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     }
 
     override fun query(): Condition {
-        val cacheSize = cacheHolder.queryCacheSize(
-                WhereBuilder.create().toCondition())
-        // 越界保护
         val start = pageNo * pageSize
         val end = start + pageSize
-        return if (end >= cacheSize) {
-            QueryBuilder.create()
-                    .limit(0)
-                    .toCondition()
-        } else
-            QueryBuilder.create()
-                    .limit(start, end)
-                    .toCondition()
-
+        return QueryBuilder.create()
+                .limit(start, end)
+                .toCondition()
     }
 
     override fun createCacheHolder(clazz: Class<T>): CacheHolder<T> {

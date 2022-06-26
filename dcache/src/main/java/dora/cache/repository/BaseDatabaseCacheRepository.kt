@@ -10,6 +10,7 @@ import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
 import dora.db.builder.Condition
+import dora.db.builder.QueryBuilder
 import dora.db.builder.WhereBuilder
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
@@ -42,12 +43,20 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
     }
 
     /**
-     * 根据查询条件进行初步的过滤从数据库加载的数据，过滤不完全则再调用onInterceptData。
+     * 根据查询条件进行初步的过滤从数据库加载的数据，过滤不完全则再调用onInterceptData。通常在断网情况下，指定
+     * 离线数据的过滤条件。
      *
      * @return
      */
+    @Deprecated(message = "Use query() instead.",
+            replaceWith = ReplaceWith("query"),
+            level = DeprecationLevel.ERROR)
     protected open fun where(): Condition {
         return WhereBuilder.create().toCondition()
+    }
+
+    protected open fun query(): Condition {
+        return QueryBuilder.create().toCondition()
     }
 
     /**
@@ -81,7 +90,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
                             if (checkValuesNotNull()) {
-                                val model = cacheHolder.queryCache(where())
+                                val model = cacheHolder.queryCache(query())
                                 model?.let {
                                     onInterceptData(DataSource.Type.CACHE, it)
                                     liveData.postValue(it)
@@ -106,12 +115,12 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                                     onInterceptData(DataSource.Type.NETWORK, it)
                                     if (!disallowForceUpdate()) {
                                         if (checkValuesNotNull()) {
-                                            cacheHolder.removeOldCache(where())
+                                            cacheHolder.removeOldCache(query())
                                         }
                                     } else {
                                         if (dataMap.containsKey(mapKey())) {
                                             if (checkValuesNotNull()) {
-                                                cacheHolder.removeOldCache(where())
+                                                cacheHolder.removeOldCache(query())
                                             }
                                         }
                                     }
@@ -148,12 +157,12 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                             onInterceptData(DataSource.Type.NETWORK, it)
                             if (!disallowForceUpdate()) {
                                 if (checkValuesNotNull()) {
-                                    cacheHolder.removeOldCache(where())
+                                    cacheHolder.removeOldCache(query())
                                 }
                             } else {
                                 if (dataMap.containsKey(mapKey())) {
                                     if (checkValuesNotNull()) {
-                                        cacheHolder.removeOldCache(where())
+                                        cacheHolder.removeOldCache(query())
                                     }
                                 }
                             }
@@ -174,7 +183,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                         if (isClearDataOnNetworkError) {
                             if (checkValuesNotNull()) {
                                 clearData()
-                                cacheHolder.removeOldCache(where())
+                                cacheHolder.removeOldCache(query())
                             }
                         }
                         listener?.onFailure(msg)
@@ -196,7 +205,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
                             if (checkValuesNotNull()) {
-                                val models = listCacheHolder.queryCache(where())
+                                val models = listCacheHolder.queryCache(query())
                                 models?.let {
                                     onInterceptData(DataSource.Type.CACHE, it)
                                     liveData.postValue(it)
@@ -223,12 +232,12 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                                     onInterceptData(DataSource.Type.NETWORK, it)
                                     if (!disallowForceUpdate()) {
                                         if (checkValuesNotNull()) {
-                                            listCacheHolder.removeOldCache(where())
+                                            listCacheHolder.removeOldCache(query())
                                         }
                                     } else {
                                         if (listDataMap.containsKey(mapKey())) {
                                             if (checkValuesNotNull()) {
-                                                listCacheHolder.removeOldCache(where())
+                                                listCacheHolder.removeOldCache(query())
                                             }
                                         }
                                     }
@@ -249,7 +258,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                                 if (isClearDataOnNetworkError) {
                                     if (checkValuesNotNull()) {
                                         clearListData()
-                                        listCacheHolder.removeOldCache(where())
+                                        listCacheHolder.removeOldCache(query())
                                     }
                                 }
                                 listener?.onFailure(e.toString())
@@ -276,12 +285,12 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                             onInterceptData(DataSource.Type.NETWORK, it)
                             if (!disallowForceUpdate()) {
                                 if (checkValuesNotNull()) {
-                                    listCacheHolder.removeOldCache(where())
+                                    listCacheHolder.removeOldCache(query())
                                 }
                             } else {
                                 if (listDataMap.containsKey(mapKey())) {
                                     if (checkValuesNotNull()) {
-                                        listCacheHolder.removeOldCache(where())
+                                        listCacheHolder.removeOldCache(query())
                                     }
                                 }
                             }
@@ -302,7 +311,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                         if (isClearDataOnNetworkError) {
                             if (checkValuesNotNull()) {
                                 clearListData()
-                                listCacheHolder.removeOldCache(where())
+                                listCacheHolder.removeOldCache(query())
                             }
                         }
                         listener?.onFailure(msg)

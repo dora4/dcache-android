@@ -5,7 +5,6 @@ class WhereBuilder {
     var selection: String = ""
         private set
     var selectionArgs: Array<String?>? = null
-        private set
 
     private constructor()
 

@@ -214,7 +214,6 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
             /**
              * 和[.DATABASE_CACHE]的不同之处在于，只有在没网的情况下才会加载数据库的缓存数据。
              */
-            @Deprecated("")
             const val DATABASE_CACHE_NO_NETWORK = 3
         }
     }

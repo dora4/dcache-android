@@ -75,6 +75,13 @@ class QueryBuilder private constructor() {
         return if (limit != null) StringBuilder(limit).delete(0, LIMIT.length).toString() else SPACE
     }
 
+    fun toCondition(): Condition {
+        if (whereBuilder.selectionArgs == null) {
+            whereBuilder.selectionArgs = arrayOf<String?>("")
+        }
+        return Condition(whereBuilder.selection, whereBuilder.selectionArgs!!, limit, order, group)
+    }
+
     companion object {
 
         private const val GROUP_BY = " GROUP BY "

@@ -14,6 +14,7 @@ import dora.cache.data.fetcher.IDataFetcher
 import dora.cache.data.fetcher.IListDataFetcher
 import dora.cache.data.page.DataPager
 import dora.db.builder.Condition
+import dora.db.builder.QueryBuilder
 import dora.rx.RxTransformer
 import io.reactivex.Observable
 import io.reactivex.Observer
@@ -32,8 +33,15 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
      *
      * @return
      */
+    @Deprecated(message = "Use query() instead.",
+            replaceWith = ReplaceWith("query"),
+            level = DeprecationLevel.ERROR)
     open fun where(): Condition {
         return WhereBuilder.create().toCondition()
+    }
+
+    protected open fun query(): Condition {
+        return QueryBuilder.create().toCondition()
     }
 
     /**
@@ -68,7 +76,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                                     liveData.postValue(it)
                                 }
                             } else if (type === DataSource.CacheType.DATABASE) {
-                                val model = cacheHolder.queryCache(where())
+                                val model = cacheHolder.queryCache(query())
                                 model?.let {
                                     onInterceptData(DataSource.Type.CACHE, it)
                                     liveData.postValue(it)
@@ -95,7 +103,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                                     }
                                     onInterceptData(DataSource.Type.NETWORK, it)
                                     MemoryCache.updateCacheAtMemory(cacheName, it as Any)
-                                    cacheHolder.removeOldCache(where())
+                                    cacheHolder.removeOldCache(query())
                                     cacheHolder.addNewCache(it)
                                     liveData.postValue(it)
                                 }
@@ -109,7 +117,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                                 if (isClearDataOnNetworkError) {
                                     clearData()
                                     MemoryCache.removeCacheAtMemory(cacheName)
-                                    cacheHolder.removeOldCache(where())
+                                    cacheHolder.removeOldCache(query())
                                 }
                                 listener?.onFailure(e.toString())
                             }
@@ -133,7 +141,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                             }
                             onInterceptData(DataSource.Type.NETWORK, it)
                             MemoryCache.updateCacheAtMemory(cacheName, it as Any)
-                            cacheHolder.removeOldCache(where())
+                            cacheHolder.removeOldCache(query())
                             cacheHolder.addNewCache(it)
                             liveData.postValue(it)
                         }
@@ -147,7 +155,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                         if (isClearDataOnNetworkError) {
                             clearData()
                             MemoryCache.removeCacheAtMemory(cacheName)
-                            cacheHolder.removeOldCache(where())
+                            cacheHolder.removeOldCache(query())
                         }
                         listener?.onFailure(msg)
                     }
@@ -174,7 +182,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                                     liveData.postValue(it)
                                 }
                             } else if (type === DataSource.CacheType.DATABASE) {
-                                val models = listCacheHolder.queryCache(where())
+                                val models = listCacheHolder.queryCache(query())
                                 models?.let {
                                     onInterceptData(DataSource.Type.CACHE, it)
                                     liveData.postValue(it)
@@ -203,7 +211,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                                     }
                                     onInterceptData(DataSource.Type.NETWORK, it)
                                     MemoryCache.updateCacheAtMemory(cacheName, it)
-                                    listCacheHolder.removeOldCache(where())
+                                    listCacheHolder.removeOldCache(query())
                                     listCacheHolder.addNewCache(it)
                                     liveData.postValue(it)
                                 }
@@ -215,7 +223,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                                     Log.d(TAG, e.toString())
                                 }
                                 if (isClearDataOnNetworkError) {
-                                    listCacheHolder.removeOldCache(where())
+                                    listCacheHolder.removeOldCache(query())
                                     clearListData()
                                     MemoryCache.removeCacheAtMemory(cacheName)
                                 }
@@ -242,7 +250,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                             }
                             onInterceptData(DataSource.Type.NETWORK, it)
                             MemoryCache.updateCacheAtMemory(cacheName, it)
-                            listCacheHolder.removeOldCache(where())
+                            listCacheHolder.removeOldCache(query())
                             listCacheHolder.addNewCache(it)
                             liveData.postValue(it)
                         }
@@ -254,7 +262,7 @@ abstract class BaseMemoryCacheRepository<M>(context: Context) : BaseRepository<M
                             Log.d(TAG, msg)
                         }
                         if (isClearDataOnNetworkError) {
-                            listCacheHolder.removeOldCache(where())
+                            listCacheHolder.removeOldCache(query())
                             clearListData()
                             MemoryCache.removeCacheAtMemory(cacheName)
                         }

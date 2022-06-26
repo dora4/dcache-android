@@ -265,7 +265,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
         val primaryKey: PrimaryKeyEntity = bean.primaryKey
         val name: String = primaryKey.name
         val value: String = primaryKey.value
-        return deleteInternal(WhereBuilder.create(Condition("$name=?", arrayOf(value), "", "", "", "")), database)
+        return deleteInternal(WhereBuilder.create(Condition("$name=?", arrayOf(value))), database)
     }
 
     override fun deleteAll(): Boolean {

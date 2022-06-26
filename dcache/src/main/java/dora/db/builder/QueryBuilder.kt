@@ -76,10 +76,8 @@ class QueryBuilder private constructor() {
     }
 
     fun toCondition(): Condition {
-        if (whereBuilder.selectionArgs == null) {
-            whereBuilder.selectionArgs = arrayOf<String?>("")
-        }
-        return Condition(whereBuilder.selection, whereBuilder.selectionArgs!!, limit, order, group)
+        return Condition(whereBuilder.selection, whereBuilder.selectionArgs ?: arrayOf(),
+                limit, order, group, having)
     }
 
     companion object {

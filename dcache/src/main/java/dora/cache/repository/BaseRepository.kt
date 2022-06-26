@@ -49,6 +49,12 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
     protected var isListMode = true
         protected set
 
+    /**
+     * 追加模式，仅当isListMode为true时有效，将新数据和内存的数据一起进行缓存。
+     */
+    protected var isAppendMode = false
+        protected set
+
     protected var isLogPrint = false
         protected set
 

@@ -9,6 +9,7 @@ import dora.cache.data.fetcher.IListDataFetcher
 import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
+import dora.cache.holder.ListCacheHolder
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import dora.db.builder.WhereBuilder
@@ -236,6 +237,12 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                                     onInterceptData(DataSource.Type.NETWORK, it)
                                     if (!disallowForceUpdate()) {
                                         if (checkValuesNotNull()) {
+                                            if (isAppendMode) {
+                                                // 移除之前所有的条件的数据
+                                                for (condition in (listCacheHolder as ListCacheHolder).cacheConditions) {
+                                                    listCacheHolder.removeOldCache(condition)
+                                                }
+                                            }
                                             listCacheHolder.removeOldCache(query())
                                         }
                                     } else {
@@ -247,7 +254,18 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                                             listDataMap.put(mapKey(), it)
                                         }
                                     }
-                                    listCacheHolder.addNewCache(it)
+                                    // 追加缓存的模式
+                                    if (isAppendMode) {
+                                        val temp = arrayListOf<M>()
+                                        liveData.value?.let { v ->
+                                            temp.addAll(v)
+                                        }
+                                        temp.addAll(it)
+                                        listCacheHolder.addNewCache(temp)
+                                        (listCacheHolder as ListCacheHolder).cacheConditions.add(query())
+                                    } else {
+                                        listCacheHolder.addNewCache(it)
+                                    }
                                     if (disallowForceUpdate()) {
                                         liveData.postValue(listDataMap[mapKey()])
                                     } else {
@@ -291,6 +309,12 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                             onInterceptData(DataSource.Type.NETWORK, it)
                             if (!disallowForceUpdate()) {
                                 if (checkValuesNotNull()) {
+                                    if (isAppendMode) {
+                                        // 移除之前所有的条件的数据
+                                        for (condition in (listCacheHolder as ListCacheHolder).cacheConditions) {
+                                            listCacheHolder.removeOldCache(condition)
+                                        }
+                                    }
                                     listCacheHolder.removeOldCache(query())
                                 }
                             } else {
@@ -302,7 +326,18 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                                     listDataMap.put(mapKey(), it)
                                 }
                             }
-                            listCacheHolder.addNewCache(it)
+                            // 追加缓存的模式
+                            if (isAppendMode) {
+                                val temp = arrayListOf<M>()
+                                liveData.value?.let { v ->
+                                    temp.addAll(v)
+                                }
+                                temp.addAll(it)
+                                listCacheHolder.addNewCache(temp)
+                                (listCacheHolder as ListCacheHolder).cacheConditions.add(query())
+                            } else {
+                                listCacheHolder.addNewCache(it)
+                            }
                             if (disallowForceUpdate()) {
                                 liveData.postValue(listDataMap[mapKey()])
                             } else {

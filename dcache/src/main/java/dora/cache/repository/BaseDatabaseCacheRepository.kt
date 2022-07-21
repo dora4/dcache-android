@@ -3,13 +3,13 @@ package dora.cache.repository
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import dora.cache.data.fetcher.DataFetcher
 import dora.cache.data.fetcher.IDataFetcher
 import dora.cache.data.fetcher.IListDataFetcher
 import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
-import dora.cache.holder.ListCacheHolder
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import dora.db.builder.WhereBuilder
@@ -19,8 +19,8 @@ import dora.rx.RxTransformer
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
+import java.lang.IllegalArgumentException
 
-@RepositoryType(BaseRepository.CacheStrategy.DATABASE_CACHE)
 abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
     constructor(context: Context) : BaseRepository<M>(context) {
 
@@ -28,14 +28,14 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
     protected val listDataMap = HashMap<String, MutableList<M>>()
 
     /**
-     * 如果返回true，则放弃强制覆盖原有数据的模式，而采用map映射。
+     * 如果返回true，则放弃强制覆盖原有数据的模式，而采用map映射，注意这种方式在程序退出后会丢失map缓存的数据。
      */
     protected open fun disallowForceUpdate() : Boolean {
         return false
     }
 
     /**
-     * 只要mapKey的值不冲突即可追加缓存，读取的时候则通过mapKey取不同条件（如接口的参数不同，请求的时间不同等）
+     * 只要mapKey的值不冲突即可追加缓存，读取的时候则通过mapKey取不同条件（如接口的参数不同，请求的时间戳不同等）
      * 接口返回的数据的缓存。
      */
     protected open fun mapKey() : String {
@@ -60,28 +60,17 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
         return QueryBuilder.create().toCondition()
     }
 
-    /**
-     * 保证成员属性不为空，而成功调用where方法。
-     *
-     * @see BaseDatabaseCacheRepository.where
-     */
-    protected open fun checkValuesNotNull() : Boolean { return true }
-
-    /**
-     * 手动放入缓存数据，仅listMode为true时使用。
-     */
-    fun addData(data: M) {
-        addData(arrayListOf(data))
-    }
-
-    /**
-     * 手动放入一堆缓存数据，仅listMode为true时使用。
-     */
-    fun addData(data: MutableList<M>) {
-        getListLiveData().value?.let {
-            it.addAll(data)
-            listCacheHolder.addNewCache(data)
-        }
+    override fun selectData(ds: DataSource): Boolean {
+        val isLoaded = ds.loadFromCache(DataSource.CacheType.DATABASE)
+        return if (isNetworkAvailable) {
+            try {
+                ds.loadFromNetwork()
+                true
+            } catch (e: Exception) {
+                Log.e(TAG, e.toString())
+                isLoaded
+            }
+        } else isLoaded
     }
 
     override fun createDataFetcher(): DataFetcher<M> {
@@ -90,60 +79,14 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
-                            if (checkValuesNotNull()) {
-                                val model = cacheHolder.queryCache(query())
-                                model?.let {
-                                    onInterceptData(DataSource.Type.CACHE, it)
-                                    liveData.postValue(it)
-                                    return true
-                                }
-                            }
+                            return onLoadFromCache(liveData)
                         }
                         liveData.postValue(null)
                         return false
                     }
 
                     override fun loadFromNetwork() {
-                        RxTransformer.doApi(onLoadFromNetworkObservable(), object : Observer<M> {
-                            override fun onSubscribe(d: Disposable?) {
-                            }
-
-                            override fun onNext(model: M) {
-                                model?.let {
-                                    if (isLogPrint) {
-                                        Log.d(TAG, it.toString())
-                                    }
-                                    onInterceptData(DataSource.Type.NETWORK, it)
-                                    if (!disallowForceUpdate()) {
-                                        if (checkValuesNotNull()) {
-                                            cacheHolder.removeOldCache(query())
-                                        }
-                                    } else {
-                                        if (dataMap.containsKey(mapKey())) {
-                                            if (checkValuesNotNull()) {
-                                                cacheHolder.removeOldCache(query())
-                                            }
-                                        } else {
-                                            dataMap.put(mapKey(), it)
-                                        }
-                                    }
-                                    cacheHolder.addNewCache(it)
-                                    if (disallowForceUpdate()) {
-                                        liveData.postValue(dataMap[mapKey()])
-                                    } else {
-                                        liveData.postValue(it)
-                                    }
-                                }
-                                listener?.onSuccess()
-                            }
-
-                            override fun onError(e: Throwable?) {
-                            }
-
-                            override fun onComplete() {
-                            }
-
-                        })
+                        rxOnLoadFromNetwork(listener, liveData)
                         onLoadFromNetwork(callback(listener))
                     }
                 })
@@ -153,45 +96,11 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
             override fun callback(listener: IDataFetcher.OnLoadListener?): DoraCallback<M> {
                 return object : DoraCallback<M>() {
                     override fun onSuccess(model: M) {
-                        model?.let {
-                            if (isLogPrint) {
-                                Log.d(TAG, it.toString())
-                            }
-                            onInterceptData(DataSource.Type.NETWORK, it)
-                            if (!disallowForceUpdate()) {
-                                if (checkValuesNotNull()) {
-                                    cacheHolder.removeOldCache(query())
-                                }
-                            } else {
-                                if (dataMap.containsKey(mapKey())) {
-                                    if (checkValuesNotNull()) {
-                                        cacheHolder.removeOldCache(query())
-                                    }
-                                } else {
-                                    dataMap.put(mapKey(), it)
-                                }
-                            }
-                            cacheHolder.addNewCache(it)
-                            if (disallowForceUpdate()) {
-                                liveData.postValue(dataMap[mapKey()])
-                            } else {
-                                liveData.postValue(it)
-                            }
-                        }
-                        listener?.onSuccess()
+                        parseModel(model, listener, liveData)
                     }
 
                     override fun onFailure(msg: String) {
-                        if (isLogPrint) {
-                            Log.d(TAG, msg)
-                        }
-                        if (isClearDataOnNetworkError) {
-                            if (checkValuesNotNull()) {
-                                clearData()
-                                cacheHolder.removeOldCache(query())
-                            }
-                        }
-                        listener?.onFailure(msg)
+                        onParseModelFailure(msg, listener)
                     }
                 }
             }
@@ -209,88 +118,14 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
-                            if (checkValuesNotNull()) {
-                                val models = listCacheHolder.queryCache(query())
-                                models?.let {
-                                    onInterceptData(DataSource.Type.CACHE, it)
-                                    liveData.postValue(it)
-                                    return true
-                                }
-                            }
+                            return onLoadFromCacheList(liveData)
                         }
                         liveData.postValue(arrayListOf())
                         return false
                     }
 
                     override fun loadFromNetwork() {
-                        RxTransformer.doApi(onLoadFromNetworkObservableList(), object : Observer<MutableList<M>> {
-                            override fun onSubscribe(d: Disposable?) {
-                            }
-
-                            override fun onNext(models: MutableList<M>?) {
-                                models?.let {
-                                    if (isLogPrint) {
-                                        for (model in it) {
-                                            Log.d(TAG, model.toString())
-                                        }
-                                    }
-                                    onInterceptData(DataSource.Type.NETWORK, it)
-                                    if (!disallowForceUpdate()) {
-                                        if (checkValuesNotNull()) {
-                                            if (isAppendMode) {
-                                                // 移除之前所有的条件的数据
-                                                for (condition in (listCacheHolder as ListCacheHolder).cacheConditions) {
-                                                    listCacheHolder.removeOldCache(condition)
-                                                }
-                                            }
-                                            listCacheHolder.removeOldCache(query())
-                                        }
-                                    } else {
-                                        if (listDataMap.containsKey(mapKey())) {
-                                            if (checkValuesNotNull()) {
-                                                listCacheHolder.removeOldCache(query())
-                                            }
-                                        } else {
-                                            listDataMap.put(mapKey(), it)
-                                        }
-                                    }
-                                    // 追加缓存的模式
-                                    if (isAppendMode) {
-                                        val temp = arrayListOf<M>()
-                                        liveData.value?.let { v ->
-                                            temp.addAll(v)
-                                        }
-                                        temp.addAll(it)
-                                        listCacheHolder.addNewCache(temp)
-                                        (listCacheHolder as ListCacheHolder).cacheConditions.add(query())
-                                    } else {
-                                        listCacheHolder.addNewCache(it)
-                                    }
-                                    if (disallowForceUpdate()) {
-                                        liveData.postValue(listDataMap[mapKey()])
-                                    } else {
-                                        liveData.postValue(it)
-                                    }
-                                }
-                                listener?.onSuccess()
-                            }
-
-                            override fun onError(e: Throwable?) {
-                                if (isLogPrint) {
-                                    Log.d(TAG, e.toString())
-                                }
-                                if (isClearDataOnNetworkError) {
-                                    if (checkValuesNotNull()) {
-                                        clearListData()
-                                        listCacheHolder.removeOldCache(query())
-                                    }
-                                }
-                                listener?.onFailure(e.toString())
-                            }
-
-                            override fun onComplete() {
-                            }
-                        })
+                        rxOnLoadFromNetwork(listener, liveData)
                         onLoadFromNetwork(listCallback(listener))
                     }
                 })
@@ -300,64 +135,11 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
             override fun listCallback(listener: IListDataFetcher.OnLoadListener?): DoraListCallback<M> {
                 return object : DoraListCallback<M>() {
                     override fun onSuccess(models: MutableList<M>) {
-                        models?.let {
-                            if (isLogPrint) {
-                                for (model in it) {
-                                    Log.d(TAG, model.toString())
-                                }
-                            }
-                            onInterceptData(DataSource.Type.NETWORK, it)
-                            if (!disallowForceUpdate()) {
-                                if (checkValuesNotNull()) {
-                                    if (isAppendMode) {
-                                        // 移除之前所有的条件的数据
-                                        for (condition in (listCacheHolder as ListCacheHolder).cacheConditions) {
-                                            listCacheHolder.removeOldCache(condition)
-                                        }
-                                    }
-                                    listCacheHolder.removeOldCache(query())
-                                }
-                            } else {
-                                if (listDataMap.containsKey(mapKey())) {
-                                    if (checkValuesNotNull()) {
-                                        listCacheHolder.removeOldCache(query())
-                                    }
-                                } else {
-                                    listDataMap.put(mapKey(), it)
-                                }
-                            }
-                            // 追加缓存的模式
-                            if (isAppendMode) {
-                                val temp = arrayListOf<M>()
-                                liveData.value?.let { v ->
-                                    temp.addAll(v)
-                                }
-                                temp.addAll(it)
-                                listCacheHolder.addNewCache(temp)
-                                (listCacheHolder as ListCacheHolder).cacheConditions.add(query())
-                            } else {
-                                listCacheHolder.addNewCache(it)
-                            }
-                            if (disallowForceUpdate()) {
-                                liveData.postValue(listDataMap[mapKey()])
-                            } else {
-                                liveData.postValue(it)
-                            }
-                        }
-                        listener?.onSuccess()
+                        parseModels(models, listener, liveData)
                     }
 
                     override fun onFailure(msg: String) {
-                        if (isLogPrint) {
-                            Log.d(TAG, msg)
-                        }
-                        if (isClearDataOnNetworkError) {
-                            if (checkValuesNotNull()) {
-                                clearListData()
-                                listCacheHolder.removeOldCache(query())
-                            }
-                        }
-                        listener?.onFailure(msg)
+                        onParseModelsFailure(msg, listener)
                     }
                 }
             }
@@ -370,6 +152,30 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                 liveData.postValue(arrayListOf())
             }
         }
+    }
+
+    private fun onLoadFromCache(liveData: MutableLiveData<M?>) : Boolean {
+        if (checkValuesNotNull()) {
+            val model = cacheHolder.queryCache(query())
+            model?.let {
+                onInterceptData(DataSource.Type.CACHE, it)
+                liveData.postValue(it)
+                return true
+            }
+        } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        return false
+    }
+
+    private fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<M>>) : Boolean {
+        if (checkValuesNotNull()) {
+            val models = listCacheHolder.queryCache(query())
+            models?.let {
+                onInterceptData(DataSource.Type.CACHE, it)
+                liveData.postValue(it)
+                return true
+            }
+        } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        return false
     }
 
     /**
@@ -397,4 +203,133 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
     override fun onLoadFromNetworkObservableList() : Observable<MutableList<M>> {
         return Observable.empty()
     }
- }
+
+    @JvmOverloads
+    private fun rxOnLoadFromNetwork(listener: IDataFetcher.OnLoadListener?, liveData: MutableLiveData<M?>) {
+        RxTransformer.doApi(onLoadFromNetworkObservable(), object : Observer<M> {
+            override fun onSubscribe(d: Disposable?) {
+            }
+
+            override fun onNext(model: M) {
+                parseModel(model, listener, liveData)
+            }
+
+            override fun onError(e: Throwable?) {
+                onParseModelFailure(e.toString(), listener)
+            }
+
+            override fun onComplete() {
+            }
+        })
+    }
+
+    @JvmOverloads
+    private fun rxOnLoadFromNetwork(listener: IListDataFetcher.OnLoadListener?, liveData: MutableLiveData<MutableList<M>>) {
+        RxTransformer.doApi(onLoadFromNetworkObservableList(), object : Observer<MutableList<M>> {
+            override fun onSubscribe(d: Disposable?) {
+            }
+
+            override fun onNext(models: MutableList<M>?) {
+                parseModels(models, listener, liveData)
+            }
+
+            override fun onError(e: Throwable?) {
+                onParseModelsFailure(e.toString(), listener)
+            }
+
+            override fun onComplete() {
+            }
+        })
+    }
+
+    @JvmOverloads
+    protected open fun parseModel(model: M, listener: IDataFetcher.OnLoadListener?, liveData: MutableLiveData<M?>) {
+        model?.let {
+            if (isLogPrint) {
+                Log.d(TAG, it.toString())
+            }
+            onInterceptData(DataSource.Type.NETWORK, it)
+            if (!disallowForceUpdate()) {
+                if (checkValuesNotNull()) {
+                    cacheHolder.removeOldCache(query())
+                } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            } else {
+                if (dataMap.containsKey(mapKey())) {
+                    if (checkValuesNotNull()) {
+                        cacheHolder.removeOldCache(query())
+                    } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+                } else {
+                    dataMap[mapKey()] = it
+                }
+            }
+            cacheHolder.addNewCache(it)
+            if (disallowForceUpdate()) {
+                liveData.postValue(dataMap[mapKey()])
+            } else {
+                liveData.postValue(it)
+            }
+        }
+        listener?.onSuccess()
+    }
+
+    @JvmOverloads
+    protected open fun parseModels(models: MutableList<M>?, listener: IListDataFetcher.OnLoadListener?,
+                            liveData: MutableLiveData<MutableList<M>>) {
+        models?.let {
+            if (isLogPrint) {
+                for (model in it) {
+                    Log.d(TAG, model.toString())
+                }
+            }
+            onInterceptData(DataSource.Type.NETWORK, it)
+            if (!disallowForceUpdate()) {
+                if (checkValuesNotNull()) {
+                    listCacheHolder.removeOldCache(query())
+                } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            } else {
+                if (listDataMap.containsKey(mapKey())) {
+                    if (checkValuesNotNull()) {
+                        listCacheHolder.removeOldCache(query())
+                    } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+                } else {
+                    listDataMap[mapKey()] = it
+                }
+            }
+            listCacheHolder.addNewCache(it)
+            if (disallowForceUpdate()) {
+                liveData.postValue(listDataMap[mapKey()])
+            } else {
+                liveData.postValue(it)
+            }
+        }
+        listener?.onSuccess()
+    }
+
+    @JvmOverloads
+    private fun onParseModelFailure(msg: String, listener: IDataFetcher.OnLoadListener?) {
+        if (isLogPrint) {
+            Log.d(TAG, msg)
+        }
+        if (isClearDataOnNetworkError) {
+            if (checkValuesNotNull()) {
+                clearData()
+                cacheHolder.removeOldCache(query())
+            } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        }
+        listener?.onFailure(msg)
+    }
+
+    @JvmOverloads
+    private fun onParseModelsFailure(msg: String, listener: IListDataFetcher.OnLoadListener?) {
+        if (isLogPrint) {
+            Log.d(TAG, msg)
+        }
+        if (isClearDataOnNetworkError) {
+            if (checkValuesNotNull()) {
+                clearListData()
+                listCacheHolder.removeOldCache(query())
+            } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        }
+        listener?.onFailure(msg)
+    }
+}

@@ -14,8 +14,6 @@ annotation class Repository(
          */
         val isListMode: Boolean = true,
 
-        val isAppendMode: Boolean = false,
-
         /**
          * 是否打印调试日志。
          */

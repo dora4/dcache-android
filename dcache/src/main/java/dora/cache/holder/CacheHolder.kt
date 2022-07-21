@@ -2,6 +2,9 @@ package dora.cache.holder
 
 import dora.db.builder.Condition
 
+/**
+ * 控制缓存和加载数据的流程。
+ */
 interface CacheHolder<M> {
 
     /**

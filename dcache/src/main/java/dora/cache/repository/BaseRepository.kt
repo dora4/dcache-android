@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.util.Log
-import androidx.annotation.IntDef
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import dora.cache.data.fetcher.IDataFetcher
@@ -14,7 +13,6 @@ import dora.cache.holder.CacheHolder
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import io.reactivex.Observable
-import java.lang.RuntimeException
 import java.lang.reflect.ParameterizedType
 
 /**
@@ -23,11 +21,6 @@ import java.lang.reflect.ParameterizedType
  * 非集合数据，请配置[Repository]注解将[.isListMode]的值设置为false。
  */
 abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetcher<M>, IListDataFetcher<M> {
-
-    /**
-     * 缓存策略。
-     */
-    protected var cacheStrategy = CacheStrategy.NO_CACHE
 
     /**
      * 非集合数据获取接口。
@@ -49,17 +42,11 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
     protected var isListMode = true
         protected set
 
-    /**
-     * 追加模式，仅当isListMode为true时有效，将新数据和内存的数据一起进行缓存。
-     */
-    protected var isAppendMode = false
-        protected set
-
     protected var isLogPrint = false
         protected set
 
     /**
-     * 是否在网络加载数据失败的时候清空数据，不建议为true。
+     * 是否在网络加载数据失败的时候清空数据。
      *
      * @return
      */
@@ -74,6 +61,37 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
 
     protected abstract fun createListCacheHolder(clazz: Class<M>): CacheHolder<MutableList<M>>
 
+    /**
+     * 手动放入缓存数据，仅listMode为true时使用，注意只会追加到缓存里面去，请调用接口将新数据也更新到服务端，以致
+     * 于下次请求api接口时也会有这部分数据。
+     */
+    fun addData(data: M) {
+        if (isListMode) {
+            addData(arrayListOf(data))
+        }
+    }
+
+    /**
+     * 手动放入一堆缓存数据，仅listMode为true时使用，注意只会追加到缓存里面去，请调用接口将新数据也更新到服务端，
+     * 以致于下次请求api接口时也会有这部分数据。
+     */
+    fun addData(data: MutableList<M>) {
+        if (isListMode) {
+            getListLiveData().value?.let {
+                it.addAll(data)
+                listCacheHolder.addNewCache(data)
+            }
+        }
+    }
+
+    /**
+     * 保证成员属性不为空，而成功调用where方法。
+     *
+     * @see BaseDatabaseCacheRepository.where
+     */
+    protected open fun checkValuesNotNull() : Boolean { return true }
+
+    @JvmOverloads
     override fun callback(listener: IDataFetcher.OnLoadListener?): DoraCallback<M> {
         return object : DoraCallback<M>() {
             override fun onSuccess(model: M) {
@@ -94,6 +112,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
         }
     }
 
+    @JvmOverloads
     override fun listCallback(listener: IListDataFetcher.OnLoadListener?): DoraListCallback<M> {
         return object : DoraListCallback<M>() {
             override fun onSuccess(models: MutableList<M>) {
@@ -140,89 +159,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
      * @param ds 数据的来源
      * @return 数据是否获取成功
      */
-    protected fun selectData(ds: DataSource): Boolean {
-        if (cacheStrategy == CacheStrategy.NO_CACHE) {
-            if (isNetworkAvailable) {
-                return try {
-                    ds.loadFromNetwork()
-                    true
-                } catch (e: Exception) {
-                    Log.e(TAG, e.toString())
-                    false
-                }
-            }
-        } else if (cacheStrategy == CacheStrategy.DATABASE_CACHE) {
-            val isLoaded = ds.loadFromCache(DataSource.CacheType.DATABASE)
-            return if (isNetworkAvailable) {
-                try {
-                    ds.loadFromNetwork()
-                    true
-                } catch (e: Exception) {
-                    Log.e(TAG, e.toString())
-                    isLoaded
-                }
-            } else isLoaded
-        } else if (cacheStrategy == CacheStrategy.MEMORY_CACHE) {
-            val isLoaded = ds.loadFromCache(DataSource.CacheType.MEMORY)
-            if (!isLoaded) {
-                ds.loadFromCache(DataSource.CacheType.DATABASE)
-            }
-            return if (isNetworkAvailable) {
-                try {
-                    ds.loadFromNetwork()
-                    true
-                } catch (e: Exception) {
-                    Log.e(TAG, e.toString())
-                    isLoaded
-                }
-            } else isLoaded
-        } else if (cacheStrategy == CacheStrategy.DATABASE_CACHE_NO_NETWORK) {
-            var isLoaded = false
-            if (!isNetworkAvailable) {
-                isLoaded = ds.loadFromCache(DataSource.CacheType.DATABASE)
-            }
-            return if (isNetworkAvailable) {
-                try {
-                    ds.loadFromNetwork()
-                    true
-                } catch (e: Exception) {
-                    Log.e(TAG, e.toString())
-                    isLoaded
-                }
-            } else isLoaded
-        }
-        return false
-    }
-
-    @Target(AnnotationTarget.FIELD)
-    @Retention(AnnotationRetention.SOURCE)
-    @IntDef(CacheStrategy.NO_CACHE, CacheStrategy.DATABASE_CACHE,
-            CacheStrategy.MEMORY_CACHE, CacheStrategy.DATABASE_CACHE_NO_NETWORK)
-    annotation class Strategy
-
-    interface CacheStrategy {
-        companion object {
-            /**
-             * 默认策略，不启用缓存。
-             */
-            const val NO_CACHE = 0
-
-            /**
-             * 数据库缓存，通常用于断网的情况，在打开界面前从数据库读取离线数据。
-             */
-            const val DATABASE_CACHE = 1
-
-            /**
-             * 内存缓存，通常用于需要在app冷启动的时候将数据库的数据先加载到内存，以后打开界面直接从内存中去拿数据。
-             */
-            const val MEMORY_CACHE = 2
-
-            /**
-             * 和[.DATABASE_CACHE]的不同之处在于，只有在没网的情况下才会加载数据库的缓存数据。
-             */
-            const val DATABASE_CACHE_NO_NETWORK = 3
-        }
-    }
+    protected abstract fun selectData(ds: DataSource): Boolean
 
     /**
      * 数据的来源。
@@ -242,7 +179,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
         }
 
         enum class CacheType {
-            DATABASE, MEMORY
+            DATABASE, CUSTOM
         }
 
         /**
@@ -316,21 +253,14 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
     }
 
     companion object {
-        internal const val TAG = "dcache"
+        const val TAG = "dcache"
     }
 
     init {
-        val repositoryType = javaClass.superclass.getAnnotation(RepositoryType::class.java)
-        if (repositoryType != null) {
-            cacheStrategy = repositoryType.cacheStrategy
-        } else {
-            throw RuntimeException("RepositoryType is not defined")
-        }
         val repository = javaClass.getAnnotation(Repository::class.java)
-        if (repository != null) {
-            isListMode = repository.isListMode
-            isLogPrint = repository.isLogPrint
-        }
+                ?: throw RuntimeException("@Repository is required.")
+        isListMode = repository.isListMode
+        isLogPrint = repository.isLogPrint
         val MClass: Class<M> = getGenericType(this) as Class<M>
         Log.d(TAG, "MClass:$MClass,isListMode:$isListMode")
         if (isListMode) {

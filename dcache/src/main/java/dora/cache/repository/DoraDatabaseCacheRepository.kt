@@ -6,7 +6,6 @@ import dora.cache.holder.DoraCacheHolder
 import dora.cache.holder.DoraListCacheHolder
 import dora.db.table.OrmTable
 
-@RepositoryType(BaseRepository.CacheStrategy.DATABASE_CACHE)
 abstract class DoraDatabaseCacheRepository<T: OrmTable>(context: Context)
     : BaseDatabaseCacheRepository<T>(context) {
 

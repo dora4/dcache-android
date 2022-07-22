@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import dora.db.Orm
 import dora.db.OrmLog
 import dora.db.table.OrmTable
-import dora.db.table.PrimaryKeyEntity
+import dora.db.table.PrimaryKeyEntry
 import dora.db.table.TableManager
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
@@ -262,7 +262,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     override fun delete(bean: T): Boolean {
-        val primaryKey: PrimaryKeyEntity = bean.primaryKey
+        val primaryKey: PrimaryKeyEntry = bean.primaryKey
         val name: String = primaryKey.name
         val value: String = primaryKey.value
         return deleteInternal(WhereBuilder.create(Condition("$name=?", arrayOf(value))), database)
@@ -287,7 +287,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     override fun update(bean: T): Boolean {
-        val primaryKey: PrimaryKeyEntity = bean.primaryKey
+        val primaryKey: PrimaryKeyEntry = bean.primaryKey
         val name: String = primaryKey.name
         val value: String = primaryKey.value
         return updateInternal(WhereBuilder.create(Condition("$name=?", arrayOf(value))),

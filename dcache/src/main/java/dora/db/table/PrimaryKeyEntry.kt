@@ -1,6 +1,6 @@
 package dora.db.table
 
-open class PrimaryKeyEntity {
+open class PrimaryKeyEntry {
 
     var name: String
         private set

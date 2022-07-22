@@ -80,7 +80,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                         listCacheHolder.removeOldCache(query())
                     } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
                 } else {
-                    listDataMap.put(mapKey(), it)
+                    listDataMap[mapKey()] = it
                 }
             }
             // 追加缓存的模式

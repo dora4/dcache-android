@@ -16,9 +16,9 @@ import io.reactivex.Observable
 import java.lang.reflect.ParameterizedType
 
 /**
- * 数据仓库，扩展它来支持数据的三级缓存，即从云端服务器的数据库、手机本地数据库和手机内存中读取需要的数据，以支持用户
- * 手机在断网情况下也能显示以前的数据。一个[BaseRepository]要么用于非集合数据，要么用于集合数据。如果要用于
- * 非集合数据，请配置[Repository]注解将[.isListMode]的值设置为false。
+ * 数据仓库，缓存和加载流程处理基类。一个[BaseRepository]要么用于非集合数据，要么用于集合数据。如果要用于
+ * 非集合数据，请在实现类配置[Repository]注解将[.isListMode]的值设置为false，默认为集合模式。注意，
+ * 无论是集合模式还是非集合模式，Repository注解都是必须的。
  */
 abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetcher<M>, IListDataFetcher<M> {
 
@@ -32,8 +32,14 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
      */
     protected lateinit var listDataFetcher: IListDataFetcher<M>
 
+    /**
+     * 非集合数据缓存接口。
+     */
     protected lateinit var cacheHolder: CacheHolder<M>
 
+    /**
+     * 集合数据缓存接口。
+     */
     protected lateinit var listCacheHolder: CacheHolder<MutableList<M>>
 
     /**
@@ -85,9 +91,10 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
     }
 
     /**
-     * 保证成员属性不为空，而成功调用where方法。
+     * 保证成员属性不为空，而成功调用数据库查询方法，提高查询可靠性。比如用来校验属性，a != null && b != null
+     * && c != null。
      *
-     * @see BaseDatabaseCacheRepository.where
+     * @see BaseDatabaseCacheRepository.query
      */
     protected open fun checkValuesNotNull() : Boolean { return true }
 
@@ -136,25 +143,31 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
     }
 
     /**
-     * 非集合数据的API接口调用。
+     * 非集合数据的API接口调用，Retrofit接口的方法返回retrofit.Call类型使用。
      *
      * @param callback
      */
     protected abstract fun onLoadFromNetwork(callback: DoraCallback<M>)
 
     /**
-     * 集合数据的API接口调用。
+     * 集合数据的API接口调用，Retrofit接口的方法返回retrofit.Call类型使用。
      *
      * @param callback
      */
     protected abstract fun onLoadFromNetwork(callback: DoraListCallback<M>)
 
+    /**
+     * 非集合数据的API接口调用，Retrofit接口的方法返回io.reactivex.Observable类型使用。
+     */
     protected abstract fun onLoadFromNetworkObservable() : Observable<M>
 
+    /**
+     * 集合数据的API接口调用，Retrofit接口的方法返回io.reactivex.Observable类型使用。
+     */
     protected abstract fun onLoadFromNetworkObservableList() : Observable<MutableList<M>>
 
     /**
-     * 从三级缓存仓库选择数据。
+     * 从仓库选择数据，处理数据来源的优先级。
      *
      * @param ds 数据的来源
      * @return 数据是否获取成功
@@ -167,6 +180,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
     interface DataSource {
 
         enum class Type {
+
             /**
              * 数据来源于网络服务器。
              */
@@ -179,7 +193,16 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
         }
 
         enum class CacheType {
-            DATABASE, CUSTOM
+
+            /**
+             * 内置SQLite数据库。
+             */
+            DATABASE,
+
+            /**
+             * 自定义的数据仓库。
+             */
+            CUSTOM
         }
 
         /**
@@ -196,45 +219,68 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
         fun loadFromNetwork()
     }
 
+    /**
+     * 抓取非集合数据，返回给livedata，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过[.getLiveData()]
+     * 拿到。
+     */
     @JvmOverloads
     override fun fetchData(listener: IDataFetcher.OnLoadListener?): LiveData<M?> {
         return dataFetcher.fetchData(listener)
     }
 
+    /**
+     * 抓取集合数据，返回给livedata，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过[.getListLiveData()]
+     * 拿到。
+     */
     @JvmOverloads
     override fun fetchListData(listener: IListDataFetcher.OnLoadListener?): LiveData<MutableList<M>> {
         return listDataFetcher.fetchListData(listener)
     }
 
+    /**
+     * @see IDataFetcher
+     */
     override fun clearData() {
         dataFetcher.clearData()
     }
 
+    /**
+     * @see IListDataFetcher
+     */
     override fun clearListData() {
         listDataFetcher.clearListData()
     }
 
+    /**
+     * @see fetchData
+     */
     override fun getLiveData(): LiveData<M?> {
         return dataFetcher.getLiveData()
     }
 
+    /**
+     * @see fetchListData
+     */
     override fun getListLiveData(): LiveData<MutableList<M>> {
         return listDataFetcher.getListLiveData()
     }
 
+    /**
+     * @see IListDataFetcher
+     */
     override fun obtainPager(): IDataPager<M> {
         return listDataFetcher.obtainPager()
     }
 
     /**
-     * 检测网络是否可用。
+     * 检测网络是否可用，非是否打开网络开关，而是是否能够收发数据包。
      *
      * @return
      */
     protected val isNetworkAvailable: Boolean
         protected get() = checkNetwork(context)
 
-    protected fun checkNetwork(context: Context): Boolean {
+    private fun checkNetwork(context: Context): Boolean {
         val networkInfo = getActiveNetworkInfo(context)
         return networkInfo != null && networkInfo.isConnected
     }
@@ -263,6 +309,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
         isLogPrint = repository.isLogPrint
         val MClass: Class<M> = getGenericType(this) as Class<M>
         Log.d(TAG, "MClass:$MClass,isListMode:$isListMode")
+        // 二选一实现CacheHolder和DataFetcher并使用
         if (isListMode) {
             listCacheHolder = createListCacheHolder(MClass)
             listCacheHolder.init()
@@ -274,7 +321,13 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
         }
     }
 
+    /**
+     * 拦截网络请求和缓存加载出来的数据，并做一些修改，非集合模式使用。
+     */
     protected open fun onInterceptData(type: DataSource.Type, model: M) {}
 
+    /**
+     * 拦截网络请求和缓存加载出来的数据，并做一些修改，集合模式使用。
+     */
     protected open fun onInterceptData(type: DataSource.Type, models: MutableList<M>) {}
 }

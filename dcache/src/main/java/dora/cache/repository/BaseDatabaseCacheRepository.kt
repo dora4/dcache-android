@@ -21,6 +21,9 @@ import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import java.lang.IllegalArgumentException
 
+/**
+ * 使用内置SQLite数据库进行缓存的仓库。
+ */
 abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
     constructor(context: Context) : BaseRepository<M>(context) {
 
@@ -306,7 +309,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
     }
 
     @JvmOverloads
-    private fun onParseModelFailure(msg: String, listener: IDataFetcher.OnLoadListener?) {
+    protected open fun onParseModelFailure(msg: String, listener: IDataFetcher.OnLoadListener?) {
         if (isLogPrint) {
             Log.d(TAG, msg)
         }
@@ -320,7 +323,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
     }
 
     @JvmOverloads
-    private fun onParseModelsFailure(msg: String, listener: IListDataFetcher.OnLoadListener?) {
+    protected open fun onParseModelsFailure(msg: String, listener: IListDataFetcher.OnLoadListener?) {
         if (isLogPrint) {
             Log.d(TAG, msg)
         }

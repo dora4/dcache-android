@@ -2,6 +2,10 @@ package dora.http
 
 import android.app.Activity
 import androidx.fragment.app.Fragment
+import dora.rx.RxTransformer
+import io.reactivex.Observable
+import io.reactivex.Observer
+import io.reactivex.disposables.Disposable
 import retrofit2.Call
 import kotlin.coroutines.resume
 import kotlin.coroutines.startCoroutine
@@ -41,6 +45,29 @@ object DoraHttp {
         })
     }
 
+
+    /**
+     * 请求失败抛异常。
+     */
+    suspend fun <T> rxApi(apiMethod: ()-> Observable<T>) = suspendCoroutine<T> {
+        val data = apiMethod()
+        RxTransformer.doApi(data, object : Observer<T> {
+            override fun onSubscribe(d: Disposable?) {
+            }
+
+            override fun onNext(t: T) {
+                it.resume(t)
+            }
+
+            override fun onError(e: Throwable?) {
+                it.resumeWith(Result.failure(DoraHttpException(e.toString())))
+            }
+
+            override fun onComplete() {
+            }
+        })
+    }
+
     /**
      * 请求失败返回空。
      */
@@ -54,6 +81,29 @@ object DoraHttp {
             override fun onFailure(msg: String) {
                 it.resumeWith(Result.success(null))
             }
+        })
+    }
+
+    /**
+     * 请求失败返回空。
+     */
+    suspend fun <T> rxResult(apiMethod: ()-> Observable<T>) = suspendCoroutine<T?> {
+        val data = apiMethod()
+        RxTransformer.doApi(data, object : Observer<T> {
+            override fun onSubscribe(d: Disposable?) {
+            }
+
+            override fun onNext(t: T) {
+                it.resume(t)
+            }
+
+            override fun onError(e: Throwable?) {
+                it.resumeWith(Result.success(null))
+            }
+
+            override fun onComplete() {
+            }
+
         })
     }
 

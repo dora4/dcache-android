@@ -282,6 +282,16 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
         return db.delete(tableName, builder.selection, builder.selectionArgs) > 0
     }
 
+    override fun insertOrUpdate(bean: T): Boolean {
+        val primaryKey = bean.primaryKey
+        val result = selectOne(WhereBuilder.create().addWhereEqualTo(primaryKey.name, primaryKey.value))
+        return if (result != null) {
+            update(bean)
+        } else {
+            insert(bean)
+        }
+    }
+
     override fun update(builder: WhereBuilder, newBean: T): Boolean {
         return updateInternal(builder, newBean, database)
     }
@@ -398,16 +408,24 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     override fun selectCount(builder: WhereBuilder): Long {
-        return selectCount(QueryBuilder.create().where(builder))
+        return count(builder)
     }
 
     override fun selectCount(builder: QueryBuilder): Long {
+        return count(builder)
+    }
+
+    override fun count(builder: WhereBuilder): Long {
+        return count(QueryBuilder.create().where(builder))
+    }
+
+    override fun count(builder: QueryBuilder): Long {
         var count: Long = 0
         try {
             val tableName: String = TableManager.getTableName(beanClass)
             val sql: String = builder.build()
             val cursor = database.rawQuery("SELECT COUNT(*) FROM $tableName$sql",
-                    builder.getWhereBuilder().selectionArgs)
+                builder.getWhereBuilder().selectionArgs)
             if (cursor != null) {
                 cursor.moveToFirst()
                 count = cursor.getLong(0)
@@ -420,7 +438,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     private fun getResult(cursor: Cursor): List<T> {
-        val result: MutableList<T> = ArrayList()
+        val result: MutableList<T> = arrayListOf()
         while (cursor.moveToNext()) {
             try {
                 val bean = createResult(cursor)

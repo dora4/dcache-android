@@ -16,26 +16,15 @@ interface IDataFetcher<M> {
     /**
      * 抓取数据的回调。
      */
-    fun callback(listener: OnLoadListener? = null): DoraCallback<M>
+    fun callback(): DoraCallback<M>
 
     /**
      * 开始抓取数据。
      */
-    fun fetchData(listener: OnLoadListener? = object : OnLoadListener {
-        override fun onSuccess() {
-        }
-
-        override fun onFailure(msg: String) {
-        }
-    }): LiveData<M?>
+    fun fetchData(description: String? = ""): LiveData<M?>
 
     /**
      * 获取livedata。
      */
     fun getLiveData(): LiveData<M?>
-
-    interface OnLoadListener {
-        fun onSuccess()
-        fun onFailure(msg: String)
-    }
 }

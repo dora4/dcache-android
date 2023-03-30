@@ -5,8 +5,6 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import dora.cache.data.fetcher.DataFetcher
-import dora.cache.data.fetcher.IDataFetcher
-import dora.cache.data.fetcher.IListDataFetcher
 import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
@@ -78,7 +76,9 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
 
     override fun createDataFetcher(): DataFetcher<M> {
         return object : DataFetcher<M>() {
-            override fun fetchData(listener: IDataFetcher.OnLoadListener?): LiveData<M?> {
+
+
+            override fun fetchData(description: String?): LiveData<M?> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
@@ -89,21 +89,21 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                     }
 
                     override fun loadFromNetwork() {
-                        rxOnLoadFromNetwork(listener, liveData)
-                        onLoadFromNetwork(callback(listener))
+                        rxOnLoadFromNetwork(liveData)
+                        onLoadFromNetwork(callback())
                     }
                 })
                 return liveData
             }
 
-            override fun callback(listener: IDataFetcher.OnLoadListener?): DoraCallback<M> {
+            override fun callback(): DoraCallback<M> {
                 return object : DoraCallback<M>() {
                     override fun onSuccess(model: M) {
-                        parseModel(model, listener, liveData)
+                        parseModel(model, liveData)
                     }
 
                     override fun onFailure(msg: String) {
-                        onParseModelFailure(msg, listener)
+                        onParseModelFailure(msg)
                     }
                 }
             }
@@ -117,7 +117,7 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
     override fun createListDataFetcher(): ListDataFetcher<M> {
         return object : ListDataFetcher<M>() {
 
-            override fun fetchListData(listener: IListDataFetcher.OnLoadListener?): LiveData<MutableList<M>> {
+            override fun fetchListData(description: String?): LiveData<MutableList<M>> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
@@ -128,21 +128,21 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                     }
 
                     override fun loadFromNetwork() {
-                        rxOnLoadFromNetwork(listener, liveData)
-                        onLoadFromNetwork(listCallback(listener))
+                        rxOnLoadFromNetworkForList(liveData)
+                        onLoadFromNetwork(listCallback())
                     }
                 })
                 return liveData
             }
 
-            override fun listCallback(listener: IListDataFetcher.OnLoadListener?): DoraListCallback<M> {
+            override fun listCallback(): DoraListCallback<M> {
                 return object : DoraListCallback<M>() {
                     override fun onSuccess(models: MutableList<M>) {
-                        parseModels(models, listener, liveData)
+                        parseModels(models, liveData)
                     }
 
                     override fun onFailure(msg: String) {
-                        onParseModelsFailure(msg, listener)
+                        onParseModelsFailure(msg)
                     }
                 }
             }
@@ -207,18 +207,17 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
         return Observable.empty()
     }
 
-    @JvmOverloads
-    private fun rxOnLoadFromNetwork(listener: IDataFetcher.OnLoadListener?, liveData: MutableLiveData<M?>) {
+    private fun rxOnLoadFromNetwork(liveData: MutableLiveData<M?>) {
         RxTransformer.doApi(onLoadFromNetworkObservable(), object : Observer<M> {
             override fun onSubscribe(d: Disposable?) {
             }
 
             override fun onNext(model: M) {
-                parseModel(model, listener, liveData)
+                parseModel(model, liveData)
             }
 
             override fun onError(e: Throwable?) {
-                onParseModelFailure(e.toString(), listener)
+                onParseModelFailure(e.toString())
             }
 
             override fun onComplete() {
@@ -226,18 +225,17 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
         })
     }
 
-    @JvmOverloads
-    private fun rxOnLoadFromNetwork(listener: IListDataFetcher.OnLoadListener?, liveData: MutableLiveData<MutableList<M>>) {
+    private fun rxOnLoadFromNetworkForList(liveData: MutableLiveData<MutableList<M>>) {
         RxTransformer.doApi(onLoadFromNetworkObservableList(), object : Observer<MutableList<M>> {
             override fun onSubscribe(d: Disposable?) {
             }
 
             override fun onNext(models: MutableList<M>?) {
-                parseModels(models, listener, liveData)
+                parseModels(models, liveData)
             }
 
             override fun onError(e: Throwable?) {
-                onParseModelsFailure(e.toString(), listener)
+                onParseModelsFailure(e.toString())
             }
 
             override fun onComplete() {
@@ -245,11 +243,10 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
         })
     }
 
-    @JvmOverloads
-    protected open fun parseModel(model: M, listener: IDataFetcher.OnLoadListener?, liveData: MutableLiveData<M?>) {
+    protected open fun parseModel(model: M, liveData: MutableLiveData<M?>) {
         model?.let {
             if (isLogPrint) {
-                Log.d(TAG, it.toString())
+                Log.d(TAG, "【$description】$it")
             }
             onInterceptData(DataSource.Type.NETWORK, it)
             if (!disallowForceUpdate()) {
@@ -272,16 +269,14 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                 liveData.postValue(it)
             }
         }
-        listener?.onSuccess()
     }
 
-    @JvmOverloads
-    protected open fun parseModels(models: MutableList<M>?, listener: IListDataFetcher.OnLoadListener?,
+    protected open fun parseModels(models: MutableList<M>?,
                             liveData: MutableLiveData<MutableList<M>>) {
         models?.let {
             if (isLogPrint) {
                 for (model in it) {
-                    Log.d(TAG, model.toString())
+                    Log.d(TAG, "【$description】${model.toString()}")
                 }
             }
             onInterceptData(DataSource.Type.NETWORK, it)
@@ -305,13 +300,11 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                 liveData.postValue(it)
             }
         }
-        listener?.onSuccess()
     }
 
-    @JvmOverloads
-    protected open fun onParseModelFailure(msg: String, listener: IDataFetcher.OnLoadListener?) {
+    protected open fun onParseModelFailure(msg: String) {
         if (isLogPrint) {
-            Log.d(TAG, msg)
+            Log.d(TAG, "【${description}】$msg")
         }
         if (isClearDataOnNetworkError) {
             if (checkValuesNotNull()) {
@@ -319,13 +312,11 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                 cacheHolder.removeOldCache(query())
             } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
         }
-        listener?.onFailure(msg)
     }
 
-    @JvmOverloads
-    protected open fun onParseModelsFailure(msg: String, listener: IListDataFetcher.OnLoadListener?) {
+    protected open fun onParseModelsFailure(msg: String) {
         if (isLogPrint) {
-            Log.d(TAG, msg)
+            Log.d(TAG, "【${description}】$msg")
         }
         if (isClearDataOnNetworkError) {
             if (checkValuesNotNull()) {
@@ -333,6 +324,5 @@ abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
                 listCacheHolder.removeOldCache(query())
             } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
         }
-        listener?.onFailure(msg)
     }
 }

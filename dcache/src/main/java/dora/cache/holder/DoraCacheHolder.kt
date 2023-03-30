@@ -31,6 +31,6 @@ class DoraCacheHolder<M, T : OrmTable>(var clazz: Class<out OrmTable>) : CacheHo
     }
 
     override fun queryCacheSize(condition: Condition): Long {
-        return dao.selectCount(WhereBuilder.create(condition))
+        return dao.count(WhereBuilder.create(condition))
     }
 }

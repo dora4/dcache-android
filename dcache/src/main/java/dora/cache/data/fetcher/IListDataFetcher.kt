@@ -17,17 +17,12 @@ interface IListDataFetcher<M> {
     /**
      * 抓取数据的回调。
      */
-    fun listCallback(listener: OnLoadListener? = null): DoraListCallback<M>
+    fun listCallback(): DoraListCallback<M>
 
     /**
      * 开始抓取数据。
      */
-    fun fetchListData(listener: OnLoadListener? = object : OnLoadListener {
-        override fun onSuccess() {
-        }
-        override fun onFailure(msg: String) {
-        }
-    }): LiveData<MutableList<M>>
+    fun fetchListData(description: String? = ""): LiveData<MutableList<M>>
 
     /**
      * 获取livedata。
@@ -38,9 +33,4 @@ interface IListDataFetcher<M> {
      * 获取livedata的分页器。
      */
     fun obtainPager(): IDataPager<M>
-
-    interface OnLoadListener {
-        fun onSuccess()
-        fun onFailure(msg: String)
-    }
 }

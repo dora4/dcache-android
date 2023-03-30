@@ -1,13 +1,10 @@
 package dora.cache.repository
 
-import java.lang.annotation.Retention
-import java.lang.annotation.RetentionPolicy
-
 /**
  * 每一个具体的Repository类必须配置这个注解，来标记是否为List类型的数据。
  */
 @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS)
-@Retention(RetentionPolicy.RUNTIME)
+@kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
 annotation class Repository(
 
         /**

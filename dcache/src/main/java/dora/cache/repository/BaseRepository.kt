@@ -51,6 +51,8 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
     protected var isLogPrint = false
         protected set
 
+    protected var description: String? = ""
+
     /**
      * 是否在网络加载数据失败的时候清空数据。
      *
@@ -98,46 +100,40 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
      */
     protected open fun checkValuesNotNull() : Boolean { return true }
 
-    @JvmOverloads
-    override fun callback(listener: IDataFetcher.OnLoadListener?): DoraCallback<M> {
+    override fun callback(): DoraCallback<M> {
         return object : DoraCallback<M>() {
             override fun onSuccess(model: M) {
                 if (isLogPrint) {
                     model.let {
-                        Log.d(TAG, it.toString())
+                        Log.d(TAG, "【$description】${model.toString()}")
                     }
                 }
-                listener?.onSuccess()
             }
 
             override fun onFailure(msg: String) {
                 if (isLogPrint) {
-                    Log.d(TAG, msg)
+                    Log.d(TAG, "【$description】$msg")
                 }
-                listener?.onFailure(msg)
             }
         }
     }
 
-    @JvmOverloads
-    override fun listCallback(listener: IListDataFetcher.OnLoadListener?): DoraListCallback<M> {
+    override fun listCallback(): DoraListCallback<M> {
         return object : DoraListCallback<M>() {
             override fun onSuccess(models: MutableList<M>) {
                 if (isLogPrint) {
                     models.let {
                         for (model in it) {
-                            Log.d(TAG, model.toString())
+                            Log.d(TAG, "【$description】${model.toString()}")
                         }
                     }
                 }
-                listener?.onSuccess()
             }
 
             override fun onFailure(msg: String) {
                 if (isLogPrint) {
-                    Log.d(TAG, msg)
+                    Log.d(TAG, "【$description】$msg")
                 }
-                listener?.onFailure(msg)
             }
         }
     }
@@ -223,18 +219,18 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
      * 抓取非集合数据，返回给livedata，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过[.getLiveData()]
      * 拿到。
      */
-    @JvmOverloads
-    override fun fetchData(listener: IDataFetcher.OnLoadListener?): LiveData<M?> {
-        return dataFetcher.fetchData(listener)
+    override fun fetchData(description: String?): LiveData<M?> {
+        this.description = description
+        return dataFetcher.fetchData(this.description)
     }
 
     /**
      * 抓取集合数据，返回给livedata，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过[.getListLiveData()]
      * 拿到。
      */
-    @JvmOverloads
-    override fun fetchListData(listener: IListDataFetcher.OnLoadListener?): LiveData<MutableList<M>> {
-        return listDataFetcher.fetchListData(listener)
+    override fun fetchListData(description: String?): LiveData<MutableList<M>> {
+        this.description = description
+        return listDataFetcher.fetchListData(this.description)
     }
 
     /**

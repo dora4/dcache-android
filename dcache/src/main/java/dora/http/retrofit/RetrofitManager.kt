@@ -1,7 +1,6 @@
 package dora.http.retrofit
 
 import okhttp3.OkHttpClient
-import retrofit2.CallAdapter
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
@@ -28,12 +27,14 @@ object RetrofitManager {
             retrofit = retrofitMap[clazz]
             return retrofit!!.create(clazz)
         } else {
-            retrofit = Retrofit.Builder()
+            val builder = Retrofit.Builder()
                     .baseUrl(Objects.requireNonNull(urlMap[clazz]))
                     .addConverterFactory(GsonConverterFactory.create())
-                    .addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
                     .client(getConfig().getClient())
-                    .build()
+            if (config.isUseRxJava()) {
+                builder.addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
+            }
+            retrofit = builder.build()
             retrofitMap[clazz] = retrofit
         }
         return retrofit.create(clazz)
@@ -43,6 +44,12 @@ object RetrofitManager {
     class Config {
 
         private var client = OkHttpClient()
+
+        /**
+         * 低版本可能需要启用rxjava。
+         */
+        private var useRxJava: Boolean = false
+
         val builder = OkHttpClient.Builder()
 
         fun setClient(client: OkHttpClient) : Config {
@@ -50,8 +57,17 @@ object RetrofitManager {
             return this
         }
 
+        fun rxJava(useRxJava: Boolean) : Config {
+            this.useRxJava = useRxJava
+            return this
+        }
+
         fun getClient() : OkHttpClient {
             return client
+        }
+
+        fun isUseRxJava() : Boolean {
+            return useRxJava
         }
 
         fun okhttp(block: OkHttpClient.Builder.() -> OkHttpClient) {

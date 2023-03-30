@@ -3,7 +3,6 @@ package dora.cache.repository
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
-import dora.cache.data.fetcher.IListDataFetcher
 import dora.cache.holder.ListCacheHolder
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
@@ -57,12 +56,12 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
         } else isLoaded
     }
 
-    override fun parseModels(models: MutableList<T>?, listener: IListDataFetcher.OnLoadListener?,
+    override fun parseModels(models: MutableList<T>?,
                                    liveData: MutableLiveData<MutableList<T>>) {
         models?.let {
             if (isLogPrint) {
                 for (model in it) {
-                    Log.d(TAG, model.toString())
+                    Log.d(TAG, "【$description】${model.toString()}")
                 }
             }
             onInterceptData(DataSource.Type.NETWORK, it)
@@ -98,6 +97,5 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                 liveData.postValue(it)
             }
         }
-        listener?.onSuccess()
     }
 }

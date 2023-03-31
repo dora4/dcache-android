@@ -1,6 +1,20 @@
 # dcache-android![Release](https://jitpack.io/v/dora4/dcache-android.svg)
 
-简介：一个使用在Android平台的数据缓存框架，支持将model数据从后端接口下载后，简单的配置即可自动映射到数据库，并在断网的情况下可以离线读取。
+简介：dcache是一个开源的Android离线数据缓存框架，旨在提供一种简单而高效的方式来缓存网络请求的结果和其他数据，以便在手机没有网络的时候使用历史缓存数据。它可以用于缓存各种类型的数据，包括字符串、JSON、图片、音频和视频等。以下是dcache的主要特点：
+
+简单易用：dcache提供了简单易用的API，使得缓存数据变得非常容易。您只需几行代码即可将数据缓存到本地，而不需要处理复杂的缓存逻辑。
+
+可配置性强：dcache提供了丰富的配置选项，您可以根据自己的需求来调整缓存所使用的orm框架、缓存路径等参数。同时，您也可以自定义缓存策略，从而满足不同的业务需求。
+
+支持扩展：dcache可以轻松地与其他库和框架集成，例如OkHttp、Retrofit等。如果您需要更高级的功能，例如缓存加密和压缩等，您也可以轻松地扩展dcache以满足自己的需求。
+
+总之，dcache是一个简单易用、可配置性强、支持扩展的Android离线数据缓存框架，非常适合用于各种Android应用程序中。
+
+
+
+
+
+
 
 
 
@@ -27,25 +41,16 @@ api "com.github.dora4:dcache-android:$latest_version"
 #### 代码混淆配置
 
 ```
--keep class dora.cache.repository.** {
-    *;
-}
 -keep class dora.db.dao.** {
     *;
 }
--keep class dora.db.converter.** {
-    *;
-}
--dontwarn dora.cache.repository.**
 -dontwarn dora.db.dao.**
--dontwarn dora.db.converter.**
 ```
 
 捐赠虚拟货币支持开源项目
 
 | 币种           | 钱包地址                                   | 备注                                                        |
 | -------------- | ------------------------------------------ | ----------------------------------------------------------- |
-| 柚子(EOS)      | doramusic123                               | TAG中直接填写你的github用户名                               |
 | USDT(TRC-20链) | TYVXzqctSSPSTeVPYg7i7qbEtSxwrAJQ5y         | 发送你的钱包地址和github用户名至邮箱dora924666990@gmail.com |
 | 以太坊(ETH)    | 0x5dA12D7DB7B5D6C8D2Af78723F6dCE4A3C89caB9 | 发送你的钱包地址和github用户名至邮箱dora924666990@gmail.com |
 

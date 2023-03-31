@@ -51,6 +51,6 @@ api "com.github.dora4:dcache-android:$latest_version"
 
 | 币种           | 钱包地址                                   | 备注                                                        |
 | -------------- | ------------------------------------------ | ----------------------------------------------------------- |
-| USDT(TRC-20链) | TYVXzqctSSPSTeVPYg7i7qbEtSxwrAJQ5y         | 发送你的钱包地址和github用户名至邮箱dora924666990@gmail.com |
-| 以太坊(ETH)    | 0x5dA12D7DB7B5D6C8D2Af78723F6dCE4A3C89caB9 | 发送你的钱包地址和github用户名至邮箱dora924666990@gmail.com |
+| USDT(TRC-20链) | TYVXzqctSSPSTeVPYg7i7qbEtSxwrAJQ5y         | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币 |
+| ETH(ERC-20链)    | 0x5dA12D7DB7B5D6C8D2Af78723F6dCE4A3C89caB9 | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币 |
 

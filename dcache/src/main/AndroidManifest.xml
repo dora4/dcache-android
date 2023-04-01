@@ -1,8 +1,12 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="dcache">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- 使用在检测当前是否有可用的网络 -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- 使用在RetrofitManager发起api调用 -->
     <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- 使用在数据库orm框架 -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 </manifest>

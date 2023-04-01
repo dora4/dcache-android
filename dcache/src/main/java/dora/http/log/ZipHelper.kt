@@ -1,6 +1,5 @@
 package dora.http.log
 
-import android.os.Build
 import java.io.*
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
@@ -83,15 +82,10 @@ class ZipHelper private constructor() {
         fun compressForZlib(stringToCompress: String): ByteArray? {
             var returnValues: ByteArray? = null
             try {
-                returnValues = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                returnValues =
                     compressForZlib(
                             stringToCompress.toByteArray(StandardCharsets.UTF_8)
                     )
-                } else {
-                    compressForZlib(
-                            stringToCompress.toByteArray(charset("UTF-8"))
-                    )
-                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -104,11 +98,7 @@ class ZipHelper private constructor() {
             try {
                 os = ByteArrayOutputStream(string.length)
                 gos = GZIPOutputStream(os)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    gos.write(string.toByteArray(StandardCharsets.UTF_8))
-                } else {
-                    gos.write(string.toByteArray(charset("UTF-8")))
-                }
+                gos.write(string.toByteArray(StandardCharsets.UTF_8))
                 return os.toByteArray()
             } catch (e: IOException) {
                 e.printStackTrace()
@@ -143,7 +133,7 @@ class ZipHelper private constructor() {
             return null
         }
 
-        fun closeQuietly(closeable: Closeable?) {
+        private fun closeQuietly(closeable: Closeable?) {
             if (closeable != null) {
                 try {
                     closeable.close()

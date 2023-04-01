@@ -8,6 +8,7 @@ import okhttp3.MediaType
 import okhttp3.Request
 
 class DefaultFormatPrinter : FormatPrinter {
+
     /**
      * 打印网络请求信息，当网络请求时 {[okhttp3.RequestBody]} 可以解析的情况。
      *
@@ -90,7 +91,7 @@ class DefaultFormatPrinter : FormatPrinter {
     companion object {
         private const val TAG = "DoraHttpLog"
         private val LINE_SEPARATOR = System.getProperty("line.separator")
-        private val DOUBLE_SEPARATOR = LINE_SEPARATOR + LINE_SEPARATOR
+        private val DOUBLE_SEPARATOR = LINE_SEPARATOR?.plus(LINE_SEPARATOR)
         private val OMITTED_RESPONSE = arrayOf(LINE_SEPARATOR, "Omitted response body")
         private val OMITTED_REQUEST = arrayOf(LINE_SEPARATOR, "Omitted request body")
         private const val N = "\n"

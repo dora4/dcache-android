@@ -1,7 +1,9 @@
 package dora.http.log
 
 class UrlEncoderUtils private constructor() {
+
     companion object {
+
         /**
          * 判断 str 是否已经 URLEncoder.encode() 过
          * 经常遇到这样的情况, 拿到一个 URL，但是搞不清楚到底要不要 URLEncoder.encode()
@@ -12,7 +14,7 @@ class UrlEncoderUtils private constructor() {
          */
         fun hasUrlEncoded(str: String): Boolean {
             var encode = false
-            for (i in 0 until str.length) {
+            for (i in str.indices) {
                 val c = str[i]
                 if (c == '%' && i + 2 < str.length) {
                     // 判断是否符合urlEncode规范
@@ -36,7 +38,7 @@ class UrlEncoderUtils private constructor() {
          * @return 返回 `true` 为 16 进制的字符
          */
         private fun isValidHexChar(c: Char): Boolean {
-            return '0' <= c && c <= '9' || 'a' <= c && c <= 'f' || 'A' <= c && c <= 'F'
+            return c in '0'..'9' || c in 'a'..'f' || c in 'A'..'F'
         }
     }
 

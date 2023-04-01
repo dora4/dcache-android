@@ -12,10 +12,10 @@ import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import dora.db.builder.WhereBuilder
 import dora.db.constraint.AssignType
+import dora.db.constraint.Id
 import dora.db.constraint.PrimaryKey
 import dora.db.table.Column
 import dora.db.table.Convert
-import dora.db.table.Id
 import dora.db.table.Ignore
 import dora.db.converter.PropertyConverter
 import java.lang.reflect.*
@@ -98,8 +98,8 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
             if (primaryKey != null && primaryKey.value === AssignType.AUTO_INCREMENT) {
                 continue
             }
-            var columnName: String = column?.value ?: TableManager.generateColumnName(field.name)
-            var fieldType: Class<*> = convert?.columnType?.java ?: field.type
+            val columnName: String = column?.value ?: TableManager.generateColumnName(field.name)
+            val fieldType: Class<*> = convert?.columnType?.java ?: field.type
             if (isAssignableFromCharSequence(fieldType)) {
                 if (convert != null) {
                     val value = field[bean]
@@ -110,7 +110,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
                         values.put(columnName, propertyConverter.convertToDatabaseValue(it))
                     }
                 } else {
-                    values.put(columnName, field[bean]?.let { it.toString() } ?: "")
+                    values.put(columnName, field[bean]?.toString() ?: "")
                 }
             } else if (isAssignableFromBoolean(fieldType)) {
                 if (convert != null) {
@@ -207,7 +207,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
                         values.put(columnName, propertyConverter.convertToDatabaseValue(it.toString()))
                     }
                 } else {
-                    values.put(columnName, field[bean]?.let { it.toString() } ?: "")
+                    values.put(columnName, field[bean]?.toString() ?: "")
                 }
             }
         }
@@ -215,7 +215,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     private val columnHack: String
-        private get() {
+        get() {
             val sb = StringBuilder()
             val fields = beanClass.declaredFields
             for (field in fields) {
@@ -407,10 +407,16 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
         return count
     }
 
+    @Deprecated("请使用count(builder: WhereBuilder)替代", level = DeprecationLevel.ERROR,
+        replaceWith = ReplaceWith("count(builder)")
+    )
     override fun selectCount(builder: WhereBuilder): Long {
         return count(builder)
     }
 
+    @Deprecated("请使用count(builder: QueryBuilder)替代", level = DeprecationLevel.ERROR,
+        replaceWith = ReplaceWith("count(builder)")
+    )
     override fun selectCount(builder: QueryBuilder): Long {
         return count(builder)
     }

@@ -18,6 +18,7 @@ import javax.xml.transform.stream.StreamResult
 import javax.xml.transform.stream.StreamSource
 
 class CharacterHandler private constructor() {
+
     companion object {
 
         val EMOJI_FILTER: InputFilter = object : InputFilter {
@@ -97,8 +98,7 @@ class CharacterHandler private constructor() {
             if (TextUtils.isEmpty(xml)) {
                 return "Empty/Null xml content"
             }
-            val message: String?
-            message = try {
+            val message: String? = try {
                 val xmlInput: Source = StreamSource(StringReader(xml))
                 val xmlOutput = StreamResult(StringWriter())
                 val transformer = TransformerFactory.newInstance().newTransformer()

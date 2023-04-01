@@ -1,4 +1,4 @@
-package dora.http
+package dora.http.coroutine
 
 import android.app.Activity
 import kotlin.coroutines.AbstractCoroutineContextElement
@@ -9,7 +9,7 @@ class DoraCoroutineContext(private val activity: Activity) : AbstractCoroutineCo
         (ContinuationInterceptor), ContinuationInterceptor {
 
     override fun <T> interceptContinuation(continuation: Continuation<T>): Continuation<T> {
-        return ThreadTransferContinuation(activity, continuation.context.fold(continuation) {
+        return ThreadSwitchContinuation(activity, continuation.context.fold(continuation) {
             continuation, element ->
             if (element != this && element is ContinuationInterceptor) {
                 element.interceptContinuation(continuation)

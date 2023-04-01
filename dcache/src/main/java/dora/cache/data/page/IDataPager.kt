@@ -18,17 +18,17 @@ interface IDataPager<M> {
      */
     var pageSize: Int
 
-    val models: List<M>
+    val models: MutableList<M>
 
     /**
      * 加载过滤后的页面数据。
      */
-    fun loadData(models: List<M>)
+    fun loadData(models: MutableList<M>)
 
     /**
      * 页面数据改变后，会回调它。
      */
-    fun onResult(result: (models: List<M>) -> Unit) : IDataPager<M>
+    fun onResult(result: (models: MutableList<M>) -> Unit) : IDataPager<M>
 
     /**
      * 接收具体访问者的访问，不同的访问者将会以不同的规则呈现页面数据。

@@ -1,4 +1,4 @@
-package dora.http
+package dora.http.exception
 
 import okhttp3.Request
 import java.lang.RuntimeException

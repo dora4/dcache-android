@@ -6,11 +6,15 @@ import dora.db.builder.WhereBuilder
 import dora.db.dao.DaoFactory
 import dora.db.dao.OrmDao
 
+/**
+ * 内置的ListCacheHolder，默认实现。
+ */
 class DoraListCacheHolder<M, T : OrmTable>(var clazz: Class<out OrmTable>) : ListCacheHolder<M>() {
 
     lateinit var dao: OrmDao<T>
 
     override fun init() {
+        // 创建指定类型的OrmDao
         dao = DaoFactory.getDao(clazz) as OrmDao<T>
     }
 

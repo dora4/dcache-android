@@ -11,6 +11,7 @@ import java.nio.charset.Charset
 import java.util.concurrent.TimeUnit
 
 class FormatLogInterceptor : Interceptor {
+
     var mPrinter: FormatPrinter = DefaultFormatPrinter()
     var printLevel = Level.ALL
 
@@ -19,7 +20,7 @@ class FormatLogInterceptor : Interceptor {
         val request = chain.request()
         val logRequest = printLevel == Level.ALL || printLevel != Level.NONE && printLevel == Level.REQUEST
         if (logRequest) {
-            //打印请求信息
+            // 打印请求信息
             if (request.body != null && isParseable(request.body!!.contentType())) {
                 mPrinter.printJsonRequest(request, parseParams(request))
             } else {

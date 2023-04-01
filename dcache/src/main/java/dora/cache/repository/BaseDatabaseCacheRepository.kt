@@ -13,7 +13,7 @@ import dora.db.builder.QueryBuilder
 import dora.db.builder.WhereBuilder
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
-import dora.rx.RxTransformer
+import dora.http.rx.RxTransformer
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
@@ -22,8 +22,8 @@ import java.lang.IllegalArgumentException
 /**
  * 使用内置SQLite数据库进行缓存的仓库。
  */
-abstract class BaseDatabaseCacheRepository<M> @JvmOverloads
-    constructor(context: Context) : BaseRepository<M>(context) {
+abstract class BaseDatabaseCacheRepository<M>
+constructor(context: Context) : BaseRepository<M>(context) {
 
     protected val dataMap = HashMap<String, M>()
     protected val listDataMap = HashMap<String, MutableList<M>>()

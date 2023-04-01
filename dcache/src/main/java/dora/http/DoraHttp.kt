@@ -2,7 +2,10 @@ package dora.http
 
 import android.app.Activity
 import androidx.fragment.app.Fragment
-import dora.rx.RxTransformer
+import dora.http.coroutine.ContextContinuation
+import dora.http.coroutine.DoraCoroutineContext
+import dora.http.exception.DoraHttpException
+import dora.http.rx.RxTransformer
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable

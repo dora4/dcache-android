@@ -1,4 +1,4 @@
-package dora.rx;
+package dora.http.rx;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
@@ -6,6 +6,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
+/**
+ * RxJava转换器。
+ */
 public class RxTransformer {
 
     public static <T> void doApi(Observable<T> observable, Consumer<T> consumer) {

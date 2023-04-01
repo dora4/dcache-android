@@ -1,8 +1,5 @@
 package dora.db.constraint
 
-import java.lang.annotation.Retention
-import java.lang.annotation.RetentionPolicy
-
 @Target(AnnotationTarget.FIELD)
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(AnnotationRetention.RUNTIME)
 annotation class PrimaryKey(val value: AssignType) 

@@ -1,4 +1,4 @@
-package dora.http
+package dora.http.coroutine
 
 import kotlin.Result
 import kotlin.coroutines.Continuation

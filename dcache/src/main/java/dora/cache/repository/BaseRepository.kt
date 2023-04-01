@@ -20,7 +20,7 @@ import java.lang.reflect.ParameterizedType
  * 非集合数据，请在实现类配置[Repository]注解将[.isListMode]的值设置为false，默认为集合模式。注意，
  * 无论是集合模式还是非集合模式，Repository注解都是必须的。
  */
-abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetcher<M>, IListDataFetcher<M> {
+abstract class BaseRepository<M>(protected val context: Context) : ViewModel(), IDataFetcher<M>, IListDataFetcher<M> {
 
     /**
      * 非集合数据获取接口。
@@ -221,7 +221,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
      */
     override fun fetchData(description: String?): LiveData<M?> {
         this.description = description
-        return dataFetcher.fetchData(this.description)
+        return dataFetcher.fetchData(description)
     }
 
     /**
@@ -230,7 +230,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
      */
     override fun fetchListData(description: String?): LiveData<MutableList<M>> {
         this.description = description
-        return listDataFetcher.fetchListData(this.description)
+        return listDataFetcher.fetchListData(description)
     }
 
     /**
@@ -287,7 +287,7 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
         return connectivityManager.activeNetworkInfo
     }
 
-    private fun getGenericType(obj: Any): Class<*>? {
+    private fun getGenericType(obj: Any): Class<*> {
         return if (obj.javaClass.genericSuperclass is ParameterizedType &&
                 (obj.javaClass.genericSuperclass as ParameterizedType).actualTypeArguments.isNotEmpty()) {
             (obj.javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<*>

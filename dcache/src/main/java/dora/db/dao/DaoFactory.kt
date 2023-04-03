@@ -20,7 +20,7 @@ object DaoFactory {
     fun <T : OrmTable> getDao(beanClass: Class<T>): OrmDao<T> {
         synchronized(LOCK) {
             return if (DAO_MAP.containsKey(beanClass)) {
-                DAO_MAP.get(beanClass) as OrmDao<T>
+                DAO_MAP[beanClass] as OrmDao<T>
             } else {
                 val dao = OrmDao<T>(beanClass)
                 DAO_MAP[beanClass] = dao

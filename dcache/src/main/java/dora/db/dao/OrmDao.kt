@@ -5,22 +5,16 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import dora.db.Orm
 import dora.db.OrmLog
-import dora.db.table.OrmTable
-import dora.db.table.PrimaryKeyEntry
-import dora.db.table.TableManager
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import dora.db.builder.WhereBuilder
 import dora.db.constraint.AssignType
 import dora.db.constraint.Id
 import dora.db.constraint.PrimaryKey
-import dora.db.table.Column
-import dora.db.table.Convert
-import dora.db.table.Ignore
 import dora.db.converter.PropertyConverter
+import dora.db.table.*
 import java.lang.reflect.*
 import java.util.*
-import kotlin.jvm.Throws
 
 class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>) : Dao<T> {
 
@@ -282,6 +276,32 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
         return db.delete(tableName, builder.selection, builder.selectionArgs) > 0
     }
 
+    override fun insertOrUpdate(builder: WhereBuilder, newBean: T): Boolean {
+        val result = select(builder);
+        if (result.isEmpty()) {
+            return insert(newBean)
+        } else {
+            val size = result.size
+            var count = 0
+            result.forEach {
+                val clazz: Class<T> = it.javaClass
+                for (field in clazz.declaredFields) {
+                    // 将字段设置为可访问
+                    field.isAccessible = true
+                    // 获取原始对象的字段值
+                    val value = field[it]
+                    // 设置新对象的字段值
+                    field[newBean] = value
+                }
+                val ok = update(newBean)
+                if (ok) {
+                    count++
+                }
+            }
+            return count == size
+        }
+    }
+
     override fun insertOrUpdate(bean: T): Boolean {
         val primaryKey = bean.primaryKey
         val result = selectOne(WhereBuilder.create().addWhereEqualTo(primaryKey.name, primaryKey.value))
@@ -304,6 +324,10 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
                 bean, database)
     }
 
+    @Deprecated(
+        "防止错误调用污染数据，请使用update(builder: WhereBuilder, newBean: T)替代",
+        level = DeprecationLevel.WARNING
+    )
     override fun updateAll(newBean: T): Boolean {
         return updateAllInternal(newBean, database)
     }
@@ -391,20 +415,11 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
         return null
     }
 
+    @Deprecated("请使用count()替代", level = DeprecationLevel.ERROR,
+        replaceWith = ReplaceWith("count()")
+    )
     override fun selectCount(): Long {
-        var count: Long = 0
-        try {
-            val tableName: String = TableManager.getTableName(beanClass)
-            val cursor = database.rawQuery("SELECT COUNT(*) FROM $tableName", null)
-            if (cursor != null) {
-                cursor.moveToFirst()
-                count = cursor.getLong(0)
-                cursor.close()
-            }
-        } catch (e: Exception) {
-            OrmLog.d("select count(*) result is zero")
-        }
-        return count
+        return count()
     }
 
     @Deprecated("请使用count(builder: WhereBuilder)替代", level = DeprecationLevel.ERROR,
@@ -419,6 +434,22 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     )
     override fun selectCount(builder: QueryBuilder): Long {
         return count(builder)
+    }
+
+    override fun count(): Long {
+        var count: Long = 0
+        try {
+            val tableName: String = TableManager.getTableName(beanClass)
+            val cursor = database.rawQuery("SELECT COUNT(*) FROM $tableName", null)
+            if (cursor != null) {
+                cursor.moveToFirst()
+                count = cursor.getLong(0)
+                cursor.close()
+            }
+        } catch (e: Exception) {
+            OrmLog.d("select count(*) result is zero")
+        }
+        return count
     }
 
     override fun count(builder: WhereBuilder): Long {

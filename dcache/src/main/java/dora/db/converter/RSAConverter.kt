@@ -15,11 +15,11 @@ import javax.crypto.Cipher
 
 abstract class RSAConverter : PropertyConverter<String, String> {
 
-    abstract fun getPrimaryKey() : String
+    abstract fun getPrivateKey() : String
     abstract fun getPublicKey() : String
 
     override fun convertToEntityProperty(databaseValue: String?): String? {
-        return decryptByPrivate(getPrimaryKey(), databaseValue)
+        return decryptByPrivate(getPrivateKey(), databaseValue)
     }
 
     override fun convertToDatabaseValue(entityProperty: String?): String? {
@@ -96,7 +96,7 @@ abstract class RSAConverter : PropertyConverter<String, String> {
             val cipher: Cipher = Cipher.getInstance("RSA")
             cipher.init(Cipher.DECRYPT_MODE, publicKey)
             String(rsaSplitCodec(cipher, Cipher.DECRYPT_MODE, Base64.decode(content, Base64.NO_WRAP),
-                    publicKey.getModulus().bitLength())!!, Charset.forName("UTF-8"))
+                    publicKey.modulus.bitLength())!!, Charset.forName("UTF-8"))
         } catch (e: Exception) {
             ""
         }

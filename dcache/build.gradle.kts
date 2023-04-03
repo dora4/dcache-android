@@ -4,19 +4,15 @@ plugins {
 }
 
 android {
-    val compile_sdk = 30
-    val min_sdk = 21
-    val target_sdk = 30
-    val release_version_name = "1.6.0"
     namespace = "dora.dcache"
-    compileSdk = compile_sdk
+    compileSdk = 33
     defaultConfig {
-        minSdk = min_sdk
-        targetSdk = target_sdk
-        version = release_version_name
+        minSdk = 21
+        targetSdk = 33
+        version = "1.6.1"
     }
     buildTypes {
-        getByName("release") {
+        release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
         }

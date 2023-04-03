@@ -32,6 +32,11 @@ interface Dao<T : OrmTable> {
     fun deleteAll(): Boolean
 
     /**
+     * 查询所有满足条件的数据，如果有，则全部更新为newBean，没有，则插入一个newBean。
+     */
+    fun insertOrUpdate(builder: WhereBuilder, newBean: T) : Boolean
+
+    /**
      * 插入或更新数据。如果有，则更新，没有，则插入。
      */
     fun insertOrUpdate(bean: T) : Boolean
@@ -87,9 +92,19 @@ interface Dao<T : OrmTable> {
     fun selectOne(builder: QueryBuilder): T?
 
     /**
+     * 查询数据总数。过时。
+     */
+    @Deprecated(
+        message =
+        "请使用count()替代",
+        level = DeprecationLevel.ERROR
+    )
+    fun selectCount(): Long
+
+    /**
      * 查询数据总数。
      */
-    fun selectCount(): Long
+    fun count(): Long
 
     /**
      * 查询符合条件的数据总数。过时。

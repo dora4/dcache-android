@@ -1,6 +1,17 @@
 plugins {
     id("com.android.library")
     id("kotlin-android")
+    id("maven-publish")
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = "com.github.dora4"
+            artifactId = "dcache-android"
+            version = "1.6.3"
+        }
+    }
 }
 
 android {
@@ -9,7 +20,6 @@ android {
     defaultConfig {
         minSdk = 21
         targetSdk = 33
-        version = "1.6.2"
     }
     buildTypes {
         release {

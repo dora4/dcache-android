@@ -36,35 +36,35 @@
 -dontwarn dora.cache.**
 
 -keep class dora.db.builder.Condition
--keepclassmembers public class dora.db.builder.WhereBuilder {
+-keep public class dora.db.builder.WhereBuilder {
     public *;
 }
--keepclassmembers public class dora.db.builder.QueryBuilder {
+-keep public class dora.db.builder.QueryBuilder {
     public *;
 }
 -keep class dora.db.constraint.AssignType
 -keep class dora.db.converter.** {
     *;
 }
--keepclassmembers public class dora.db.dao.Dao {
+-keep public class dora.db.dao.Dao {
     public *;
 }
--keepclassmembers public class dora.db.dao.OrmDao {
+-keep public class dora.db.dao.OrmDao {
     public *;
 }
--keepclassmembers public class dora.db.dao.DaoFactory {
+-keep public class dora.db.dao.DaoFactory {
     public *;
 }
--keepclassmembers public class dora.db.table.TableManager {
+-keep public class dora.db.table.TableManager {
     public *;
 }
--keepclassmembers public class dora.db.Orm {
+-keep public class dora.db.Orm {
     public *;
 }
--keepclassmembers public class dora.db.OrmConfig {
+-keep public class dora.db.OrmConfig {
     public *;
 }
--keepclassmembers public class dora.db.Transaction {
+-keep public class dora.db.Transaction {
     public *;
 }
 -dontwarn dora.db.**

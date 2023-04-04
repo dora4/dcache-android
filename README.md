@@ -38,10 +38,10 @@ def latest_version = 'x.x.x'
 api "com.github.dora4:dcache-android:$latest_version"
 ```
 
-捐赠虚拟货币支持开源项目
+#### 捐赠虚拟货币支持开源项目
 
 | 币种           | 钱包地址                                   | 备注                                                                                                             |
 | -------------- | ------------------------------------------ |----------------------------------------------------------------------------------------------------------------|
 | USDT(TRC-20链) | TYVXzqctSSPSTeVPYg7i7qbEtSxwrAJQ5y         | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币（推荐，转账快且手续费低）                                                     |
-| ETH(ERC-20链)    | 0x5dA12D7DB7B5D6C8D2Af78723F6dCE4A3C89caB9 | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，如非以太坊L1链，则chainId=1，请在邮箱中说明，比如bsc的chainId=56，polygon的chainId=137 |
+| ETH(ERC-20链)    | 0x5dA12D7DB7B5D6C8D2Af78723F6dCE4A3C89caB9 | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，以太坊L1本链的chainId=1，如为以太坊兼容链，请在邮箱中说明，比如bsc的chainId=56，polygon的chainId=137 |
 

@@ -4,16 +4,6 @@ plugins {
     id("maven-publish")
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            groupId = "com.github.dora4"
-            artifactId = "dcache-android"
-            version = "1.6.3"
-        }
-    }
-}
-
 android {
     namespace = "dora.dcache"
     compileSdk = 33
@@ -49,3 +39,18 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.2")
 }
 
+afterEvaluate {
+    publishing {
+        publications {
+            register("release", MavenPublication::class) {
+
+                // Applies the component for the release build variant.
+                // NOTE : Delete this line code if you publish Native Java / Kotlin Library
+                from(components["release"])
+                groupId = "com.github.dora4"
+                artifactId = "dcache-android"
+                version = "1.6.4"
+            }
+        }
+    }
+}

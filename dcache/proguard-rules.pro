@@ -23,7 +23,62 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
--keep class dora.db.dao.** {
+
+# 保持注解不被混淆
+-keepattributes *Annotation*
+-keep class * extends java.lang.annotation.Annotation {*;}
+# 保持泛型不被混淆
+-keepattributes Signature
+
+-keep class dora.cache.** {
     *;
 }
--dontwarn dora.db.dao.**
+-dontwarn dora.cache.**
+
+-keep class dora.db.builder.Condition
+-keepclassmembers public class dora.db.builder.WhereBuilder {
+    public *;
+}
+-keepclassmembers public class dora.db.builder.QueryBuilder {
+    public *;
+}
+-keep class dora.db.constraint.AssignType
+-keep class dora.db.converter.** {
+    *;
+}
+-keepclassmembers public class dora.db.dao.Dao {
+    public *;
+}
+-keepclassmembers public class dora.db.dao.OrmDao {
+    public *;
+}
+-keepclassmembers public class dora.db.dao.DaoFactory {
+    public *;
+}
+-keepclassmembers public class dora.db.table.TableManager {
+    public *;
+}
+-keepclassmembers public class dora.db.Orm {
+    public *;
+}
+-keepclassmembers public class dora.db.OrmConfig {
+    public *;
+}
+-keepclassmembers public class dora.db.Transaction {
+    public *;
+}
+-dontwarn dora.db.**
+
+-keep public class dora.http.log.FormatLogInterceptor {
+    public *;
+}
+-keep class dora.http.retrofit.** {
+    *;
+}
+-keep class dora.http.DoraCallback {
+    *;
+}
+-keep class dora.http.DoraListCallback {
+    *;
+}
+-dontwarn dora.http.**

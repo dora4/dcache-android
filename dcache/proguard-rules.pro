@@ -36,10 +36,10 @@
 -dontwarn dora.cache.**
 
 -keep class dora.db.builder.Condition
--keep public class dora.db.builder.WhereBuilder {
+-keepclassmembers public class dora.db.builder.WhereBuilder {
     public *;
 }
--keep public class dora.db.builder.QueryBuilder {
+-keepclassmembers public class dora.db.builder.QueryBuilder {
     public *;
 }
 -keep class dora.db.constraint.AssignType
@@ -56,10 +56,13 @@
     public *;
 }
 -keep interface dora.db.table.OrmTable {
+    public *;
 }
--keep class * extends dora.db.table.OrmTable {*;}
--keep class dora.db.table.PrimaryKeyEntry
--keep class dora.db.table.PrimaryKeyId
+-keepattributes interface dora.db.table.OrmTable {
+    public *;
+}
+-keep public class dora.db.table.PrimaryKeyEntry
+-keep public class dora.db.table.PrimaryKeyId
 -keep public class dora.db.table.TableManager {
     public *;
 }

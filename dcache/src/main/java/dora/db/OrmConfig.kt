@@ -8,7 +8,7 @@ class OrmConfig private constructor(builder: Builder) {
     internal val versionCode: Int
     internal val tables: Array<Class<out OrmTable>>?
 
-    inner class Builder {
+    class Builder {
 
         internal lateinit var databaseName: String
         internal var versionCode = 1

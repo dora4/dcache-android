@@ -31,6 +31,8 @@
 -keepattributes Exceptions
 # 保持泛型不被混淆
 -keepattributes Signature
+# 保持内部类不被混淆
+-keepattributes InnerClasses
 
 -keep class dora.cache.** {
     *;
@@ -38,46 +40,38 @@
 -dontwarn dora.cache.**
 
 -keep class dora.db.builder.Condition
--keepnames class dora.db.builder.WhereBuilder
--keepclassmembers public class dora.db.builder.WhereBuilder {
+-keepclasseswithmembers public class dora.db.builder.WhereBuilder {
     public *;
 }
--keepnames class dora.db.builder.QueryBuilder
--keepclassmembers public class dora.db.builder.QueryBuilder {
+-keepclasseswithmembers public class dora.db.builder.QueryBuilder {
     public *;
 }
 -keep class dora.db.constraint.AssignType
 -keep class dora.db.converter.** {
     *;
 }
--keep public class dora.db.dao.Dao {
+-keep interface dora.db.dao.Dao {
     public *;
 }
--keepnames class dora.db.dao.OrmDao
--keepclassmembers public class dora.db.dao.OrmDao {
+-keepclasseswithmembers public class dora.db.dao.OrmDao {
     public *;
 }
--keepnames class dora.db.dao.DaoFactory
--keepclassmembers public class dora.db.dao.DaoFactory {
+-keepclasseswithmembers public class dora.db.dao.DaoFactory {
     public *;
 }
--keep class dora.db.table.OrmTable
+-keep interface dora.db.table.OrmTable
 -keep class dora.db.table.PrimaryKeyEntry
 -keep class dora.db.table.PrimaryKeyId
--keepnames class dora.db.table.TableManager
--keepclassmembers public class dora.db.table.TableManager {
+-keepclasseswithmembers public class dora.db.table.TableManager {
     public *;
 }
--keepnames class dora.db.Orm
--keepclassmembers public class dora.db.Orm {
+-keepclasseswithmembers public class dora.db.Orm {
     public *;
 }
--keepnames class dora.db.OrmConfig
--keepclassmembers public class dora.db.OrmConfig {
+-keepclasseswithmembers public class dora.db.OrmConfig {
     public *;
 }
--keepnames class dora.db.OrmConfig$Builder
--keepclassmembers public class dora.db.OrmConfig$Builder {
+-keepclasseswithmembers public class dora.db.OrmConfig$Builder {
     public *;
 }
 -keep public class dora.db.Transaction {
@@ -97,8 +91,7 @@
 -keep class dora.http.DoraListCallback {
     *;
 }
--keepnames class dora.http.DoraHttp
--keepclassmembers public class dora.http.DoraHttp {
+-keepclasseswithmembers public class dora.http.DoraHttp {
     public *;
 }
 -dontwarn dora.http.**

@@ -55,13 +55,8 @@
 -keep class dora.db.dao.DaoFactory {
     public *;
 }
--keep interface dora.db.table.OrmTable {
+-keep class dora.db.table.** {
     *;
-}
--keep class dora.db.table.PrimaryKeyEntry
--keep class dora.db.table.PrimaryKeyId
--keep class dora.db.table.TableManager {
-    public *;
 }
 -keep class dora.db.Orm {
     public *;

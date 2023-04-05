@@ -256,7 +256,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     override fun delete(bean: T): Boolean {
-        val primaryKey: PrimaryKeyEntry = bean.primaryKey
+        val primaryKey: PrimaryKeyEntry = bean.getPrimaryKey()
         val name: String = primaryKey.name
         val value: String = primaryKey.value
         return deleteInternal(WhereBuilder.create(Condition("$name=?", arrayOf(value))), database)
@@ -307,7 +307,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     private fun insertOrUpdateInternal(bean: T): Boolean {
-        val primaryKey = bean.primaryKey
+        val primaryKey = bean.getPrimaryKey()
         val result = selectOne(WhereBuilder.create().addWhereEqualTo(primaryKey.name, primaryKey.value))
         return if (result != null) {
             update(bean)
@@ -325,7 +325,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     override fun update(bean: T): Boolean {
-        val primaryKey: PrimaryKeyEntry = bean.primaryKey
+        val primaryKey: PrimaryKeyEntry = bean.getPrimaryKey()
         val name: String = primaryKey.name
         val value: String = primaryKey.value
         return updateInternal(WhereBuilder.create(Condition("$name=?", arrayOf(value))),

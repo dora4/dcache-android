@@ -7,13 +7,13 @@ interface OrmTable {
      *
      * @return The primary key value.
      */
-    var primaryKey: PrimaryKeyEntry
+    fun getPrimaryKey(): PrimaryKeyEntry
 
     /**
      * @return If true, it will drop table first and recreate the table when the table is
      * upgraded.Instead,it will expand directly on the previous table.
      */
-    var isUpgradeRecreated: Boolean
+    fun isUpgradeRecreated(): Boolean
 
     companion object {
 

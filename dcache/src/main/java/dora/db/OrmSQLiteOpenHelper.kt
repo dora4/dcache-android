@@ -67,7 +67,7 @@ class OrmSQLiteOpenHelper(context: Context, name: String, version: Int,
                 val table = tables[i]
                 val ormTable: OrmTable? = newOrmTableInstance(tables[i])
                 ormTable?.let {
-                    val isRecreated = it.isUpgradeRecreated
+                    val isRecreated = it.isUpgradeRecreated()
                     if (isRecreated) {
                         Transaction.execute {
                             TableManager.dropTable(table)

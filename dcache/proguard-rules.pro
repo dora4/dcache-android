@@ -36,10 +36,10 @@
 -dontwarn dora.cache.**
 
 -keep class dora.db.builder.Condition
--keepclassmembers public class dora.db.builder.WhereBuilder {
+-keep class dora.db.builder.WhereBuilder {
     public *;
 }
--keepclassmembers public class dora.db.builder.QueryBuilder {
+-keep class dora.db.builder.QueryBuilder {
     public *;
 }
 -keep class dora.db.constraint.AssignType
@@ -49,38 +49,35 @@
 -keep interface dora.db.dao.Dao {
     public *;
 }
--keep public class dora.db.dao.OrmDao {
+-keep class dora.db.dao.OrmDao {
     public *;
 }
--keep public class dora.db.dao.DaoFactory {
+-keep class dora.db.dao.DaoFactory {
     public *;
 }
 -keep interface dora.db.table.OrmTable {
+    *;
+}
+-keep class dora.db.table.PrimaryKeyEntry
+-keep class dora.db.table.PrimaryKeyId
+-keep class dora.db.table.TableManager {
     public *;
 }
--keepattributes interface dora.db.table.OrmTable {
+-keep class dora.db.Orm {
     public *;
 }
--keep public class dora.db.table.PrimaryKeyEntry
--keep public class dora.db.table.PrimaryKeyId
--keep public class dora.db.table.TableManager {
+-keep class dora.db.OrmConfig {
     public *;
 }
--keep public class dora.db.Orm {
+-keep class dora.db.OrmConfig$Builder {
     public *;
 }
--keep public class dora.db.OrmConfig {
-    public *;
-}
--keep public class dora.db.OrmConfig$Builder {
-    public *;
-}
--keep public class dora.db.Transaction {
+-keep class dora.db.Transaction {
     public *;
 }
 -dontwarn dora.db.**
 
--keep public class dora.http.log.FormatLogInterceptor {
+-keep class dora.http.log.FormatLogInterceptor {
     public *;
 }
 -keep class dora.http.retrofit.** {
@@ -92,7 +89,7 @@
 -keep class dora.http.DoraListCallback {
     *;
 }
--keep public class dora.http.DoraHttp {
+-keep class dora.http.DoraHttp {
     public *;
 }
 -dontwarn dora.http.**

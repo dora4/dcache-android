@@ -29,10 +29,6 @@
 -keep class * extends java.lang.annotation.Annotation {*;}
 # 保持异常不被混淆
 -keepattributes Exceptions
-# 保持泛型不被混淆
--keepattributes Signature
-# 保持内部类不被混淆
--keepattributes InnerClasses
 
 -keep class dora.cache.** {
     *;
@@ -40,10 +36,10 @@
 -dontwarn dora.cache.**
 
 -keep class dora.db.builder.Condition
--keepclasseswithmembers public class dora.db.builder.WhereBuilder {
+-keep public class dora.db.builder.WhereBuilder {
     public *;
 }
--keepclasseswithmembers public class dora.db.builder.QueryBuilder {
+-keep public class dora.db.builder.QueryBuilder {
     public *;
 }
 -keep class dora.db.constraint.AssignType
@@ -53,25 +49,27 @@
 -keep interface dora.db.dao.Dao {
     public *;
 }
--keepclasseswithmembers public class dora.db.dao.OrmDao {
+-keep public class dora.db.dao.OrmDao {
     public *;
 }
--keepclasseswithmembers public class dora.db.dao.DaoFactory {
+-keep public class dora.db.dao.DaoFactory {
     public *;
 }
--keep interface dora.db.table.OrmTable
+-keep interface dora.db.table.OrmTable {
+}
+-keep class * extends dora.db.table.OrmTable {*;}
 -keep class dora.db.table.PrimaryKeyEntry
 -keep class dora.db.table.PrimaryKeyId
--keepclasseswithmembers public class dora.db.table.TableManager {
+-keep public class dora.db.table.TableManager {
     public *;
 }
--keepclasseswithmembers public class dora.db.Orm {
+-keep public class dora.db.Orm {
     public *;
 }
--keepclasseswithmembers public class dora.db.OrmConfig {
+-keep public class dora.db.OrmConfig {
     public *;
 }
--keepclasseswithmembers public class dora.db.OrmConfig$Builder {
+-keep public class dora.db.OrmConfig$Builder {
     public *;
 }
 -keep public class dora.db.Transaction {
@@ -91,7 +89,7 @@
 -keep class dora.http.DoraListCallback {
     *;
 }
--keepclasseswithmembers public class dora.http.DoraHttp {
+-keep public class dora.http.DoraHttp {
     public *;
 }
 -dontwarn dora.http.**

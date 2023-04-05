@@ -276,7 +276,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
         return db.delete(tableName, builder.selection, builder.selectionArgs) > 0
     }
 
-    override fun insertOrUpdate(builder: WhereBuilder, newBean: T): Boolean {
+    private fun insertOrUpdateInternal(builder: WhereBuilder, newBean: T): Boolean {
         val result = select(builder);
         if (result.isEmpty()) {
             return insert(newBean)
@@ -302,7 +302,11 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
         }
     }
 
-    override fun insertOrUpdate(bean: T): Boolean {
+    override fun insertOrUpdate(builder: WhereBuilder, newBean: T): Boolean {
+        return insertOrUpdateInternal(builder, newBean)
+    }
+
+    private fun insertOrUpdateInternal(bean: T): Boolean {
         val primaryKey = bean.primaryKey
         val result = selectOne(WhereBuilder.create().addWhereEqualTo(primaryKey.name, primaryKey.value))
         return if (result != null) {
@@ -310,6 +314,10 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
         } else {
             insert(bean)
         }
+    }
+
+    override fun insertOrUpdate(bean: T): Boolean {
+        return insertOrUpdateInternal(bean)
     }
 
     override fun update(builder: WhereBuilder, newBean: T): Boolean {
@@ -345,6 +353,10 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     override fun selectAll(): List<T> {
+        return selectAllInternal()
+    }
+
+    private fun selectAllInternal(): List<T> {
         val tableName: String = TableManager.getTableName(beanClass)
         val cursor = database.query(tableName, null, null, null, null, null, null)
         return getResult(cursor)
@@ -355,6 +367,10 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     override fun select(builder: QueryBuilder): List<T> {
+        return selectInternal(builder)
+    }
+
+    private fun selectInternal(builder: QueryBuilder): List<T> {
         val tableName: String = TableManager.getTableName(beanClass)
         val columns: Array<String>? = builder.columns
         val group: String = builder.getGroup()
@@ -369,9 +385,13 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     override fun selectOne(): T? {
+        return selectOneInternal()
+    }
+
+    private fun selectOneInternal(): T? {
         val tableName: String = TableManager.getTableName(beanClass)
         val cursor = database.query(tableName, null, null, null,
-                null, null, null)
+            null, null, null)
         if (cursor.moveToFirst()) {
             try {
                 return createResult(cursor)
@@ -388,7 +408,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
         return selectOne(QueryBuilder.create().where(builder))
     }
 
-    override fun selectOne(builder: QueryBuilder): T? {
+    private fun selectOneInternal(builder: QueryBuilder): T? {
         val beans: List<T> = select(builder)
         if (beans.isNotEmpty()) {
             return beans[0]
@@ -415,6 +435,10 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
         return null
     }
 
+    override fun selectOne(builder: QueryBuilder): T? {
+        return selectOneInternal(builder)
+    }
+
     @Deprecated("请使用count()替代", level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("count()")
     )
@@ -437,6 +461,10 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     override fun count(): Long {
+        return countInternal()
+    }
+
+    private fun countInternal() : Long {
         var count: Long = 0
         try {
             val tableName: String = TableManager.getTableName(beanClass)
@@ -457,6 +485,10 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     override fun count(builder: QueryBuilder): Long {
+        return countInternal(builder)
+    }
+
+    private fun countInternal(builder: QueryBuilder) : Long {
         var count: Long = 0
         try {
             val tableName: String = TableManager.getTableName(beanClass)

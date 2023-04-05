@@ -2,7 +2,7 @@ package dora.http
 
 import java.util.concurrent.Executors
 
-class DoraTask(private val task:() -> Unit) {
+internal class DoraTask(private val task:() -> Unit) {
 
     private val pool by lazy {
         Executors.newCachedThreadPool()

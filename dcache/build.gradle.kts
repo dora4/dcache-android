@@ -43,13 +43,10 @@ afterEvaluate {
     publishing {
         publications {
             register("release", MavenPublication::class) {
-
-                // Applies the component for the release build variant.
-                // NOTE : Delete this line code if you publish Native Java / Kotlin Library
                 from(components["release"])
                 groupId = "com.github.dora4"
                 artifactId = "dcache-android"
-                version = "1.6.6"
+                version = "1.6.7"
             }
         }
     }

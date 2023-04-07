@@ -13,7 +13,7 @@ android {
     }
     buildTypes {
         release {
-            isMinifyEnabled = true      // 开启代码混淆
+            isMinifyEnabled = false      // 开启代码混淆
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
         }
     }
@@ -46,7 +46,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.github.dora4"
                 artifactId = "dcache-android"
-                version = "1.6.16"
+                version = "1.6.17"
             }
         }
     }

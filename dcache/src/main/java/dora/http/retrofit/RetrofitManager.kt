@@ -102,10 +102,9 @@ object RetrofitManager {
          */
         fun mappingBaseUrl(serviceClazz: Class<out ApiService>, baseUrl: String) = apply {
             if (!urlMap.containsKey(serviceClazz)) {
-                urlMap[serviceClazz] = baseUrl
+                registerBaseUrl(serviceClazz, baseUrl)
             } else {
-                urlMap.remove(serviceClazz)
-                urlMap[serviceClazz] = baseUrl
+                replaceBaseUrl(serviceClazz, baseUrl)
             }
         }
 
@@ -119,7 +118,7 @@ object RetrofitManager {
         /**
          * @see mappingBaseUrl
          */
-        private replaceBaseUrl(serviceClazz: Class<out ApiService>, baseUrl: String) = apply {
+        private fun replaceBaseUrl(serviceClazz: Class<out ApiService>, baseUrl: String) = apply {
             urlMap.remove(serviceClazz)
             urlMap[serviceClazz] = baseUrl
         }

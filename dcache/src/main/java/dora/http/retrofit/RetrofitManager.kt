@@ -7,20 +7,44 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.*
 import kotlin.collections.HashMap
 
+/**
+ * Retrofit管理器，kotlin调用initConfig进行初始化，java调用getConfig进行初始化。通过配置RetrofitManager来管理全局
+ * 的URL映射。
+ */
 object RetrofitManager {
 
+    /**
+     * 用于保存所有API服务对应的Retrofit对象。
+     */
     private var retrofitMap: MutableMap<Class<*>, Retrofit> = HashMap()
+
+    /**
+     * 用于保存所有API服务映射的URL地址。
+     */
     private var urlMap: MutableMap<Class<*>, String> = HashMap()
+
+    /**
+     * 用于保存全局的配置信息。
+     */
     private var config: Config = Config()
 
+    /**
+     * java调用它初始化全局配置。
+     */
     fun getConfig() : Config {
         return config
     }
 
+    /**
+     * kotlin调用它初始化全局配置。
+     */
     fun initConfig(block: Config.() -> Unit) {
         block(config)
     }
 
+    /**
+     * 获取API服务对象。
+     */
     fun <T : ApiService> getService(clazz: Class<T>): T {
         val retrofit: Retrofit?
         if (retrofitMap.containsKey(clazz)) {
@@ -39,7 +63,6 @@ object RetrofitManager {
         }
         return retrofit.create(clazz)
     }
-
 
     class Config {
 
@@ -75,9 +98,29 @@ object RetrofitManager {
         }
 
         /**
-         * 请在子类的initBaseUrl()中进行注册，可以注册多个url地址。
+         * 将API服务和baseUrl绑定起来，没有则添加baseUrl，有则替换baseUrl。可以映射多个url地址。
          */
-        fun registerBaseUrl(serviceClazz: Class<out ApiService>, baseUrl: String) = apply {
+        fun mappingBaseUrl(serviceClazz: Class<out ApiService>, baseUrl: String) = apply {
+            if (!urlMap.containsKey(serviceClazz)) {
+                urlMap[serviceClazz] = baseUrl
+            } else {
+                urlMap.remove(serviceClazz)
+                urlMap[serviceClazz] = baseUrl
+            }
+        }
+
+        /**
+         * @see mappingBaseUrl
+         */
+        private fun registerBaseUrl(serviceClazz: Class<out ApiService>, baseUrl: String) = apply {
+            urlMap[serviceClazz] = baseUrl
+        }
+
+        /**
+         * @see mappingBaseUrl
+         */
+        private replaceBaseUrl(serviceClazz: Class<out ApiService>, baseUrl: String) = apply {
+            urlMap.remove(serviceClazz)
             urlMap[serviceClazz] = baseUrl
         }
     }

@@ -10,6 +10,7 @@ import io.reactivex.functions.Consumer
  * RxJava转换器。
  */
 object RxTransformer {
+
     fun <T> doApi(observable: Observable<T>, consumer: Consumer<T>?) {
         observable.observeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())

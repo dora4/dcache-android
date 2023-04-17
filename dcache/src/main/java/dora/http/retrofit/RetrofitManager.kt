@@ -43,6 +43,25 @@ object RetrofitManager {
     }
 
     /**
+     * 检测API服务是否可用。
+     */
+    fun <T : ApiService> checkService(clazz: Class<T>) : Boolean {
+        return retrofitMap.containsKey(clazz))
+    }
+
+    /**
+     * 移除API服务对象。
+     */
+    fun <T : ApiService> removeService(clazz: Class<T>) {
+        if (retrofitMap.containsKey(clazz)) {
+            retrofitMap.remove(clazz)
+        }
+        if (urlMap.containsKey(clazz)) {
+            urlMap.remove(clazz)
+        }
+    }
+
+    /**
      * 获取API服务对象。
      */
     fun <T : ApiService> getService(clazz: Class<T>): T {
@@ -51,15 +70,20 @@ object RetrofitManager {
             retrofit = retrofitMap[clazz]
             return retrofit!!.create(clazz)
         } else {
-            val builder = Retrofit.Builder()
-                    .baseUrl(Objects.requireNonNull(urlMap[clazz]))
+            if (urlMap.containsKey(clazz)) {
+                String url = urlMap [clazz]
+                val builder = Retrofit.Builder()
+                    .baseUrl(url)
                     .addConverterFactory(GsonConverterFactory.create())
                     .client(getConfig().getClient())
-            if (config.isUseRxJava()) {
-                builder.addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
+                if (config.isUseRxJava()) {
+                    builder.addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
+                }
+                retrofit = builder.build()
+                retrofitMap[clazz] = retrofit
+            } else {
+                throw DoraHttpException("ApiService is not registered.")
             }
-            retrofit = builder.build()
-            retrofitMap[clazz] = retrofit
         }
         return retrofit.create(clazz)
     }

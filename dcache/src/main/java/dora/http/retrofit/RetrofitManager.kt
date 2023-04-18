@@ -1,10 +1,10 @@
 package dora.http.retrofit
 
+import dora.http.exception.DoraHttpException
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
-import java.util.*
 import kotlin.collections.HashMap
 
 /**
@@ -46,7 +46,7 @@ object RetrofitManager {
      * 检测API服务是否可用。
      */
     fun <T : ApiService> checkService(clazz: Class<T>) : Boolean {
-        return retrofitMap.containsKey(clazz))
+        return retrofitMap.containsKey(clazz)
     }
 
     /**
@@ -71,7 +71,7 @@ object RetrofitManager {
             return retrofit!!.create(clazz)
         } else {
             if (urlMap.containsKey(clazz)) {
-                String url = urlMap [clazz]
+                val url = urlMap [clazz] ?: ""
                 val builder = Retrofit.Builder()
                     .baseUrl(url)
                     .addConverterFactory(GsonConverterFactory.create())

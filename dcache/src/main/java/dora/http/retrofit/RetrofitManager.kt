@@ -65,13 +65,13 @@ object RetrofitManager {
      * 获取API服务对象。
      */
     fun <T : ApiService> getService(clazz: Class<T>): T {
-        val retrofit: Retrofit?
+        val retrofit: Retrofit
         if (retrofitMap.containsKey(clazz)) {
-            retrofit = retrofitMap[clazz]
-            return retrofit!!.create(clazz)
+            retrofit = retrofitMap[clazz]!!
+            return retrofit.create(clazz)
         } else {
             if (urlMap.containsKey(clazz)) {
-                val url = urlMap [clazz] ?: ""
+                val url = urlMap[clazz] ?: ""
                 val builder = Retrofit.Builder()
                     .baseUrl(url)
                     .addConverterFactory(GsonConverterFactory.create())

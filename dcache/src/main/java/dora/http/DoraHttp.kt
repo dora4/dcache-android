@@ -113,9 +113,11 @@ object DoraHttp {
     /**
      * 自己执行网络请求代码。
      */
-    suspend fun <T> request(block: () -> T) = suspendCoroutine<T> {
-        DoraTask {
+    suspend fun <T> request(block: ()-> T) = suspendCoroutine<T> {
+        try {
             it.resume(block())
-        }.execute()
+        } catch (e: Exception) {
+            it.resumeWith(Result.failure(e))
+        }
     }
 }

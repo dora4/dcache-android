@@ -46,7 +46,7 @@ object RetrofitManager {
      * 检测API服务是否可用。
      */
     fun <T : ApiService> checkService(clazz: Class<T>) : Boolean {
-        return retrofitMap.containsKey(clazz)
+        return urlMap.containsKey(clazz)
     }
 
     /**

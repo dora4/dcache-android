@@ -10,7 +10,7 @@ object Transaction {
 
     val db = Orm.getDB()
 
-    fun execute(block: Transaction.() -> Unit) : Transaction = apply {
+    fun execute(block: Transaction.() -> Unit) : Any = apply {
         try {
             db.beginTransaction()
             block()
@@ -23,7 +23,7 @@ object Transaction {
     }
 
     fun <T : OrmTable> execute(tableClass: Class<T>, block: Transaction.(dao: OrmDao<T>) -> Unit) :
-            Transaction = apply {
+            Any = apply {
         val dao = DaoFactory.getDao(tableClass) ?: throw IllegalArgumentException("DAO not found.")
         try {
             db.beginTransaction()

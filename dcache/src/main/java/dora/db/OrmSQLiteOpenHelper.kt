@@ -4,6 +4,7 @@ import android.content.Context
 import android.database.DatabaseErrorHandler
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import dora.db.exception.OrmMigrationException
 import dora.db.table.OrmTable
 import dora.db.table.TableManager
 import java.lang.reflect.InvocationTargetException
@@ -74,7 +75,29 @@ class OrmSQLiteOpenHelper(context: Context, name: String, version: Int,
                             TableManager.createTable(table)
                         }
                     } else {
-                        TableManager.upgradeTable(table)
+                        var curVersion = oldVersion
+                        // 数据迁移，按顺序执行所有Migration
+                        for (migration in it.migrations) {
+                            // 检测Migration可用性
+                            if (migration.fromVersion >= migration.toVersion) {
+                                throw OrmMigrationException("fromVersion can't be more than toVersion," +
+                                        "either fromVersion can't be equal to toVersion.")
+                            }
+                            if (migration.toVersion <= curVersion) {
+                                // 无需升级
+                                continue
+                            }
+                            if (migration.fromVersion == curVersion) {
+                                val ok = Transaction.execute(it.javaClass) { dao ->
+                                    migration.migrate(dao)
+                                } as Boolean
+                                if (ok) {
+                                    curVersion = migration.toVersion
+                                    OrmLog.d("${it.javaClass.name}'s version has succeeded upgraded to $curVersion")
+                                }
+                            }
+                        }
+//                        TableManager.upgradeTable(table)
                     }
                 }
             }

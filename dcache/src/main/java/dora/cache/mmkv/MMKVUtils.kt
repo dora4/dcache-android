@@ -35,7 +35,7 @@ object MMKVUtils {
         return mmkv.decodeBool(key, defValue)
     }
 
-    fun <T> writeObject(key: String, value: Any, clazz: Class<T>) {
+    fun <T> writeObject(key: String, value: T, clazz: Class<T>) {
         val objJson = Gson().toJson(value, clazz)
         writeString(key, objJson)
     }

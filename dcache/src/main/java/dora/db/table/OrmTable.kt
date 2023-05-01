@@ -1,5 +1,7 @@
 package dora.db.table
 
+import dora.db.migration.OrmMigration
+
 interface OrmTable {
 
     /**
@@ -14,6 +16,11 @@ interface OrmTable {
      * upgraded.Instead,it will expand directly on the previous table.
      */
     val isUpgradeRecreated: Boolean
+
+    /**
+     * Upgrade orm table data while isUpgradeRecreated is false.
+     */
+    val migrations: Array<OrmMigration>
 
     companion object {
 

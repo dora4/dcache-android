@@ -10,6 +10,7 @@ import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import retrofit2.Call
+import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.startCoroutine
 import kotlin.coroutines.suspendCoroutine
@@ -106,16 +107,15 @@ object DoraHttp {
 
             override fun onComplete() {
             }
-
         })
     }
 
     /**
-     * 自己执行网络请求代码。
+     * 自己执行网络请求代码，执行完成请调用continuation.resume()。
      */
-    suspend fun <T> request(block: ()-> T) = suspendCoroutine<T> {
+    suspend fun <T> request(block: (continuation: Continuation<T>) -> T) = suspendCoroutine<T> {
         try {
-            it.resume(block())
+            block(it)
         } catch (e: Exception) {
             it.resumeWith(Result.failure(e))
         }

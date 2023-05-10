@@ -40,8 +40,15 @@ api "com.github.dora4:dcache-android:$latest_version"
 
 #### 捐赠虚拟货币支持开源项目
 
-| 币种           | 钱包地址                                   | 备注                                                                                                             |
-| -------------- | ------------------------------------------ |----------------------------------------------------------------------------------------------------------------|
-| USDT(TRC-20链) | TYVXzqctSSPSTeVPYg7i7qbEtSxwrAJQ5y         | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币（推荐，转账快且手续费低）                                                     |
-| ETH(ERC-20链)    | 0x5dA12D7DB7B5D6C8D2Af78723F6dCE4A3C89caB9 | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，以太坊L1本链的chainId=1，如为以太坊兼容链，请在邮箱中说明，比如bsc的chainId=56，polygon的chainId=137 |
-
+| 币种            | 钱包地址                                               | 备注                                                         |
+| --------------- | ------------------------------------------------------ | ------------------------------------------------------------ |
+| USDT(TRC-20链)  | TYVXzqctSSPSTeVPYg7i7qbEtSxwrAJQ5y                     | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币（推荐，转账快且手续费低） |
+| ETH(ERC-20链)   | 0x5dA12D7DB7B5D6C8D2Af78723F6dCE4A3C89caB9             | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，以太坊L1本链的chainId=1，如为以太坊兼容链，请在邮箱中说明，比如bsc的chainId=56，polygon的chainId=137 |
+| SOL(Solana链)   | Fra3Ap9JyXo36F9JpPEemq9yXfJrGVjT57GUu7MPG9Dd           | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币 |
+| DOGE(狗狗币)    | DJXHQjvgFYMFfcB7vUynz9umfyYe57jBGG                     | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，打赏专用货币 |
+| LUNA(新luna链)  | terra19yvx9q4hap6cy4gv37haw7yx8gzyddfy9q3vlw           | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币 |
+| BTC(OMNI链)     | 3K9SGPMhWFCgoiikxahoakzTtPwVWEWAR8                     | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账较慢，安全性极高 |
+| ATOM(Cosmos链)  | cosmos1lqevtw9njpg9gte3ujpykjx9tgtkg22kx37zgq          | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币 |
+| DOT(Polkadot链) | 14uT8bbKZk98PC4jMzuofK7QreCNYChi4HCF72Lv5CzzqpTN       | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账快，手续费适中 |
+| FIL(Filecoin链) | f1cu4o6d64bijlvpdnudl3wki4ckxic7ysckpc37a              | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账慢，但手续费极低 |
+| BCH(比特现金)   | bitcoincash:qpfwvmx84nweq4y7k9aq0ra8tq4zttq48ydfau9s4g | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账速度适中，手续费很低 |

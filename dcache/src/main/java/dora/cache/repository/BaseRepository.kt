@@ -8,6 +8,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import dora.cache.data.fetcher.IDataFetcher
 import dora.cache.data.fetcher.IListDataFetcher
+import dora.cache.data.fetcher.OnLoadStateListener
+import dora.cache.data.fetcher.OnLoadStateListenerImpl
 import dora.cache.data.page.IDataPager
 import dora.cache.holder.CacheHolder
 import dora.http.DoraCallback
@@ -52,6 +54,7 @@ abstract class BaseRepository<M>(protected val context: Context) : ViewModel(), 
         protected set
 
     protected var description: String? = ""
+    protected var listener: OnLoadStateListener? = OnLoadStateListenerImpl()
 
     /**
      * 是否在网络加载数据失败的时候清空数据。
@@ -219,8 +222,9 @@ abstract class BaseRepository<M>(protected val context: Context) : ViewModel(), 
      * 抓取非集合数据，返回给livedata，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过[.getLiveData()]
      * 拿到。
      */
-    override fun fetchData(description: String?): LiveData<M?> {
+    override fun fetchData(description: String?, listener: OnLoadStateListener?): LiveData<M?> {
         this.description = description
+        this.listener = listener
         return dataFetcher.fetchData(description)
     }
 
@@ -228,8 +232,9 @@ abstract class BaseRepository<M>(protected val context: Context) : ViewModel(), 
      * 抓取集合数据，返回给livedata，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过[.getListLiveData()]
      * 拿到。
      */
-    override fun fetchListData(description: String?): LiveData<MutableList<M>> {
+    override fun fetchListData(description: String?, listener: OnLoadStateListener?): LiveData<MutableList<M>> {
         this.description = description
+        this.listener = listener
         return listDataFetcher.fetchListData(description)
     }
 

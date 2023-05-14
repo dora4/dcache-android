@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import dora.cache.data.fetcher.DataFetcher
 import dora.cache.data.fetcher.ListDataFetcher
+import dora.cache.data.fetcher.OnLoadStateListener
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
 import dora.db.builder.Condition
@@ -78,7 +79,7 @@ constructor(context: Context) : BaseRepository<M>(context) {
         return object : DataFetcher<M>() {
 
 
-            override fun fetchData(description: String?): LiveData<M?> {
+            override fun fetchData(description: String?, listener: OnLoadStateListener?): LiveData<M?> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
@@ -117,7 +118,7 @@ constructor(context: Context) : BaseRepository<M>(context) {
     override fun createListDataFetcher(): ListDataFetcher<M> {
         return object : ListDataFetcher<M>() {
 
-            override fun fetchListData(description: String?): LiveData<MutableList<M>> {
+            override fun fetchListData(description: String?, listener: OnLoadStateListener?): LiveData<MutableList<M>> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
@@ -263,6 +264,7 @@ constructor(context: Context) : BaseRepository<M>(context) {
                 }
             }
             cacheHolder.addNewCache(it)
+            listener?.onLoad(OnLoadStateListener.SUCCESS)
             if (disallowForceUpdate()) {
                 liveData.postValue(dataMap[mapKey()])
             } else {
@@ -294,6 +296,7 @@ constructor(context: Context) : BaseRepository<M>(context) {
                 }
             }
             listCacheHolder.addNewCache(it)
+            listener?.onLoad(OnLoadStateListener.SUCCESS)
             if (disallowForceUpdate()) {
                 liveData.postValue(listDataMap[mapKey()])
             } else {
@@ -306,6 +309,7 @@ constructor(context: Context) : BaseRepository<M>(context) {
         if (isLogPrint) {
             Log.d(TAG, "【${description}】$msg")
         }
+        listener?.onLoad(OnLoadStateListener.FAILURE)
         if (isClearDataOnNetworkError) {
             if (checkValuesNotNull()) {
                 clearData()
@@ -318,6 +322,7 @@ constructor(context: Context) : BaseRepository<M>(context) {
         if (isLogPrint) {
             Log.d(TAG, "【${description}】$msg")
         }
+        listener?.onLoad(OnLoadStateListener.FAILURE)
         if (isClearDataOnNetworkError) {
             if (checkValuesNotNull()) {
                 clearListData()

@@ -51,6 +51,6 @@ api "com.github.dora4:dcache-android:$latest_version"
 | ATOM(Cosmos链)  | cosmos1lqevtw9njpg9gte3ujpykjx9tgtkg22kx37zgq          | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币 |
 | DOT(Polkadot链) | 14uT8bbKZk98PC4jMzuofK7QreCNYChi4HCF72Lv5CzzqpTN       | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账快，手续费适中 |
 | FIL(Filecoin链) | f1cu4o6d64bijlvpdnudl3wki4ckxic7ysckpc37a              | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账慢，但手续费极低 |
-| BCH(比特现金)   | bitcoincash:qpfwvmx84nweq4y7k9aq0ra8tq4zttq48ydfau9s4g | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账速度适中，手续费很低 |
+| BCH(比特现金)   | bitcoincash:qq7ppehjjwtcmahtdyraak3trkfzgf6vnv29wnufun | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账速度适中，手续费很低 |
 
 广告：助记词保管推荐【隐私保险箱】，https://www.pgyer.com/privacybox 激活码限时免费🎉

@@ -90,8 +90,12 @@ constructor(context: Context) : BaseRepository<M>(context) {
                     }
 
                     override fun loadFromNetwork() {
-                        rxOnLoadFromNetwork(liveData)
-                        onLoadFromNetwork(callback())
+                        try {
+                            rxOnLoadFromNetwork(liveData)
+                            onLoadFromNetwork(callback())
+                        } catch (ignore: Exception) {
+                            listener?.onLoad(OnLoadStateListener.FAILURE)
+                        }
                     }
                 })
                 return liveData
@@ -129,8 +133,12 @@ constructor(context: Context) : BaseRepository<M>(context) {
                     }
 
                     override fun loadFromNetwork() {
-                        rxOnLoadFromNetworkForList(liveData)
-                        onLoadFromNetwork(listCallback())
+                        try {
+                            rxOnLoadFromNetworkForList(liveData)
+                            onLoadFromNetwork(listCallback())
+                        } catch (ignore: Exception) {
+                            listener?.onLoad(OnLoadStateListener.FAILURE)
+                        }
                     }
                 })
                 return liveData

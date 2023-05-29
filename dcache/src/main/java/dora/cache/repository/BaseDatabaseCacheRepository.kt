@@ -91,8 +91,8 @@ constructor(context: Context) : BaseRepository<M>(context) {
 
                     override fun loadFromNetwork() {
                         try {
-                            rxOnLoadFromNetwork(liveData)
-                            onLoadFromNetwork(callback())
+                            rxOnLoadFromNetwork(liveData, listener)
+                            onLoadFromNetwork(callback(), listener)
                         } catch (ignore: Exception) {
                             listener?.onLoad(OnLoadStateListener.FAILURE)
                         }
@@ -134,8 +134,8 @@ constructor(context: Context) : BaseRepository<M>(context) {
 
                     override fun loadFromNetwork() {
                         try {
-                            rxOnLoadFromNetworkForList(liveData)
-                            onLoadFromNetwork(listCallback())
+                            rxOnLoadFromNetworkForList(liveData, listener)
+                            onLoadFromNetwork(listCallback(), listener)
                         } catch (ignore: Exception) {
                             listener?.onLoad(OnLoadStateListener.FAILURE)
                         }
@@ -193,31 +193,31 @@ constructor(context: Context) : BaseRepository<M>(context) {
     /**
      * 非集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetwork(callback: DoraCallback<M>) {
+    override fun onLoadFromNetwork(callback: DoraCallback<M>, listener: OnLoadStateListener?) {
     }
 
     /**
      * 集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetwork(callback: DoraListCallback<M>) {
+    override fun onLoadFromNetwork(callback: DoraListCallback<M>, listener: OnLoadStateListener?) {
     }
 
     /**
      * 非集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetworkObservable() : Observable<M> {
+    override fun onLoadFromNetworkObservable(listener: OnLoadStateListener?) : Observable<M> {
         return Observable.empty()
     }
 
     /**
      * 集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetworkObservableList() : Observable<MutableList<M>> {
+    override fun onLoadFromNetworkObservableList(listener: OnLoadStateListener?) : Observable<MutableList<M>> {
         return Observable.empty()
     }
 
-    private fun rxOnLoadFromNetwork(liveData: MutableLiveData<M?>) {
-        RxTransformer.doApi(onLoadFromNetworkObservable(), object : Observer<M> {
+    private fun rxOnLoadFromNetwork(liveData: MutableLiveData<M?>, listener: OnLoadStateListener? = null) {
+        RxTransformer.doApi(onLoadFromNetworkObservable(listener), object : Observer<M> {
             override fun onSubscribe(d: Disposable?) {
             }
 
@@ -234,8 +234,8 @@ constructor(context: Context) : BaseRepository<M>(context) {
         })
     }
 
-    private fun rxOnLoadFromNetworkForList(liveData: MutableLiveData<MutableList<M>>) {
-        RxTransformer.doApi(onLoadFromNetworkObservableList(), object : Observer<MutableList<M>> {
+    private fun rxOnLoadFromNetworkForList(liveData: MutableLiveData<MutableList<M>>, listener: OnLoadStateListener? = null) {
+        RxTransformer.doApi(onLoadFromNetworkObservableList(listener), object : Observer<MutableList<M>> {
             override fun onSubscribe(d: Disposable?) {
             }
 
@@ -315,6 +315,9 @@ constructor(context: Context) : BaseRepository<M>(context) {
 
     protected open fun onParseModelFailure(msg: String) {
         if (isLogPrint) {
+            if (description == null) {
+                description = javaClass.simpleName
+            }
             Log.d(TAG, "【${description}】$msg")
         }
         listener?.onLoad(OnLoadStateListener.FAILURE)
@@ -328,6 +331,9 @@ constructor(context: Context) : BaseRepository<M>(context) {
 
     protected open fun onParseModelsFailure(msg: String) {
         if (isLogPrint) {
+            if (description == null) {
+                description = javaClass.simpleName
+            }
             Log.d(TAG, "【${description}】$msg")
         }
         listener?.onLoad(OnLoadStateListener.FAILURE)

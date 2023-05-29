@@ -144,26 +144,32 @@ abstract class BaseRepository<M>(protected val context: Context) : ViewModel(), 
     /**
      * 非集合数据的API接口调用，Retrofit接口的方法返回retrofit.Call类型使用。
      *
-     * @param callback
+     * @param callback 数据回调
+     * @param listener 如果你自行处理掉网络请求的异常，不要忘了回调失败的状态，以便于在fetchData的时候能收到状态的回调
      */
-    protected abstract fun onLoadFromNetwork(callback: DoraCallback<M>)
+    protected abstract fun onLoadFromNetwork(callback: DoraCallback<M>, listener: OnLoadStateListener? = null)
 
     /**
      * 集合数据的API接口调用，Retrofit接口的方法返回retrofit.Call类型使用。
      *
-     * @param callback
+     * @param callback 数据回调
+     * @param listener 如果你自行处理掉网络请求的异常，不要忘了回调失败的状态，以便于在fetchListData的时候能收到状态的回调
      */
-    protected abstract fun onLoadFromNetwork(callback: DoraListCallback<M>)
+    protected abstract fun onLoadFromNetwork(callback: DoraListCallback<M>, listener: OnLoadStateListener? = null)
 
     /**
      * 非集合数据的API接口调用，Retrofit接口的方法返回io.reactivex.Observable类型使用。
+     *
+     * @param listener 如果你自行处理掉网络请求的异常，不要忘了回调失败的状态，以便于在fetchData的时候能收到状态的回调
      */
-    protected abstract fun onLoadFromNetworkObservable() : Observable<M>
+    protected abstract fun onLoadFromNetworkObservable(listener: OnLoadStateListener? = null) : Observable<M>
 
     /**
      * 集合数据的API接口调用，Retrofit接口的方法返回io.reactivex.Observable类型使用。
+     *
+     * @param listener 如果你自行处理掉网络请求的异常，不要忘了回调失败的状态，以便于在fetchListData的时候能收到状态的回调
      */
-    protected abstract fun onLoadFromNetworkObservableList() : Observable<MutableList<M>>
+    protected abstract fun onLoadFromNetworkObservableList(listener: OnLoadStateListener? = null) : Observable<MutableList<M>>
 
     /**
      * 从仓库选择数据，处理数据来源的优先级。
@@ -223,7 +229,10 @@ abstract class BaseRepository<M>(protected val context: Context) : ViewModel(), 
      * 拿到。
      */
     override fun fetchData(description: String?, listener: OnLoadStateListener?): LiveData<M?> {
-        this.description = description
+        if (description != null) {
+            // 不能让null覆盖了默认类名
+            this.description = description
+        }
         this.listener = listener
         return dataFetcher.fetchData(description)
     }
@@ -233,7 +242,10 @@ abstract class BaseRepository<M>(protected val context: Context) : ViewModel(), 
      * 拿到。
      */
     override fun fetchListData(description: String?, listener: OnLoadStateListener?): LiveData<MutableList<M>> {
-        this.description = description
+        if (description != null) {
+            // 不能让null覆盖了默认类名
+            this.description = description
+        }
         this.listener = listener
         return listDataFetcher.fetchListData(description)
     }

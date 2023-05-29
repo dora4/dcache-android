@@ -21,7 +21,7 @@ interface IDataFetcher<M> {
     /**
      * 开始抓取数据。
      */
-    fun fetchData(description: String? = "", listener: OnLoadStateListener? = OnLoadStateListenerImpl()): LiveData<M?>
+    fun fetchData(description: String?, listener: OnLoadStateListener? = OnLoadStateListenerImpl()): LiveData<M?>
 
     /**
      * 获取livedata。

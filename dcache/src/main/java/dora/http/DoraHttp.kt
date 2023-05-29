@@ -34,7 +34,7 @@ object DoraHttp {
     }
 
     /**
-     * 请求失败抛异常。
+     * 在net作用域下使用，请求失败抛异常，出块则自动释放锁，和request不同的是，无需手动释放。
      */
     suspend fun <T> api(apiMethod: ()-> Call<T>) = suspendCoroutine<T> {
         val data = apiMethod()
@@ -49,9 +49,8 @@ object DoraHttp {
         })
     }
 
-
     /**
-     * 请求失败抛异常。
+     * RxJava的写法，在net作用域下使用，请求失败抛异常，出块则自动释放锁，和request不同的是，无需手动释放。
      */
     suspend fun <T> rxApi(apiMethod: ()-> Observable<T>) = suspendCoroutine<T> {
         val data = apiMethod()
@@ -73,7 +72,7 @@ object DoraHttp {
     }
 
     /**
-     * 请求失败返回空。
+     * 在net作用域下使用，请求失败返回空值，出块则自动释放锁，和request不同的是，无需手动释放。
      */
     suspend fun <T> result(apiMethod: ()-> Call<T>) = suspendCoroutine<T?> {
         val data = apiMethod()
@@ -89,7 +88,7 @@ object DoraHttp {
     }
 
     /**
-     * 请求失败返回空。
+     * RxJava的写法，在net作用域下使用，请求失败返回空值，出块则自动释放锁，和request不同的是，无需手动释放。
      */
     suspend fun <T> rxResult(apiMethod: ()-> Observable<T>) = suspendCoroutine<T?> {
         val data = apiMethod()
@@ -111,11 +110,31 @@ object DoraHttp {
     }
 
     /**
-     * 自己执行网络请求代码，执行完成请调用continuation.resume()。
+     * DoraHttp协程中类似线程中锁的概念。
      */
-    suspend fun <T> request(block: (continuation: Continuation<T>) -> T) = suspendCoroutine<T> {
+    interface Lock<T> {
+        fun releaseLock(returnVal : T)
+    }
+
+    /**
+     * net锁，用于解除net作用域下request函数的阻塞。
+     */
+    class NetLock<T>(private val continuation: Continuation<T>) : Lock<T> {
+
+        override fun releaseLock(returnVal: T) {
+            continuation.resume(returnVal)
+        }
+    }
+
+    /**
+     * 自己执行网络请求代码，在net作用域下使用，执行完成（通常为onSuccess或onError的回调）后请调用
+     * lock.releaseLock()，让后面的代码得以执行，另外可以指定request高阶函数的返回结果，释放锁后
+     * 将可以作为request函数的执行结果赋值给变量。
+     */
+    suspend fun <T> request(block: (lock: NetLock<T>) -> Unit) = suspendCoroutine<T> {
         try {
-            block(it)
+            val lock = NetLock(it)
+            block(lock)
         } catch (e: Exception) {
             it.resumeWith(Result.failure(e))
         }

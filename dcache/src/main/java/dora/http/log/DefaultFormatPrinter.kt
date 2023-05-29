@@ -105,10 +105,10 @@ class DefaultFormatPrinter : FormatPrinter {
         private const val HEADERS_TAG = "Headers:"
         private const val STATUS_CODE_TAG = "Status Code: "
         private const val RECEIVED_TAG = "Received in: "
-        private const val CORNER_UP = "┌ "
-        private const val CORNER_BOTTOM = "└ "
-        private const val CENTER_LINE = "├ "
-        private const val DEFAULT_LINE = "│ "
+        private const val CORNER_UP = "   ┌ "
+        private const val CORNER_BOTTOM = "   └ "
+        private const val CENTER_LINE = "   ├ "
+        private const val DEFAULT_LINE = "   │ "
         private val DORA = arrayOf("-D-", "-O-", "-R-", "-A-")
         private val last: ThreadLocal<Int> = object : ThreadLocal<Int>() {
             override fun initialValue(): Int {

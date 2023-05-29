@@ -53,7 +53,7 @@ abstract class BaseRepository<M>(protected val context: Context) : ViewModel(), 
     protected var isLogPrint = false
         protected set
 
-    protected var description: String? = ""
+    protected var description: String? = javaClass.simpleName
     protected var listener: OnLoadStateListener? = OnLoadStateListenerImpl()
 
     /**

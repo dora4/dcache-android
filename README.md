@@ -49,7 +49,7 @@ api "com.github.dora4:dcache-android:$latest_version"
 | BTC(OMNI链)     | 3K9SGPMhWFCgoiikxahoakzTtPwVWEWAR8                     | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账较慢，安全性极高 |
 | ATOM(Cosmos链)  | cosmos1lqevtw9njpg9gte3ujpykjx9tgtkg22kx37zgq          | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币 |
 | DOT(Polkadot链) | 14uT8bbKZk98PC4jMzuofK7QreCNYChi4HCF72Lv5CzzqpTN       | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账快，手续费适中 |
-| FIL(Filecoin链) | f1cu4o6d64bijlvpdnudl3wki4ckxic7ysckpc37a              | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账慢，但手续费极低 |
+| FIL(Filecoin链) | 	f1kb4amu7p3r6th5jdg4js37abwci6g5tcep752yi              | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账慢，但手续费极低 |
 | LTC(莱特币)   | LdQhi87wsayEnyJ2MKn42NYZdA3LK9UkMy | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账速度适中，手续费很低 |
 | BCH(比特现金)   | bitcoincash:qq7ppehjjwtcmahtdyraak3trkfzgf6vnv29wnufun | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账速度适中，手续费很低 |
 

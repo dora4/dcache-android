@@ -305,11 +305,10 @@ object TableManager {
 
     private fun <T : OrmTable> _dropTable(tableClass: Class<T>, db: SQLiteDatabase) {
         val tableName = getTableName(tableClass)
-        val sql = (DROP_TABLE + SPACE + getTableName(tableClass) + SPACE + IF_EXISTS + SPACE
+        val sql = (DROP_TABLE + SPACE + getTableName(tableClass)
                 + tableName)
         OrmLog.d(sql)
         db.execSQL(sql)
-        removeDao(tableClass)
     }
 
     fun <T : OrmTable> createTable(tableClass: Class<T>) {

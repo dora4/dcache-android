@@ -9,7 +9,7 @@ import kotlin.collections.HashMap
 
 /**
  * Retrofit管理器，kotlin调用initConfig进行初始化，java调用getConfig进行初始化。通过配置RetrofitManager来管理全局
- * 的URL映射。
+ * 的URL映射。测试http请求地址：http://httpbin.org。
  */
 object RetrofitManager {
 

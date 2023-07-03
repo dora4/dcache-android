@@ -10,6 +10,8 @@ dcache是一个开源的Android离线数据缓存框架，旨在提供一种简�
 
 总之，dcache是一个简单易用、可配置性强、支持扩展的Android离线数据缓存框架，非常适合用于各种Android应用程序中。
 
+For instructions on using dcache-android library into your existing applications, see the https://github.com/dora4/DoraCacheSample .
+
 
 
 

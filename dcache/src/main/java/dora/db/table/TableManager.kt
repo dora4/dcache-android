@@ -33,7 +33,6 @@ object TableManager {
     private val ALTER_TABLE = "ALTER TABLE"
     private val DROP_TABLE = "DROP TABLE"
     private val IF_NOT_EXISTS = "IF NOT EXISTS"
-    private val IF_EXISTS = "IF EXISTS"
     private val ADD_COLUMN = "ADD COLUMN"
     private val AUTO_INCREMENT = "AUTOINCREMENT"
     private val SPACE = " "
@@ -305,8 +304,7 @@ object TableManager {
 
     private fun <T : OrmTable> _dropTable(tableClass: Class<T>, db: SQLiteDatabase) {
         val tableName = getTableName(tableClass)
-        val sql = (DROP_TABLE + SPACE + getTableName(tableClass)
-                + tableName)
+        val sql = DROP_TABLE + SPACE + tableName
         OrmLog.d(sql)
         db.execSQL(sql)
     }

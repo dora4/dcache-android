@@ -10,7 +10,7 @@ object Transaction {
 
     val db = Orm.getDB()
 
-    fun execute(block: Transaction.() -> Unit) : Any = apply {
+    fun <T> execute(block: Transaction.() -> T) : Any = apply {
         try {
             db.beginTransaction()
             block()

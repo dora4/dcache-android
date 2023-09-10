@@ -25,7 +25,9 @@ android {
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.2.0")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.2.0")
+
+    api("androidx.lifecycle:lifecycle-livedata-ktx:2.2.0")
+    api("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0")
 
     api("com.squareup.okhttp3:okhttp:4.8.0")
     api("com.squareup.retrofit2:converter-gson:2.8.1")

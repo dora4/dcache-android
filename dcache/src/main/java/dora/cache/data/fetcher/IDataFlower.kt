@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
  */
 interface IDataFlower<M> {
 
-    fun clearData()
+    suspend fun clearData()
 
     /**
      * 抓取数据的回调。
@@ -18,7 +18,7 @@ interface IDataFlower<M> {
     /**
      * 开始抓取数据。
      */
-    fun flowData(description: String?, listener: OnLoadStateListener? = OnLoadStateListenerImpl()): StateFlow<M?>
+    suspend fun flowData(description: String?, listener: OnLoadStateListener? = OnLoadStateListenerImpl()): StateFlow<M?>
 
     fun getFlowData(): StateFlow<M?>
 }

@@ -1,7 +1,5 @@
 package dora.cache.data.fetcher
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,7 +9,7 @@ abstract class ListDataFlower<M> : IListDataFlower<M> {
 
     internal var flowData: MutableStateFlow<MutableList<M>> = MutableStateFlow(arrayListOf())
 
-    private var pager: IDataPager<M> = DataPager(flowData.value ?: arrayListOf())
+    private var pager: IDataPager<M> = DataPager(flowData.value)
 
     override fun getListFlowData(): StateFlow<MutableList<M>> {
         return flowData

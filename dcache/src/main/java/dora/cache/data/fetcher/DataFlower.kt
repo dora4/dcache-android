@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 abstract class DataFlower<M> : IDataFlower<M> {
 
-    internal var flowData: StateFlow<M?> = MutableStateFlow(null)
+    internal var flowData: MutableStateFlow<M?> = MutableStateFlow(null)
 
     override fun getFlowData(): StateFlow<M?> {
         return flowData

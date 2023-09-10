@@ -1,6 +1,5 @@
 package dora.cache.data.fetcher
 
-import androidx.lifecycle.LiveData
 import dora.cache.data.page.IDataPager
 import dora.http.DoraListCallback
 import kotlinx.coroutines.flow.StateFlow
@@ -10,7 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
  */
 interface IListDataFlower<M> {
 
-    fun clearListData()
+    suspend fun clearListData()
 
     /**
      * 抓取数据的回调。
@@ -20,7 +19,7 @@ interface IListDataFlower<M> {
     /**
      * 开始抓取数据。
      */
-    fun flowListData(description: String?, listener: OnLoadStateListener? = OnLoadStateListenerImpl()): StateFlow<MutableList<M>>
+    suspend fun flowListData(description: String?, listener: OnLoadStateListener? = OnLoadStateListenerImpl()): StateFlow<MutableList<M>>
 
     fun getListFlowData() : StateFlow<MutableList<M>>
 

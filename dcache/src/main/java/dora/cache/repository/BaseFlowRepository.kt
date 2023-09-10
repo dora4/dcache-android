@@ -5,6 +5,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dora.cache.data.fetcher.IDataFetcher
 import dora.cache.data.fetcher.IDataFlower
 import dora.cache.data.fetcher.IListDataFetcher
@@ -16,7 +17,14 @@ import dora.cache.holder.CacheHolder
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import io.reactivex.Observable
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import java.lang.reflect.ParameterizedType
 
 /**
@@ -90,7 +98,7 @@ abstract class BaseFlowRepository<M>(protected val context: Context) : ViewModel
      */
     fun addData(data: MutableList<M>) {
         if (isListMode) {
-            getListFlowData().value?.let {
+            getListFlowData().value.let {
                 it.addAll(data)
                 listCacheHolder.addNewCache(data)
             }
@@ -179,7 +187,7 @@ abstract class BaseFlowRepository<M>(protected val context: Context) : ViewModel
      * @param ds 数据的来源
      * @return 数据是否获取成功
      */
-    protected abstract fun selectData(ds: DataSource): Boolean
+    protected abstract suspend fun selectData(ds: DataSource): Boolean
 
     /**
      * 数据的来源。
@@ -218,19 +226,27 @@ abstract class BaseFlowRepository<M>(protected val context: Context) : ViewModel
          * @param type
          * @return
          */
-        fun loadFromCache(type: CacheType): Boolean
+        suspend fun loadFromCache(type: CacheType): Boolean
 
         /**
          * 从服务器/网络加载数据。
          */
-        fun loadFromNetwork()
+        suspend fun loadFromNetwork()
     }
 
-    /**
-     * 抓取非集合数据，返回给livedata，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过[.getLiveData()]
-     * 拿到。
-     */
-    override fun flowData(description: String?, listener: OnLoadStateListener?): StateFlow<M?> {
+    open fun fetchData(description: String?, listener: OnLoadStateListener?) : Flow<M> {
+        return flow {
+            flowData(description, listener)
+        }
+    }
+
+    open fun fetchListData(description: String?, listener: OnLoadStateListener?) : Flow<MutableList<M>> {
+        return flow {
+            flowListData(description, listener)
+        }
+    }
+
+    override suspend fun flowData(description: String?, listener: OnLoadStateListener?): StateFlow<M?> {
         if (description != null) {
             // 不能让null覆盖了默认类名
             this.description = description
@@ -239,11 +255,7 @@ abstract class BaseFlowRepository<M>(protected val context: Context) : ViewModel
         return dataFetcher.flowData(description)
     }
 
-    /**
-     * 抓取集合数据，返回给livedata，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过[.getListLiveData()]
-     * 拿到。
-     */
-    override fun flowListData(description: String?, listener: OnLoadStateListener?): StateFlow<MutableList<M>> {
+    override suspend fun flowListData(description: String?, listener: OnLoadStateListener?): StateFlow<MutableList<M>> {
         if (description != null) {
             // 不能让null覆盖了默认类名
             this.description = description
@@ -255,14 +267,14 @@ abstract class BaseFlowRepository<M>(protected val context: Context) : ViewModel
     /**
      * @see IDataFetcher
      */
-    override fun clearData() {
+    override suspend fun clearData() {
         dataFetcher.clearData()
     }
 
     /**
      * @see IListDataFetcher
      */
-    override fun clearListData() {
+    override suspend fun clearListData() {
         listDataFetcher.clearListData()
     }
 

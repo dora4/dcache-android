@@ -20,7 +20,7 @@ interface OrmTable {
     /**
      * Upgrade orm table data while isUpgradeRecreated is false.
      */
-    val migrations: Array<OrmMigration>
+    val migrations: Array<OrmMigration>?
 
     companion object {
 

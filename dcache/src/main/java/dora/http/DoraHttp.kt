@@ -129,7 +129,8 @@ object DoraHttp {
     /**
      * 自己执行网络请求代码，在net作用域下使用，执行完成（通常为onSuccess或onError的回调）后请调用
      * lock.releaseLock()，让后面的代码得以执行，另外可以指定request高阶函数的返回结果，释放锁后
-     * 将可以作为request函数的执行结果赋值给变量。
+     * 将可以作为request函数的执行结果赋值给变量。包装协程方法，以一种兼容的方式，无需手动定义协程方法
+     * 去请求网络数据。
      */
     suspend fun <T> request(block: (lock: NetLock<T>) -> Unit) = suspendCoroutine<T> {
         try {

@@ -69,6 +69,10 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
         return Class::class.java.isAssignableFrom(fieldType)
     }
 
+    private fun isOrmTableField(field: Field) : Boolean {
+        return field.name.equals("primaryKey") || field.name.equals("isUpgradeRecreated") || field.name.equals("migrations")
+    }
+
     private fun convertBooleanToInt(boolean: Boolean) : Int {
         return if (boolean) 1 else 0
     }
@@ -90,6 +94,9 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
                 continue
             }
             if (primaryKey != null && primaryKey.value === AssignType.AUTO_INCREMENT) {
+                continue
+            }
+            if (isOrmTableField(field)) {
                 continue
             }
             val columnName: String = column?.value ?: TableManager.generateColumnName(field.name)
@@ -569,6 +576,9 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
         val fields = beanClass.declaredFields
         for (field in fields) {
             field.isAccessible = true
+            if (isOrmTableField(field)) {
+                continue
+            }
             var columnName: String
             val id: Id? = field.getAnnotation(Id::class.java)
             val column: Column? = field.getAnnotation(Column::class.java)

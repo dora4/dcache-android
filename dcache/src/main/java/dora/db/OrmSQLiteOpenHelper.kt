@@ -63,7 +63,7 @@ class OrmSQLiteOpenHelper(context: Context, name: String, version: Int,
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        if (tables != null && tables.isNotEmpty() && newVersion > oldVersion) {
+        if (!tables.isNullOrEmpty() && newVersion > oldVersion) {
             for (i in tables.indices) {
                 val table = tables[i]
                 val ormTable: OrmTable? = newOrmTableInstance(tables[i])
@@ -77,11 +77,16 @@ class OrmSQLiteOpenHelper(context: Context, name: String, version: Int,
                     } else {
                         var curVersion = oldVersion
                         // 数据迁移，按顺序执行所有Migration
-                        for (migration in it.migrations) {
+                        if (it.migrations == null) {
+                            return@let
+                        }
+                        for (migration in it.migrations!!) {
                             // 检测Migration可用性
                             if (migration.fromVersion >= migration.toVersion) {
-                                throw OrmMigrationException("fromVersion can't be more than toVersion," +
-                                        "either fromVersion can't be equal to toVersion.")
+                                throw OrmMigrationException(
+                                    "fromVersion can't be more than toVersion," +
+                                            "either fromVersion can't be equal to toVersion."
+                                )
                             }
                             if (migration.toVersion <= curVersion) {
                                 // 无需升级

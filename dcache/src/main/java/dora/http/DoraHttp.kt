@@ -2,6 +2,8 @@ package dora.http
 
 import android.app.Activity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.viewModelScope
+import dora.cache.repository.BaseRepository
 import dora.http.coroutine.ContextContinuation
 import dora.http.coroutine.DoraCoroutineContext
 import dora.http.exception.DoraHttpException
@@ -9,6 +11,16 @@ import dora.http.rx.RxTransformer
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import retrofit2.Call
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
@@ -25,12 +37,24 @@ object DoraHttp {
         block.startCoroutine(ContextContinuation(DoraCoroutineContext(fragment.requireActivity())))
     }
 
+    fun <M> netScope(repository: BaseRepository<M>, block: suspend () -> Unit) {
+        repository.viewModelScope.launch(DoraCoroutineContext(repository.context), CoroutineStart.DEFAULT) {
+            block()
+        }
+    }
+
     fun Activity.net(block: suspend () -> Unit) {
         block.startCoroutine(ContextContinuation(DoraCoroutineContext(this)))
     }
 
     fun Fragment.net(block: suspend () -> Unit) {
         block.startCoroutine(ContextContinuation(DoraCoroutineContext(requireActivity())))
+    }
+
+    fun <M> BaseRepository<M>.net(block: suspend () -> Unit) {
+        viewModelScope.launch(DoraCoroutineContext(context), CoroutineStart.DEFAULT) {
+            block()
+        }
     }
 
     /**
@@ -110,7 +134,7 @@ object DoraHttp {
     }
 
     /**
-     * DoraHttp协程中类似线程中锁的概念。
+     * 模拟DoraHttp协程中类似线程中锁的概念。
      */
     interface Lock<T> {
         fun releaseLock(returnVal : T)
@@ -139,5 +163,28 @@ object DoraHttp {
         } catch (e: Exception) {
             it.resumeWith(Result.failure(e))
         }
+    }
+
+    suspend fun <T> flowRequest(requestBlock: (lock: NetLock<Flow<T>>) -> T,
+                                loadingBlock: ((Boolean) -> Unit)? = null,
+                                errorBlock: ((String?) -> Unit)? = null,
+    ) = suspendCoroutine<Flow<T>> {
+        val flow = flow {
+            // 设置超时时间
+            val response = withTimeout(10 * 1000) {
+                val lock = NetLock(it)
+                requestBlock(lock)
+            }
+            emit(response)
+        }.flowOn(Dispatchers.IO)
+            .onStart {
+                loadingBlock?.invoke(true)
+            }
+            .catch { e ->
+                errorBlock?.invoke(e.toString())
+            }
+            .onCompletion {
+                loadingBlock?.invoke(false)
+            }
     }
 }

@@ -17,6 +17,7 @@ import dora.cache.holder.CacheHolder
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import io.reactivex.Observable
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
@@ -235,7 +236,7 @@ abstract class BaseFlowRepository<M>(protected val context: Context) : ViewModel
     }
 
     open fun fetchData(description: String?, listener: OnLoadStateListener?) : Flow<M> {
-        return flow {
+        return flow<M> {
             flowData(description, listener)
         }
     }

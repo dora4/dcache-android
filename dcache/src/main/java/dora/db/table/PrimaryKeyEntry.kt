@@ -1,6 +1,8 @@
 package dora.db.table
 
-open class PrimaryKeyEntry {
+import java.io.Serializable
+
+open class PrimaryKeyEntry : Serializable {
 
     var name: String
         private set

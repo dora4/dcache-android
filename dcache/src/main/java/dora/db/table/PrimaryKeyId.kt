@@ -1,3 +1,5 @@
 package dora.db.table
 
-class PrimaryKeyId(id: Long) : PrimaryKeyEntry(OrmTable.INDEX_ID, id)
+import java.io.Serializable
+
+class PrimaryKeyId(id: Long) : PrimaryKeyEntry(OrmTable.INDEX_ID, id), Serializable

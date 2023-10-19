@@ -23,9 +23,7 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
-import okhttp3.OkHttpClient
 import retrofit2.Call
-import retrofit2.Callback
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.startCoroutine
@@ -244,9 +242,9 @@ object DoraHttp {
     }
 
     suspend fun <T> flowResult(requestBlock: suspend() -> Flow<T>,
-                                successBlock: ((T) -> Unit),
-                                loadingBlock: ((Boolean) -> Unit)? = null,
-                                errorBlock: ((String) -> Unit)? = null,
+                               successBlock: ((T) -> Unit),
+                               failureBlock: ((String) -> Unit)? = null,
+                               loadingBlock: ((Boolean) -> Unit)? = null
     ) {
         requestBlock()
             .flowOn(Dispatchers.IO)
@@ -254,7 +252,7 @@ object DoraHttp {
                 loadingBlock?.invoke(true)
             }
             .catch { e ->
-                errorBlock?.invoke(e.toString())
+                failureBlock?.invoke(e.toString())
             }
             .onCompletion {
                 loadingBlock?.invoke(false)

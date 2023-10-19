@@ -1,6 +1,6 @@
 package dora.cache.repository
 
-import android.content.Context
+import android.app.Activity
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import dora.cache.holder.ListCacheHolder
@@ -9,7 +9,7 @@ import dora.db.builder.QueryBuilder
 import dora.db.table.OrmTable
 import java.lang.IllegalArgumentException
 
-abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
+abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Activity)
     : DoraDatabaseCacheRepository<T>(context) {
 
     private var pageNo: Int = 0

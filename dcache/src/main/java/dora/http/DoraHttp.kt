@@ -58,6 +58,45 @@ object DoraHttp {
     }
 
     /**
+     * 在net作用域下使用，转换[DoraCallback]，它的返回值也可以继续使用
+     * [dora.cache.data.adapter.ResultAdapter]转换。
+     */
+    suspend fun <T> callback(call: Call<T>, success: (model: T) -> Unit, failure: ((msg: String)
+            -> Unit)? = null) = suspendCoroutine {
+        call.enqueue(object : DoraCallback<T>() {
+            override fun onSuccess(model: T) {
+                success(model)
+                it.resume(model)
+            }
+
+            override fun onFailure(msg: String) {
+                failure?.invoke(msg)
+                it.resume(null)
+            }
+        })
+    }
+
+    /**
+     * 在net作用域下使用，转换[DoraListCallback]，它的返回值也可以继续使用
+     * [dora.cache.data.adapter.ListResultAdapter]转换。
+     */
+    suspend fun <T> listCallback(call: Call<MutableList<T>>, success: (model: MutableList<T>)
+        -> Unit, failure: ((msg: String) -> Unit)? = null) = suspendCoroutine<MutableList<T>> {
+        call.enqueue(object : DoraListCallback<T>() {
+
+            override fun onSuccess(models: MutableList<T>) {
+                success(models)
+                it.resume(models)
+            }
+
+            override fun onFailure(msg: String) {
+                failure?.invoke(msg)
+                it.resume(arrayListOf())
+            }
+        })
+    }
+
+    /**
      * 在net作用域下使用，请求失败抛异常，出块则自动释放锁，和request不同的是，无需手动释放。
      */
     suspend fun <T> api(apiMethod: ()-> Call<T>) = suspendCoroutine<T> {
@@ -165,12 +204,34 @@ object DoraHttp {
         }
     }
 
-    suspend fun <T> flowRequest(requestBlock: (lock: NetLock<Flow<T>>) -> T,
+    suspend fun <T> flowResult(requestBlock: () -> Flow<T>,
                                 loadingBlock: ((Boolean) -> Unit)? = null,
-                                errorBlock: ((String?) -> Unit)? = null,
+                                errorBlock: ((String) -> Unit)? = null,
+    ) {
+        flow {
+            // 设置超时时间为10秒
+            val response = withTimeout(10 * 1000) {
+                requestBlock()
+            }
+            emit(response)
+        }.flowOn(Dispatchers.IO)
+            .onStart {
+                loadingBlock?.invoke(true)
+            }
+            .catch { e ->
+                errorBlock?.invoke(e.toString())
+            }
+            .onCompletion {
+                loadingBlock?.invoke(false)
+            }
+    }
+
+    suspend fun <T> flowRequest(requestBlock: (lock: NetLock<Flow<T>>) -> Unit,
+                                loadingBlock: ((Boolean) -> Unit)? = null,
+                                errorBlock: ((String) -> Unit)? = null,
     ) = suspendCoroutine<Flow<T>> {
-        val flow = flow {
-            // 设置超时时间
+        flow {
+            // 设置超时时间为10秒
             val response = withTimeout(10 * 1000) {
                 val lock = NetLock(it)
                 requestBlock(lock)

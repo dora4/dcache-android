@@ -1,6 +1,6 @@
 package dora.cache.repository
 
-import android.app.Activity
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -24,7 +24,7 @@ import java.lang.IllegalArgumentException
  * 使用内置SQLite数据库进行缓存的仓库。
  */
 abstract class BaseDatabaseCacheRepository<M>
-constructor(context: Activity) : BaseRepository<M>(context) {
+constructor(context: Context) : BaseRepository<M>(context) {
 
     protected val dataMap = HashMap<String, M>()
     protected val listDataMap = HashMap<String, MutableList<M>>()

@@ -1,6 +1,5 @@
 package dora.cache.repository
 
-import android.app.Activity
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
@@ -23,7 +22,7 @@ import java.lang.reflect.ParameterizedType
  * 非集合数据，请在实现类配置[Repository]注解将[.isListMode]的值设置为false，默认为集合模式。注意，
  * 无论是集合模式还是非集合模式，Repository注解都是必须的。
  */
-abstract class BaseRepository<M>(val context: Activity) : ViewModel(), IDataFetcher<M>, IListDataFetcher<M> {
+abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetcher<M>, IListDataFetcher<M> {
 
     /**
      * 非集合数据获取接口。

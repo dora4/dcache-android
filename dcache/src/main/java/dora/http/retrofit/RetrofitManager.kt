@@ -1,5 +1,6 @@
 package dora.http.retrofit
 
+import dora.http.coroutine.flow.FlowCallAdapterFactory
 import dora.http.exception.DoraHttpException
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -79,6 +80,9 @@ object RetrofitManager {
                 if (config.isUseRxJava()) {
                     builder.addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
                 }
+                if (config.isUseFlow()) {
+                    builder.addCallAdapterFactory(FlowCallAdapterFactory())
+                }
                 retrofit = builder.build()
                 retrofitMap[clazz] = retrofit
             } else {
@@ -97,6 +101,8 @@ object RetrofitManager {
          */
         private var useRxJava: Boolean = false
 
+        private var useFlow: Boolean = false
+
         val builder = OkHttpClient.Builder()
 
         fun setClient(client: OkHttpClient) : Config {
@@ -109,12 +115,21 @@ object RetrofitManager {
             return this
         }
 
+        fun flow(useFlow: Boolean) : Config {
+            this.useFlow = useFlow
+            return this
+        }
+
         fun getClient() : OkHttpClient {
             return client
         }
 
         fun isUseRxJava() : Boolean {
             return useRxJava
+        }
+
+        fun isUseFlow() : Boolean {
+            return useFlow
         }
 
         fun okhttp(block: OkHttpClient.Builder.() -> OkHttpClient) {

@@ -238,10 +238,10 @@ object DoraHttp {
             }
             .onCompletion {
                 loadingBlock?.invoke(false)
-            }.collect()
+            }
     }
 
-    suspend fun <T> flowResult(requestBlock: () -> Flow<T>,
+    suspend fun <T> flowResult(requestBlock: suspend () -> Flow<T>,
                                successBlock: ((T) -> Unit),
                                failureBlock: ((String) -> Unit)? = null,
                                loadingBlock: ((Boolean) -> Unit)? = null

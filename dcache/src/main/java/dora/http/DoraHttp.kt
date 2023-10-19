@@ -60,7 +60,7 @@ object DoraHttp {
     }
 
     /**
-     * 在net作用域下使用，转换[DoraCallback]。
+     * 在net作用域下使用，可将请求结果[DoraCallback]进行转换。
      */
     suspend fun <T, R : dora.cache.data.adapter.Result<T>> callback(call: Call<T>, success: (model: T) -> Unit, failure: ((msg: String)
             -> Unit)? = null, realType: Class<R>? = null) = suspendCoroutine {
@@ -92,7 +92,7 @@ object DoraHttp {
     }
 
     /**
-     * 在net作用域下使用，转换[DoraListCallback]。
+     * 在net作用域下使用，可将请求结果[DoraListCallback]进行转换。
      */
     suspend fun <T> listCallback(call: Call<MutableList<T>>, success: (model: MutableList<T>)
         -> Unit, failure: ((msg: String) -> Unit)? = null) = suspendCoroutine<MutableList<T>> {
@@ -218,11 +218,14 @@ object DoraHttp {
         }
     }
 
-    suspend fun <T> flowRequest(requestBlock: suspend () -> T,
-                                loadingBlock: ((Boolean) -> Unit)? = null,
-                                errorBlock: ((String) -> Unit)? = null,
-    ) {
-        flow {
+    /**
+     * 将一个普通的api接口包装成Flow返回值的接口。
+     */
+    suspend fun <T> flowResult(requestBlock: () -> T,
+                               loadingBlock: ((Boolean) -> Unit)? = null,
+                               errorBlock: ((String) -> Unit)? = null,
+    ) : Flow<T> {
+        return flow {
             // 设置超时时间为10秒
             val response = withTimeout(10 * 1000) {
                 requestBlock()
@@ -241,10 +244,15 @@ object DoraHttp {
             }
     }
 
-    suspend fun <T> flowResult(requestBlock: suspend () -> Flow<T>,
-                               successBlock: ((T) -> Unit),
-                               failureBlock: ((String) -> Unit)? = null,
-                               loadingBlock: ((Boolean) -> Unit)? = null
+    /**
+     * 直接发起Flow请求，如果你使用框架内部的[dora.http.retrofit.RetrofitManager]的话，需要开启
+     * [dora.http.retrofit.RetrofitManager]的flow配置选项[dora.http.retrofit.RetrofitManager.Config.useFlow]
+     * 为true。
+     */
+    suspend fun <T> flowRequest(requestBlock: suspend () -> Flow<T>,
+                                successBlock: ((T) -> Unit),
+                                failureBlock: ((String) -> Unit)? = null,
+                                loadingBlock: ((Boolean) -> Unit)? = null
     ) {
         requestBlock()
             .flowOn(Dispatchers.IO)

@@ -3,6 +3,7 @@ package dora.http
 import android.app.Activity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.viewModelScope
+import dora.cache.data.adapter.ResultAdapter
 import dora.cache.repository.BaseRepository
 import dora.http.coroutine.ContextContinuation
 import dora.http.coroutine.DoraCoroutineContext
@@ -16,12 +17,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
+import okhttp3.OkHttpClient
 import retrofit2.Call
+import retrofit2.Callback
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.startCoroutine
@@ -55,6 +59,57 @@ object DoraHttp {
         viewModelScope.launch(DoraCoroutineContext(context), CoroutineStart.DEFAULT) {
             block()
         }
+    }
+
+    /**
+     * 在net作用域下使用，转换[DoraCallback]。
+     */
+    suspend fun <T, R : dora.cache.data.adapter.Result<T>> callback(call: Call<T>, success: (model: T) -> Unit, failure: ((msg: String)
+            -> Unit)? = null, realType: Class<R>? = null) = suspendCoroutine {
+        if (realType != null) {
+            call.enqueue(ResultAdapter<T, R>(object : DoraCallback<T>() {
+                override fun onSuccess(model: T) {
+                    success(model)
+                    it.resume(model)
+                }
+
+                override fun onFailure(msg: String) {
+                    failure?.invoke(msg)
+                    it.resume(null)
+                }
+            }) as DoraCallback<T>)
+        } else {
+            call.enqueue(object : DoraCallback<T>() {
+                override fun onSuccess(model: T) {
+                    success(model)
+                    it.resume(model)
+                }
+
+                override fun onFailure(msg: String) {
+                    failure?.invoke(msg)
+                    it.resume(null)
+                }
+            })
+        }
+    }
+
+    /**
+     * 在net作用域下使用，转换[DoraListCallback]。
+     */
+    suspend fun <T> listCallback(call: Call<MutableList<T>>, success: (model: MutableList<T>)
+        -> Unit, failure: ((msg: String) -> Unit)? = null) = suspendCoroutine<MutableList<T>> {
+        call.enqueue(object : DoraListCallback<T>() {
+
+            override fun onSuccess(models: MutableList<T>) {
+                success(models)
+                it.resume(models)
+            }
+
+            override fun onFailure(msg: String) {
+                failure?.invoke(msg)
+                it.resume(arrayListOf())
+            }
+        })
     }
 
     /**
@@ -165,18 +220,18 @@ object DoraHttp {
         }
     }
 
-    suspend fun <T> flowRequest(requestBlock: (lock: NetLock<Flow<T>>) -> T,
+    suspend fun <T> flowRequest(requestBlock: () -> T,
                                 loadingBlock: ((Boolean) -> Unit)? = null,
-                                errorBlock: ((String?) -> Unit)? = null,
-    ) = suspendCoroutine<Flow<T>> {
-        val flow = flow {
-            // 设置超时时间
+                                errorBlock: ((String) -> Unit)? = null,
+    ) {
+        flow {
+            // 设置超时时间为10秒
             val response = withTimeout(10 * 1000) {
-                val lock = NetLock(it)
-                requestBlock(lock)
+                requestBlock()
             }
             emit(response)
-        }.flowOn(Dispatchers.IO)
+        }
+            .flowOn(Dispatchers.IO)
             .onStart {
                 loadingBlock?.invoke(true)
             }
@@ -185,6 +240,26 @@ object DoraHttp {
             }
             .onCompletion {
                 loadingBlock?.invoke(false)
+            }
+    }
+
+    suspend fun <T> flowResult(requestBlock: suspend() -> Flow<T>,
+                                successBlock: ((T) -> Unit),
+                                loadingBlock: ((Boolean) -> Unit)? = null,
+                                errorBlock: ((String) -> Unit)? = null,
+    ) {
+        requestBlock()
+            .flowOn(Dispatchers.IO)
+            .onStart {
+                loadingBlock?.invoke(true)
+            }
+            .catch { e ->
+                errorBlock?.invoke(e.toString())
+            }
+            .onCompletion {
+                loadingBlock?.invoke(false)
+            }.collect {
+                successBlock(it)
             }
     }
 }

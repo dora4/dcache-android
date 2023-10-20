@@ -249,7 +249,7 @@ object DoraHttp {
      * [dora.http.retrofit.RetrofitManager]的flow配置选项[dora.http.retrofit.RetrofitManager.Config.useFlow]
      * 为true。
      */
-    suspend fun <T> flowRequest(requestBlock: suspend () -> Flow<T>,
+    suspend fun <T> flowRequest(requestBlock: () -> Flow<T>,
                                 successBlock: ((T) -> Unit),
                                 failureBlock: ((String) -> Unit)? = null,
                                 loadingBlock: ((Boolean) -> Unit)? = null

@@ -221,7 +221,7 @@ object DoraHttp {
     /**
      * 将一个普通的api接口包装成Flow返回值的接口。
      */
-    suspend fun <T> flowResult(requestBlock: () -> T,
+    suspend fun <T> flowResult(requestBlock: suspend () -> T,
                                loadingBlock: ((Boolean) -> Unit)? = null,
                                errorBlock: ((String) -> Unit)? = null,
     ) : Flow<T> {
@@ -249,7 +249,7 @@ object DoraHttp {
      * [dora.http.retrofit.RetrofitManager]的flow配置选项[dora.http.retrofit.RetrofitManager.Config.useFlow]
      * 为true。
      */
-    suspend fun <T> flowRequest(requestBlock: suspend () -> Flow<T>,
+    suspend fun <T> flowRequest(requestBlock: () -> Flow<T>,
                                 successBlock: ((T) -> Unit),
                                 failureBlock: ((String) -> Unit)? = null,
                                 loadingBlock: ((Boolean) -> Unit)? = null

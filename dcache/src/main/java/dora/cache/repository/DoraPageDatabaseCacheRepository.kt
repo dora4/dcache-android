@@ -92,9 +92,9 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
             (listCacheHolder as ListCacheHolder).cacheConditions.add(query())
 
             if (disallowForceUpdate()) {
-                liveData.postValue(listDataMap[mapKey()])
+                liveData.value = (listDataMap[mapKey()])
             } else {
-                liveData.postValue(it)
+                liveData.value = (it)
             }
         }
     }

@@ -11,14 +11,14 @@ import io.reactivex.functions.Consumer
  */
 object RxTransformer {
 
-    fun <T> doApi(observable: Observable<T>, consumer: Consumer<T>?) {
+    fun <T> doApiConsumer(observable: Observable<T>, consumer: Consumer<T>?) {
         observable.observeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .onErrorResumeNext(Observable.empty())
             .subscribe(consumer)
     }
 
-    fun <T> doApi(observable: Observable<T>, observer: Observer<T>?) {
+    fun <T> doApiObserver(observable: Observable<T>, observer: Observer<T>?) {
         observable.observeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .onErrorResumeNext(Observable.empty())

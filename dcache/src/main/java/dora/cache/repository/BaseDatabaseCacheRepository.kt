@@ -85,7 +85,7 @@ constructor(context: Context) : BaseRepository<M>(context) {
                         if (type === DataSource.CacheType.DATABASE) {
                             return onLoadFromCache(liveData)
                         }
-                        liveData.postValue(null)
+                        liveData.value = (null)
                         return false
                     }
 
@@ -114,7 +114,7 @@ constructor(context: Context) : BaseRepository<M>(context) {
             }
 
             override fun clearData() {
-                liveData.postValue(null)
+                liveData.value = (null)
             }
         }
     }
@@ -128,7 +128,7 @@ constructor(context: Context) : BaseRepository<M>(context) {
                         if (type === DataSource.CacheType.DATABASE) {
                             return onLoadFromCacheList(liveData)
                         }
-                        liveData.postValue(arrayListOf())
+                        liveData.value = (arrayListOf())
                         return false
                     }
 
@@ -161,7 +161,7 @@ constructor(context: Context) : BaseRepository<M>(context) {
             }
 
             override fun clearListData() {
-                liveData.postValue(arrayListOf())
+                liveData.value = (arrayListOf())
             }
         }
     }
@@ -171,7 +171,7 @@ constructor(context: Context) : BaseRepository<M>(context) {
             val model = cacheHolder.queryCache(query())
             model?.let {
                 onInterceptData(DataSource.Type.CACHE, it)
-                liveData.postValue(it)
+                liveData.value = (it)
                 return true
             }
         } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
@@ -183,7 +183,7 @@ constructor(context: Context) : BaseRepository<M>(context) {
             val models = listCacheHolder.queryCache(query())
             models?.let {
                 onInterceptData(DataSource.Type.CACHE, it)
-                liveData.postValue(it)
+                liveData.value = (it)
                 return true
             }
         } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
@@ -217,7 +217,7 @@ constructor(context: Context) : BaseRepository<M>(context) {
     }
 
     private fun rxOnLoadFromNetwork(liveData: MutableLiveData<M?>, listener: OnLoadStateListener? = null) {
-        RxTransformer.doApi(onLoadFromNetworkObservable(listener), object : Observer<M> {
+        RxTransformer.doApiObserver(onLoadFromNetworkObservable(listener), object : Observer<M> {
             override fun onSubscribe(d: Disposable?) {
             }
 
@@ -235,7 +235,7 @@ constructor(context: Context) : BaseRepository<M>(context) {
     }
 
     private fun rxOnLoadFromNetworkForList(liveData: MutableLiveData<MutableList<M>>, listener: OnLoadStateListener? = null) {
-        RxTransformer.doApi(onLoadFromNetworkObservableList(listener), object : Observer<MutableList<M>> {
+        RxTransformer.doApiObserver(onLoadFromNetworkObservableList(listener), object : Observer<MutableList<M>> {
             override fun onSubscribe(d: Disposable?) {
             }
 
@@ -274,9 +274,9 @@ constructor(context: Context) : BaseRepository<M>(context) {
             cacheHolder.addNewCache(it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
             if (disallowForceUpdate()) {
-                liveData.postValue(dataMap[mapKey()])
+                liveData.value = (dataMap[mapKey()])
             } else {
-                liveData.postValue(it)
+                liveData.value = (it)
             }
         }
     }
@@ -306,9 +306,9 @@ constructor(context: Context) : BaseRepository<M>(context) {
             listCacheHolder.addNewCache(it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
             if (disallowForceUpdate()) {
-                liveData.postValue(listDataMap[mapKey()])
+                liveData.value = (listDataMap[mapKey()])
             } else {
-                liveData.postValue(it)
+                liveData.value = (it)
             }
         }
     }

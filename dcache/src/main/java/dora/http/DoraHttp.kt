@@ -131,7 +131,7 @@ object DoraHttp {
      */
     suspend fun <T> rxApi(apiMethod: ()-> Observable<T>) = suspendCoroutine<T> {
         val data = apiMethod()
-        RxTransformer.doApi(data, object : Observer<T> {
+        RxTransformer.doApiObserver(data, object : Observer<T> {
             override fun onSubscribe(d: Disposable?) {
             }
 
@@ -169,7 +169,7 @@ object DoraHttp {
      */
     suspend fun <T> rxResult(apiMethod: ()-> Observable<T>) = suspendCoroutine<T?> {
         val data = apiMethod()
-        RxTransformer.doApi(data, object : Observer<T> {
+        RxTransformer.doApiObserver(data, object : Observer<T> {
             override fun onSubscribe(d: Disposable?) {
             }
 

@@ -52,5 +52,3 @@ api "com.github.dora4:dcache-android:$latest_version"
 | FIL(Filecoin链) | 	f1kb4amu7p3r6th5jdg4js37abwci6g5tcep752yi              | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账慢，但手续费极低 |
 | LTC(莱特币)   | LdQhi87wsayEnyJ2MKn42NYZdA3LK9UkMy | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账速度适中，手续费很低 |
 | BCH(比特现金)   | bitcoincash:qq7ppehjjwtcmahtdyraak3trkfzgf6vnv29wnufun | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账速度适中，手续费很低 |
-
-广告：助记词保管推荐【隐私保险箱】，https://www.pgyer.com/privacybox 激活码限时免费🎉

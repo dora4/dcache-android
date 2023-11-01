@@ -39,16 +39,3 @@ def latest_version = 'x.x.x'
 
 api "com.github.dora4:dcache-android:$latest_version"
 ```
-
-#### 捐赠虚拟货币支持开源项目
-
-| 链名称            | 钱包地址                                               | 备注                                                         |
-| --------------- | ------------------------------------------------------ | ------------------------------------------------------------ |
-| USDT(TRC-20链)  | TDYHjx6WzDZ6BXsSqm4aLMjZrTwrNJi7Ee                     | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币（推荐，转账快且手续费低） |
-| ETH(ERC-20链)   | 0xa3F893DE5c9613364182235436b7b924AaaF22C1             | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，以太坊L1本链的chainId=1，如为以太坊兼容链，请在邮箱中说明，比如bsc的chainId=56，polygon的chainId=137 |
-| SOL(Solana链)   | Fra3Ap9JyXo36F9JpPEemq9yXfJrGVjT57GUu7MPG9Dd           | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币 |
-| DOGE(狗狗币)    | DJXHQjvgFYMFfcB7vUynz9umfyYe57jBGG                     | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，打赏专用货币 |
-| BTC(OMNI链)     | 34DcqNrPFMgkSqCjLC7zxoCuVavdqaEEb6                     | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账较慢，安全性极高 |
-| FIL(Filecoin链) | 	f1kb4amu7p3r6th5jdg4js37abwci6g5tcep752yi              | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账慢，但手续费极低 |
-| LTC(莱特币)   | LdQhi87wsayEnyJ2MKn42NYZdA3LK9UkMy | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账速度适中，手续费很低 |
-| BCH(比特现金)   | bitcoincash:qq7ppehjjwtcmahtdyraak3trkfzgf6vnv29wnufun | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账速度适中，手续费很低 |

@@ -5,9 +5,7 @@ import dora.cache.data.visitor.IPageDataVisitor
 interface IDataPager<M> {
 
     /**
-     * 设置当前是第几页。
-     *
-     * @param currentPage 建议从0开始
+     * 设置当前是第几页，建议从0开始。
      */
     var currentPage: Int
 

@@ -17,7 +17,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
@@ -129,17 +128,17 @@ object DoraHttp {
     /**
      * RxJava的写法，在net作用域下使用，请求失败抛异常，出块则自动释放锁，和request不同的是，无需手动释放。
      */
-    suspend fun <T> rxApi(apiMethod: ()-> Observable<T>) = suspendCoroutine<T> {
+    suspend fun <T : Any> rxApi(apiMethod: ()-> Observable<T>) = suspendCoroutine<T> {
         val data = apiMethod()
         RxTransformer.doApiObserver(data, object : Observer<T> {
-            override fun onSubscribe(d: Disposable?) {
+            override fun onSubscribe(d: Disposable) {
             }
 
             override fun onNext(t: T) {
                 it.resume(t)
             }
 
-            override fun onError(e: Throwable?) {
+            override fun onError(e: Throwable) {
                 it.resumeWith(Result.failure(DoraHttpException(e.toString())))
             }
 
@@ -167,17 +166,17 @@ object DoraHttp {
     /**
      * RxJava的写法，在net作用域下使用，请求失败返回空值，出块则自动释放锁，和request不同的是，无需手动释放。
      */
-    suspend fun <T> rxResult(apiMethod: ()-> Observable<T>) = suspendCoroutine<T?> {
+    suspend fun <T : Any> rxResult(apiMethod: ()-> Observable<T>) = suspendCoroutine<T?> {
         val data = apiMethod()
         RxTransformer.doApiObserver(data, object : Observer<T> {
-            override fun onSubscribe(d: Disposable?) {
+            override fun onSubscribe(d: Disposable) {
             }
 
             override fun onNext(t: T) {
                 it.resume(t)
             }
 
-            override fun onError(e: Throwable?) {
+            override fun onError(e: Throwable) {
                 it.resumeWith(Result.success(null))
             }
 

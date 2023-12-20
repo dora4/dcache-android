@@ -3,7 +3,7 @@ package dora.cache.data.visitor
 import dora.cache.data.page.IDataPager
 
 /**
- * 分页数据的访问者。
+ * 分页数据的访问者，不破坏数据的原有结构，访问数据。
  *
  * @param <M>
  */

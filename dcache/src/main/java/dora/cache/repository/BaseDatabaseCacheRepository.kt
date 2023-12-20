@@ -218,14 +218,14 @@ constructor(context: Context) : BaseRepository<M>(context) {
 
     private fun rxOnLoadFromNetwork(liveData: MutableLiveData<M?>, listener: OnLoadStateListener? = null) {
         RxTransformer.doApiObserver(onLoadFromNetworkObservable(listener), object : Observer<M> {
-            override fun onSubscribe(d: Disposable?) {
+            override fun onSubscribe(d: Disposable) {
             }
 
             override fun onNext(model: M) {
                 parseModel(model, liveData)
             }
 
-            override fun onError(e: Throwable?) {
+            override fun onError(e: Throwable) {
                 onParseModelFailure(e.toString())
             }
 
@@ -236,14 +236,14 @@ constructor(context: Context) : BaseRepository<M>(context) {
 
     private fun rxOnLoadFromNetworkForList(liveData: MutableLiveData<MutableList<M>>, listener: OnLoadStateListener? = null) {
         RxTransformer.doApiObserver(onLoadFromNetworkObservableList(listener), object : Observer<MutableList<M>> {
-            override fun onSubscribe(d: Disposable?) {
+            override fun onSubscribe(d: Disposable) {
             }
 
-            override fun onNext(models: MutableList<M>?) {
+            override fun onNext(models: MutableList<M>) {
                 parseModels(models, liveData)
             }
 
-            override fun onError(e: Throwable?) {
+            override fun onError(e: Throwable) {
                 onParseModelsFailure(e.toString())
             }
 

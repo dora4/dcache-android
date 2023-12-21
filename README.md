@@ -30,7 +30,6 @@ SQLite数据库和Android网络数据请求相关的基础知识
 maven { url 'https://jitpack.io' }
 // 稳定版本1.8.5，最新版本为Jitpack编译出来的绿色版本
 def latest_version = '1.8.5'
-
 api "com.github.dora4:dcache-android:$latest_version"
 ```
 
@@ -248,7 +247,7 @@ api "com.github.dora4:dcache-android:$latest_version"
   我们通过RetrofitManager来管理服务，API服务即继承了ApiService接口的Retrofit的API接口。只有一个接口继承了ApiService接口，才能被RetrofitManager管理。
 
   | RetrofitManager的方法 | 描述                                                         |
-       | --------------------- | ------------------------------------------------------------ |
+  | --------------------- | ------------------------------------------------------------ |
   | checkService          | 检测一个API服务是否可用，如果不可用，则通过mappingBaseUrl()进行注册 |
   | getService            | 获取API服务对象                                              |
   | removeService         | 移除API服务对象                                              |
@@ -447,6 +446,6 @@ api "com.github.dora4:dcache-android:$latest_version"
 你也可以使用官方提供的dcache扩展包来更换数据库orm框架。
 
 ```groovy
-implementation 'com.github.dora4:dcache-room-support:1.0'
-implementation 'com.github.dora4:dcache-greendao-support:1.0'
+implementation 'com.github.dora4:dcache-room-support:1.4'
+implementation 'com.github.dora4:dcache-greendao-support:1.1'
 ```

@@ -39,7 +39,7 @@ abstract class RSAConverter : PropertyConverter<String, String> {
             val cipher: Cipher = Cipher.getInstance("RSA")
             cipher.init(Cipher.ENCRYPT_MODE, publicKey)
             Base64.encodeToString(rsaSplitCodec(cipher, Cipher.ENCRYPT_MODE, content.toByteArray(charset("UTF-8")),
-                    publicKey.getModulus().bitLength()), Base64.NO_WRAP)
+                    publicKey.modulus.bitLength()), Base64.NO_WRAP)
         } catch (e: Exception) {
             ""
         }
@@ -57,7 +57,7 @@ abstract class RSAConverter : PropertyConverter<String, String> {
             val privateKey: RSAPrivateKey = getPrivateKey(rsa_private)
             val cipher: Cipher = Cipher.getInstance("RSA")
             cipher.init(Cipher.DECRYPT_MODE, privateKey)
-            String(rsaSplitCodec(cipher, Cipher.DECRYPT_MODE, Base64.decode(content, Base64.NO_WRAP), privateKey.getModulus().bitLength())!!,
+            String(rsaSplitCodec(cipher, Cipher.DECRYPT_MODE, Base64.decode(content, Base64.NO_WRAP), privateKey.modulus.bitLength())!!,
                     Charset.forName("UTF-8"))
         } catch (e: Exception) {
             ""
@@ -119,8 +119,7 @@ abstract class RSAConverter : PropertyConverter<String, String> {
     }
 
     private fun rsaSplitCodec(cipher: Cipher, opmode: Int, datas: ByteArray, keySize: Int): ByteArray? {
-        val maxBlock: Int
-        maxBlock = if (opmode == Cipher.DECRYPT_MODE) {
+        val maxBlock: Int = if (opmode == Cipher.DECRYPT_MODE) {
             keySize / 8
         } else {
             keySize / 8 - 11
@@ -143,12 +142,12 @@ abstract class RSAConverter : PropertyConverter<String, String> {
         } catch (e: Exception) {
             throw RuntimeException("加解密阀值为[$maxBlock]的数据时发生异常", e)
         }
-        val resultDatas: ByteArray = out.toByteArray()
+        val result: ByteArray = out.toByteArray()
         try {
             out.close()
         } catch (e: IOException) {
             e.printStackTrace()
         }
-        return resultDatas
+        return result
     }
 }

@@ -9,14 +9,14 @@ import java.lang.reflect.ParameterizedType
 abstract class BaseJsonConverter<T> : PropertyConverter<T, String> {
 
     override fun convertToEntityProperty(databaseValue: String?): T? {
-        return Gson().fromJson(databaseValue, getGenericType(this)) as T
+        return Gson().fromJson(databaseValue, getGenericType(this)) as T?
     }
 
     override fun convertToDatabaseValue(entityProperty: T?): String? {
         return Gson().toJson(entityProperty)
     }
 
-    private fun getGenericType(obj: Any): Class<*>? {
+    private fun getGenericType(obj: Any): Class<*> {
         return if (obj.javaClass.genericSuperclass is ParameterizedType &&
                 (obj.javaClass.genericSuperclass as ParameterizedType).actualTypeArguments.isNotEmpty()) {
             (obj.javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<*>

@@ -1,5 +1,4 @@
 package dora.db.exception
 
-class OrmStateException : IllegalStateException {
-    constructor(message: String) : super(message)
+class OrmStateException(message: String) : IllegalStateException(message) {
 }

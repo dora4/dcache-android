@@ -2,6 +2,9 @@ package dora.db.table
 
 import dora.db.migration.OrmMigration
 
+/**
+ * 所有数据表的类都要实现此接口。
+ */
 interface OrmTable {
 
     /**

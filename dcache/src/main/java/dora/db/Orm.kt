@@ -6,7 +6,11 @@ import android.database.sqlite.SQLiteOpenHelper
 import dora.db.exception.OrmStateException
 import dora.db.table.OrmTable
 
+/**
+ * ORM框架入口。
+ */
 object Orm {
+
     private var database: SQLiteDatabase? = null
     private var dbHelper: SQLiteOpenHelper? = null
     private const val STATE_DATABASE_NOT_EXISTS = -1

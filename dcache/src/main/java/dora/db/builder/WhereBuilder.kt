@@ -27,9 +27,7 @@ class WhereBuilder {
      * 添加sql语句片段，and语句。
      */
     fun and(): WhereBuilder {
-        if (selection != null) {
-            selection += AND
-        }
+        selection += AND
         return this
     }
 
@@ -37,9 +35,7 @@ class WhereBuilder {
      * 添加sql语句片段，or语句。
      */
     fun or(): WhereBuilder {
-        if (selection != null) {
-            selection += OR
-        }
+        selection += OR
         return this
     }
 
@@ -47,11 +43,7 @@ class WhereBuilder {
      * 添加sql语句片段，not语句。
      */
     fun not(): WhereBuilder {
-        if (selection != null) {
-            selection += NOT
-        } else {
-            selection = NOT
-        }
+        selection += NOT
         return this
     }
 
@@ -313,9 +305,9 @@ class WhereBuilder {
                 this.selectionArgs!![i] = whereArgs[i].toString()
             }
         } else {
-            val tempArgs = arrayOfNulls<String>(this.selectionArgs!!.size + whereArgs.size)
-            System.arraycopy(this.selectionArgs, 0, tempArgs, 0, this.selectionArgs!!.size)
-            System.arraycopy(whereArgs, 0, tempArgs, this.selectionArgs!!.size, whereArgs.size)
+            val tempArgs = arrayOfNulls<String>(selectionArgs!!.size + whereArgs.size)
+            System.arraycopy(selectionArgs!!, 0, tempArgs, 0, selectionArgs!!.size)
+            System.arraycopy(whereArgs, 0, tempArgs, selectionArgs!!.size, whereArgs.size)
             this.selectionArgs = tempArgs
         }
         return this

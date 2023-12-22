@@ -1,6 +1,5 @@
 package dora.db.type
 
-import dora.db.DataMatcher
 import java.lang.reflect.Field
 
 abstract class DataType(val sqlType: SqlType) : DataMatcher {

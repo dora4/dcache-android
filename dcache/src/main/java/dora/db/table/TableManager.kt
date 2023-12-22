@@ -25,34 +25,36 @@ import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.util.*
 
+/**
+ * 表管理器，定义一些表级别的操作。
+ */
 object TableManager {
 
-    private val A = 'A'
-    private val Z = 'Z'
-    private val CREATE_TABLE = "CREATE TABLE"
-    private val ALTER_TABLE = "ALTER TABLE"
-    private val DROP_TABLE = "DROP TABLE"
-    private val IF_NOT_EXISTS = "IF NOT EXISTS"
-    private val ADD_COLUMN = "ADD COLUMN"
-    private val AUTO_INCREMENT = "AUTOINCREMENT"
-    private val SPACE = " "
-    private val SINGLE_QUOTES = "\'"
-    private val UNIQUE = "UNIQUE"
-    private val DEFAULT = "DEFAULT"
-    private val CHECK = "CHECK"
-    private val NOT_NULL = "NOT NULL"
-    private val PRIMARY_KEY = "PRIMARY KEY"
-    private val LEFT_PARENTHESIS = "("
-    private val RIGHT_PARENTHESIS = ")"
-    private val COMMA = ","
-    private val SEMICOLON = ";"
-    private val UNDERLINE = "_"
-    private val TABLE_NAME_HEADER = "t$UNDERLINE"
+    private const val A = 'A'
+    private const val Z = 'Z'
+    private const val CREATE_TABLE = "CREATE TABLE"
+    private const val ALTER_TABLE = "ALTER TABLE"
+    private const val DROP_TABLE = "DROP TABLE"
+    private const val IF_NOT_EXISTS = "IF NOT EXISTS"
+    private const val ADD_COLUMN = "ADD COLUMN"
+    private const val AUTO_INCREMENT = "AUTOINCREMENT"
+    private const val SPACE = " "
+    private const val SINGLE_QUOTES = "\'"
+    private const val UNIQUE = "UNIQUE"
+    private const val DEFAULT = "DEFAULT"
+    private const val CHECK = "CHECK"
+    private const val NOT_NULL = "NOT NULL"
+    private const val PRIMARY_KEY = "PRIMARY KEY"
+    private const val LEFT_PARENTHESIS = "("
+    private const val RIGHT_PARENTHESIS = ")"
+    private const val COMMA = ","
+    private const val SEMICOLON = ";"
+    private const val UNDERLINE = "_"
+    private const val TABLE_NAME_HEADER = "t$UNDERLINE"
 
     fun <T : OrmTable> getTableName(tableClass: Class<T>): String {
         val table = tableClass.getAnnotation(Table::class.java)
-        val tableName: String
-        tableName = if (table != null) {
+        val tableName: String = if (table != null) {
             table.value
         } else {
             val className = tableClass.simpleName
@@ -99,7 +101,7 @@ object TableManager {
             }
             sb.append(fieldName[i].toString().toLowerCase(Locale.ENGLISH))
         }
-        return sb.toString().toLowerCase()
+        return sb.toString().toLowerCase(Locale.ENGLISH)
     }
 
     private val declaredDataTypes: List<DataType>
@@ -218,6 +220,7 @@ object TableManager {
                 val assignType = getColumnConstraintValue(field, PrimaryKey::class.java,
                         AssignType::class.java)!!
                 if (assignType == AssignType.BY_MYSELF) {
+                    // empty，no problem
                 } else if (assignType == AssignType.AUTO_INCREMENT) {
                     builder.append(SPACE).append(AUTO_INCREMENT)
                 }

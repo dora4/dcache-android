@@ -1,7 +1,7 @@
 package dora.db.constraint
 
 /**
- * 等效于@Column("_id") + @PrimaryKey(AssignType.AUTO_INCREMENT)。
+ * 主键约束使用自增id，等效于@Column("_id") + @PrimaryKey(AssignType.AUTO_INCREMENT)。
  */
 @Target(AnnotationTarget.FIELD)
 @Retention(AnnotationRetention.RUNTIME)

@@ -4,6 +4,9 @@ import dora.db.table.OrmTable
 import dora.db.builder.QueryBuilder
 import dora.db.builder.WhereBuilder
 
+/**
+ * 数据库DAO对象CRUD操作抽象。
+ */
 interface Dao<T : OrmTable> {
 
     /**

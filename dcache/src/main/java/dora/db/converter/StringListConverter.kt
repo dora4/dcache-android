@@ -3,7 +3,7 @@ package dora.db.converter
 class StringListConverter : PropertyConverter<List<String>, String> {
 
     /**
-     * 解析数据库的值赋值给实体类。
+     * 解析数据库的值解码后赋值给实体类。
      *
      * @param databaseValue 数据库的值，如"a,b,c"
      * @return 如存放了a,b,c三个元素的List
@@ -16,7 +16,7 @@ class StringListConverter : PropertyConverter<List<String>, String> {
     }
 
     /**
-     * 将复杂数据类型映射到数据库。
+     * 将复杂数据类型编码后映射到数据库。
      *
      * @param entityProperty 如存放了a,b,c三个元素的List
      * @return 数据库的值，如"a,b,c"

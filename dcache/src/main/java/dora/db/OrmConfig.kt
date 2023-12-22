@@ -2,6 +2,9 @@ package dora.db
 
 import dora.db.table.OrmTable
 
+/**
+ * ORM配置类。
+ */
 class OrmConfig private constructor(builder: Builder) {
 
     internal val databaseName: String

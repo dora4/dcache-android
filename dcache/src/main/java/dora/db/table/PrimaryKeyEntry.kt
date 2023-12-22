@@ -2,6 +2,9 @@ package dora.db.table
 
 import java.io.Serializable
 
+/**
+ * 主键。
+ */
 open class PrimaryKeyEntry : Serializable {
 
     var name: String

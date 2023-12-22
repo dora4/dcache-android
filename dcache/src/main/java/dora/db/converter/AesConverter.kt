@@ -6,35 +6,35 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.and
 
-abstract class DesConverter : PropertyConverter<String, String> {
+abstract class AesConverter : PropertyConverter<String, String> {
 
-    abstract fun getDesKey() : ByteArray
+    abstract fun getAesKey() : ByteArray
 
     override fun convertToEntityProperty(databaseValue: String?): String? {
-        return decryptDES(getDesKey(), databaseValue)
+        return decryptAES(getAesKey(), databaseValue)
     }
 
     override fun convertToDatabaseValue(entityProperty: String?): String? {
-        return entityProperty?.let { encryptDES(getDesKey(), it) }
+        return entityProperty?.let { encryptAES(getAesKey(), it) }
     }
 
     @Throws(Exception::class)
-    open fun encryptDES(key: ByteArray, encryptString: String): String? {
+    open fun encryptAES(key: ByteArray, encryptString: String): String? {
         val zeroIv = IvParameterSpec(ByteArray(key.size))
-        val secretKeySpec = SecretKeySpec(key, "DES")
-        val cipher = Cipher.getInstance("DES/CBC/PKCS5Padding")
+        val secretKeySpec = SecretKeySpec(key, "AES")
+        val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
         cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, zeroIv)
         val encryptedData = cipher.doFinal(encryptString.toByteArray())
         return bytes2hex(encryptedData)
     }
 
     @Throws(Exception::class)
-    open fun decryptDES(key: ByteArray, decryptString: String?): String? {
+    open fun decryptAES(key: ByteArray, decryptString: String?): String? {
         if (decryptString != null && !TextUtils.isEmpty(decryptString)) {
             val byteMi: ByteArray = hex2bytes(decryptString, "")
             val zeroIv = IvParameterSpec(ByteArray(key.size))
-            val secretKeySpec = SecretKeySpec(key, "DES")
-            val cipher = Cipher.getInstance("DES/CBC/PKCS5Padding")
+            val secretKeySpec = SecretKeySpec(key, "AES")
+            val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
             cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, zeroIv)
             val decryptedData = cipher.doFinal(byteMi)
             return String(decryptedData)

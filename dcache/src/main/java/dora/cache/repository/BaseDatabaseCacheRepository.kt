@@ -26,7 +26,7 @@ import java.lang.IllegalArgumentException
 abstract class BaseDatabaseCacheRepository<M>
 constructor(context: Context) : BaseRepository<M>(context) {
 
-    protected val dataMap = HashMap<String, M>()
+    val dataMap = HashMap<String, M>()
     protected val listDataMap = HashMap<String, MutableList<M>>()
 
     /**

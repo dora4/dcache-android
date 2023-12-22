@@ -9,13 +9,16 @@ import dora.db.table.OrmTable
 import dora.db.table.TableManager
 import java.lang.reflect.InvocationTargetException
 
+/**
+ * 数据库开启助手。
+ */
 class OrmSQLiteOpenHelper(context: Context, name: String, version: Int,
                           private val tables: Array<Class<out OrmTable>>?) :
         SQLiteOpenHelper(context, name, null, version, DatabaseErrorHandler {
             dbObj -> OrmLog.e(dbObj.toString()) }) {
 
     override fun onCreate(db: SQLiteDatabase) {
-        if (tables != null && tables.isNotEmpty()) {
+        if (!tables.isNullOrEmpty()) {
             for (table in tables) {
                 TableManager.createTable(table)
             }
@@ -102,7 +105,6 @@ class OrmSQLiteOpenHelper(context: Context, name: String, version: Int,
                                 }
                             }
                         }
-//                        TableManager.upgradeTable(table)
                     }
                 }
             }

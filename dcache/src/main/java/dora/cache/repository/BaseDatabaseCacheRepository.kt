@@ -85,7 +85,7 @@ constructor(context: Context) : BaseRepository<M>(context) {
                         if (type === DataSource.CacheType.DATABASE) {
                             return onLoadFromCache(liveData)
                         }
-                        liveData.value = (null)
+                        liveData.postValue(null)
                         return false
                     }
 
@@ -114,7 +114,7 @@ constructor(context: Context) : BaseRepository<M>(context) {
             }
 
             override fun clearData() {
-                liveData.value = (null)
+                liveData.postValue(null)
             }
         }
     }
@@ -128,7 +128,7 @@ constructor(context: Context) : BaseRepository<M>(context) {
                         if (type === DataSource.CacheType.DATABASE) {
                             return onLoadFromCacheList(liveData)
                         }
-                        liveData.value = (arrayListOf())
+                        liveData.postValue(arrayListOf())
                         return false
                     }
 
@@ -161,7 +161,7 @@ constructor(context: Context) : BaseRepository<M>(context) {
             }
 
             override fun clearListData() {
-                liveData.value = (arrayListOf())
+                liveData.postValue(arrayListOf())
             }
         }
     }
@@ -171,7 +171,7 @@ constructor(context: Context) : BaseRepository<M>(context) {
             val model = cacheHolder.queryCache(query())
             model?.let {
                 onInterceptData(DataSource.Type.CACHE, it)
-                liveData.value = (it)
+                liveData.postValue(it)
                 return true
             }
         } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
@@ -183,7 +183,7 @@ constructor(context: Context) : BaseRepository<M>(context) {
             val models = listCacheHolder.queryCache(query())
             models?.let {
                 onInterceptData(DataSource.Type.CACHE, it)
-                liveData.value = (it)
+                liveData.postValue(it)
                 return true
             }
         } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
@@ -274,9 +274,9 @@ constructor(context: Context) : BaseRepository<M>(context) {
             cacheHolder.addNewCache(it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
             if (disallowForceUpdate()) {
-                liveData.value = (dataMap[mapKey()])
+                liveData.postValue(dataMap[mapKey()])
             } else {
-                liveData.value = (it)
+                liveData.postValue(it)
             }
         }
     }
@@ -306,9 +306,9 @@ constructor(context: Context) : BaseRepository<M>(context) {
             listCacheHolder.addNewCache(it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
             if (disallowForceUpdate()) {
-                liveData.value = (listDataMap[mapKey()])
+                liveData.postValue(listDataMap[mapKey()])
             } else {
-                liveData.value = (it)
+                liveData.postValue(it)
             }
         }
     }

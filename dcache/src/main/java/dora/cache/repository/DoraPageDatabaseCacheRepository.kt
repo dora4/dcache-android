@@ -61,7 +61,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
         models?.let {
             if (isLogPrint) {
                 for (model in it) {
-                    Log.d(TAG, "【$description】${model.toString()}")
+                    Log.d(TAG, "【$description】$model")
                 }
             }
             onInterceptData(DataSource.Type.NETWORK, it)
@@ -92,9 +92,9 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
             (listCacheHolder as ListCacheHolder).cacheConditions.add(query())
 
             if (disallowForceUpdate()) {
-                liveData.value = (listDataMap[mapKey()])
+                liveData.postValue(listDataMap[mapKey()])
             } else {
-                liveData.value = (it)
+                liveData.postValue(it)
             }
         }
     }

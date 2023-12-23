@@ -224,8 +224,8 @@ api "com.github.dora4:dcache-android:$latest_version"
               RetrofitManager.getConfig()
                                     .setClient(okhttpClient)
                                     .rxJava(true)
-                          .registerBaseUrl(TestService.class, "http://api.k780.com")
-                          .registerBaseUrl(AccountService.class, "http://github.com/dora4");
+                          .mappingBaseUrl(TestService.class, "http://api.k780.com")
+                          .mappingBaseUrl(AccountService.class, "http://github.com/dora4");
               ```
 
 

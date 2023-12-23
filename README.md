@@ -176,11 +176,11 @@ api "com.github.dora4:dcache-android:$latest_version"
 
       ```kotlin
       Transaction.execute(Account::class.java) {
-                      val selectOne = 			it.selectOne(QueryBuilder.create().orderBy(OrmTable.INDEX_ID))
-                      if (selectOne != null) {
-                          it.delete(selectOne)
-                      }
-                  }
+          val selectOne = it.selectOne(QueryBuilder.create().orderBy(OrmTable.INDEX_ID))
+          if (selectOne != null) {
+              it.delete(selectOne)
+          }
+      }
       ```
 
       使用Transaction.execute()可以在代码块中执行事务操作，it指代的是OrmDao&lt;Account&gt;。
@@ -203,16 +203,14 @@ api "com.github.dora4:dcache-android:$latest_version"
 
               ```kotlin
                   RetrofitManager.init {
-                          okhttp {
-                              authenticator(Authenticator.NONE)
-                              cookieJar(CookieJar.NO_COOKIES)
-                                // add返回值是boolean，所以调用了networkInterceptors还需要返回this
-                              networkInterceptors().add(FormatLogInterceptor())
-                              this
-                          }
-                          mappingBaseUrl(TestService::class.java, "http://api.k780.com")
-                                mappingBaseUrl(AccountService::class.java, "http://github.com/dora4")
+                      okhttp {
+                          // add返回值是boolean，所以调用了networkInterceptors还需要返回this
+                          networkInterceptors().add(FormatLogInterceptor())
+                          this
                       }
+                      mappingBaseUrl(TestService::class.java, "http://api.k780.com")
+                      mappingBaseUrl(AccountService::class.java, "http://github.com/dora4")
+                  }
               ```
 
               也可以通过扩展JRetrofitManager来进行url和服务的注册。
@@ -228,19 +226,15 @@ api "com.github.dora4:dcache-android:$latest_version"
                           .mappingBaseUrl(AccountService.class, "http://github.com/dora4");
               ```
 
+ - 拦截器配置
 
+   - Token拦截器
 
-     - 拦截器配置
+     你可以直接给RetrofitManager的client添加一个token拦截器来拦截token。
 
-       - Token拦截器
+   - 格式化输出响应数据到日志
 
-         你可以直接给RetrofitManager的client添加一个token拦截器来拦截token。
-
-       - 格式化输出响应数据到日志
-
-         你可以添加dora.http.log.FormatLogInterceptor来将响应数据以日志形式格式化输出。
-
-
+     你可以添加dora.http.log.FormatLogInterceptor来将响应数据以日志形式格式化输出。
 
 - API服务相关
 
@@ -313,37 +307,34 @@ api "com.github.dora4:dcache-android:$latest_version"
 
       ```kotlin
       net {
-                  val testRequest = try {
-                      api {
-                          RetrofitManager
-                                  .getService(TestService::class.java).testRequest()
-                      }
-                  } catch (e: DoraHttpException) {
-                      Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show()
-                  }
-                  val testRequest2 = api {
-                      RetrofitManager
-                              .getService(TestService::class.java).testRequest()
-                  }
-                  val testRequest3 = result {
-                      RetrofitManager
-                              .getService(TestService::class.java).testRequest()
-                  }
-                  request {
-                      // 你自己的网络请求
-                      var isSuccess = true
-                      if (isSuccess) {
-                         // 成功的回调里面要释放锁
-                         it.releaseLock()
-                      } else {
-                         // 失败的回调里面也要释放锁
-                         it.releaseLock()
-                      }      
-                      // 释放了锁后，request函数的代码执行就结束了，无论后面还有没有代码
-                      Log.e("这行代码不会被执行，你也可以释放锁来跳出循环，直接结束函数调用")
-                  }
-                  Toast.makeText(this, "$testRequest--$testRequest2--$testRequest3", Toast.LENGTH_SHORT).show()
+      		val testRequest = try {
+          		api {
+              		RetrofitManager.getService(TestService::class.java).testRequest()
               }
+          } catch (e: DoraHttpException) {
+              Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show()
+          }
+          val testRequest2 = api {
+              RetrofitManager.getService(TestService::class.java).testRequest()
+          }
+          val testRequest3 = result {
+              RetrofitManager.getService(TestService::class.java).testRequest()
+          }
+          request {
+              // 你自己的网络请求
+              var isSuccess = true
+              if (isSuccess) {
+              		// 成功的回调里面要释放锁
+                  it.releaseLock()
+              } else {
+                  // 失败的回调里面也要释放锁
+                  it.releaseLock()
+              }      
+              // 释放了锁后，request函数的代码执行就结束了，无论后面还有没有代码
+              Log.e("这行代码不会被执行，你也可以释放锁来跳出循环，直接结束函数调用")
+          }
+          Toast.makeText(this, "$testRequest--$testRequest2--$testRequest3", Toast.LENGTH_SHORT).show()
+      }
       ```
 
 #### 三、repository的使用
@@ -364,14 +355,13 @@ api "com.github.dora4:dcache-android:$latest_version"
 
    ```kotlin
        val repository = AccountRepository(this, Account::class.java)
-           repository.fetchListData("接口描述信息").observe(this,
-               Observer<List<Account>> {
-   
-               })
+       repository.fetchListData("接口描述信息").observe(this,
+           Observer<List<Account>> {
+   		})
    ```
-
-   如果设置了isListMode为false，则应该调用fetchData。
-
+   
+如果设置了isListMode为false，则应该调用fetchData。
+   
 5. **本地缓存数据处理**
 
     - 过滤
@@ -390,14 +380,14 @@ api "com.github.dora4:dcache-android:$latest_version"
         - 基于访问者模式的数据读取
 
           ```kotlin
-                          // 从Repository中获取分页器，仅限集合数据模式
+                  // 从Repository中获取分页器，仅限集合数据模式
                   val pager = repository.obtainPager()
-                          // 设置分页数据结果的回调
+                  // 设置分页数据结果的回调
                   pager.setPageCallback(object : PageCallback<Account> {
                       override fun onResult(models: List<Account>) {
                       }
                   })
-                          // 使用默认的分页访问者访问数据
+                  // 使用默认的分页访问者访问数据
                   pager.accept(DefaultPageDataVisitor<Account>())
           ```
 
@@ -446,6 +436,6 @@ api "com.github.dora4:dcache-android:$latest_version"
 你也可以使用官方提供的dcache扩展包来更换数据库orm框架。
 
 ```groovy
-implementation 'com.github.dora4:dcache-room-support:1.4'
-implementation 'com.github.dora4:dcache-greendao-support:1.1'
+	implementation 'com.github.dora4:dcache-room-support:1.4'
+	implementation 'com.github.dora4:dcache-greendao-support:1.1'
 ```

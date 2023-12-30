@@ -28,8 +28,8 @@ SQLite数据库和Android网络数据请求相关的基础知识
 
 ```groovy
 maven { url 'https://jitpack.io' }
-// 稳定版本1.8.5，最新版本为Jitpack编译出来的绿色版本
-def latest_version = '1.8.5'
+// 稳定版本1.8.6，最新版本为Jitpack编译出来的绿色版本
+def latest_version = '1.8.6'
 api "com.github.dora4:dcache-android:$latest_version"
 ```
 

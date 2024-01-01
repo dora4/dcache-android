@@ -17,12 +17,12 @@ object RetrofitManager {
     /**
      * 用于保存所有API服务对应的Retrofit对象。
      */
-    private var retrofitMap: MutableMap<Class<*>, Retrofit> = HashMap()
+    private val retrofitMap: MutableMap<Class<*>, Retrofit> = HashMap()
 
     /**
      * 用于保存所有API服务映射的URL地址。
      */
-    private var urlMap: MutableMap<Class<*>, String> = HashMap()
+    private val urlMap: MutableMap<Class<*>, String> = HashMap()
 
     /**
      * 用于保存全局的配置信息。

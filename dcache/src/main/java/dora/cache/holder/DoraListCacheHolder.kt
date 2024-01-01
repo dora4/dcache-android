@@ -11,7 +11,7 @@ import dora.db.dao.OrmDao
  */
 class DoraListCacheHolder<M, T : OrmTable>(var clazz: Class<out OrmTable>) : ListCacheHolder<M>() {
 
-    lateinit var dao: OrmDao<T>
+    private lateinit var dao: OrmDao<T>
 
     override fun init() {
         // 创建指定类型的OrmDao

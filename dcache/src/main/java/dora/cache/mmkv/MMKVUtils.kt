@@ -9,7 +9,7 @@ import com.tencent.mmkv.MMKV
  */
 object MMKVUtils {
 
-    val mmkv = MMKV.defaultMMKV()
+    private val mmkv = MMKV.defaultMMKV()
 
     fun writeString(key: String, value: String) {
         mmkv.encode(key, value)

@@ -6,7 +6,7 @@ import com.tencent.mmkv.MMKV
 
 object MMKVConfig {
 
-    private var builder: Builder = Builder()
+    private val builder: Builder = Builder()
 
     fun getBuilder() : Builder {
         return builder

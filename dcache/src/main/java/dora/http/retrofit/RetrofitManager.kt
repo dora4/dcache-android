@@ -27,7 +27,7 @@ object RetrofitManager {
     /**
      * 用于保存全局的配置信息。
      */
-    private var config: Config = Config()
+    private val config: Config = Config()
 
     /**
      * java调用它初始化全局配置。

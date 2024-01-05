@@ -436,6 +436,6 @@ api "com.github.dora4:dcache-android:$latest_version"
 你也可以使用官方提供的dcache扩展包来更换数据库orm框架。
 
 ```groovy
-	implementation 'com.github.dora4:dcache-room-support:1.4'
-	implementation 'com.github.dora4:dcache-greendao-support:1.1'
+implementation 'com.github.dora4:dcache-room-support:1.4'
+implementation 'com.github.dora4:dcache-greendao-support:1.1'
 ```

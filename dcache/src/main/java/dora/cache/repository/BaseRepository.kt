@@ -317,9 +317,18 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
 
     init {
         val repository = javaClass.getAnnotation(Repository::class.java)
-                ?: throw RuntimeException("@Repository is required.")
-        isListMode = repository.isListMode
-        isLogPrint = repository.isLogPrint
+        val listRepository = javaClass.getAnnotation(ListRepository::class.java)
+        if (repository == null && listRepository == null) {
+            throw RuntimeException("@Repository or @ListRepository is required.")
+        }
+        if (repository != null) {
+            isListMode = false
+        }
+        if (isListMode) {
+            isLogPrint = listRepository.isLogPrint
+        } else {
+            isLogPrint = repository.isLogPrint
+        }
         val MClass: Class<M> = getGenericType(this) as Class<M>
         Log.d(TAG, "MClass:$MClass,isListMode:$isListMode")
         // 二选一实现CacheHolder和DataFetcher并使用

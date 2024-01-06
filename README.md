@@ -439,6 +439,7 @@ api "com.github.dora4:dcache-android:$latest_version"
 implementation 'com.github.dora4:dcache-room-support:1.4'
 implementation 'com.github.dora4:dcache-greendao-support:1.1'
 ```
+
 7. **StateFlow学习资料**
 
 2.2.0版本新增对StateFlow的支持，数据载体LiveData和StateFlow自由选择。

@@ -30,7 +30,7 @@ object RetrofitManager {
     private val config: Config = Config()
 
     /**
-     * java调用它初始化全局配置。
+     * java或kotlin调用它初始化全局配置。
      */
     fun getConfig() : Config {
         return config

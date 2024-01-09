@@ -29,6 +29,7 @@ object Transaction {
         } catch (e: SQLiteException) {
             e.printStackTrace()
         } finally {
+            // 结束事务
             db.endTransaction()
         }
     }
@@ -49,6 +50,7 @@ object Transaction {
         } catch (e: SQLiteException) {
             e.printStackTrace()
         } finally {
+            // 结束事务
             db.endTransaction()
         }
     }

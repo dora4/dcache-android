@@ -5,7 +5,7 @@ import dora.cache.data.page.IDataPager
 import dora.http.DoraListCallback
 
 /**
- * 用于网络数据抓取。
+ * 从[androidx.lifecycle.LiveData]数据载体中直接读取内存数据的列表数据抓取器。
  */
 interface IListDataFetcher<M> {
 

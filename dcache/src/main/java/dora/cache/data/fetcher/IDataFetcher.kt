@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import dora.http.DoraCallback
 
 /**
- * 用于网络数据抓取。
+ * 从[androidx.lifecycle.LiveData]数据载体中直接读取内存数据的数据抓取器。
  */
 interface IDataFetcher<M> {
 

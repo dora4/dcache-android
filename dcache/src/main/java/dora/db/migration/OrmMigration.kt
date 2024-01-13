@@ -9,6 +9,11 @@ import java.io.Serializable
  */
 open class OrmMigration(val fromVersion: Int, val toVersion: Int) : Serializable {
 
+    /**
+     * 从fromVersion升一个版本。
+     */
+    constructor(fromVersion: Int) : this(fromVersion, fromVersion + 1)
+
     open fun <T : OrmTable> migrate(dao: OrmDao<T>) : Boolean {
         return false
     }

@@ -4,7 +4,7 @@ import dora.http.DoraCallback
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- * 用于网络数据抓取。
+ * 从[kotlinx.coroutines.flow.StateFlow]数据载体中直接读取内存数据的数据抓取器。
  */
 interface IFlowDataFetcher<M> {
 

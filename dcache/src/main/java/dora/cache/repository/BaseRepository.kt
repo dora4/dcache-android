@@ -19,8 +19,8 @@ import java.lang.reflect.ParameterizedType
 
 /**
  * 数据仓库，缓存和加载流程处理基类。一个[BaseRepository]要么用于非集合数据，要么用于集合数据。如果要用于
- * 非集合数据，请在实现类配置[Repository]注解将[.isListMode]的值设置为false，默认为集合模式。注意，
- * 无论是集合模式还是非集合模式，Repository注解都是必须的。
+ * 非集合数据，请在实现类配置[Repository]注解，如果为集合数据，请在实现类配置[ListRepository]注解。必须配置其中
+ * 一个注解。
  */
 abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetcher<M>, IListDataFetcher<M> {
 

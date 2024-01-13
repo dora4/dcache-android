@@ -2,6 +2,11 @@ package dora.cache.data.page
 
 import dora.cache.data.visitor.IPageDataVisitor
 
+/**
+ * 数据分页器，使用访问者进行访问。
+ *
+ * @see IPageDataVisitor
+ */
 interface IDataPager<M> {
 
     /**

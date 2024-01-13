@@ -7,7 +7,7 @@ package dora.db.builder
  */
 class QueryBuilder private constructor() {
 
-    var columns: Array<String>? = null
+    private var columns: Array<String>? = null
     private var group: String? = null
     private var having: String? = null
     private var order: String? = null
@@ -85,6 +85,10 @@ class QueryBuilder private constructor() {
     fun build(): String {
         return (whereBuilder.build() + (if (group != null) group else SPACE) + (if (having != null) having else SPACE)
                 + (if (order != null) order else SPACE) + if (limit != null) limit else SPACE)
+    }
+
+    fun getColumns() : Array<String>? {
+        return columns
     }
 
     fun getWhereBuilder(): WhereBuilder {

@@ -4,8 +4,10 @@ import dora.http.DoraCallback
 import dora.http.DoraListCallback
 
 /**
- * 将实现[dora.cache.data.adapter.Result]的api接口返回的model数据适配成框架需要的[dora.http.DoraListCallback]
- * 对象。功能同[dora.cache.data.adapter.ResultAdapter]，在api接口返回的数据为list数据时使用它。
+ * 将实现[dora.cache.data.adapter.Result]的REST API接口返回的model数据适配成框架需要的
+ * [dora.http.DoraListCallback]对象，用于[dora.cache.repository.BaseRepository]的onLoadFromNetwork()中。
+ *
+ * @see ResultAdapter
  */
 open class ListResultAdapter<M, R : Result<M>>(val callback: DoraListCallback<M>) : DoraCallback<R>() {
 

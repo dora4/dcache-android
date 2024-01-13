@@ -103,7 +103,7 @@ object RetrofitManager {
 
         private var useFlow: Boolean = false
 
-        val builder = OkHttpClient.Builder()
+        private val builder = OkHttpClient.Builder()
 
         fun setClient(client: OkHttpClient) : Config {
             this.client = client

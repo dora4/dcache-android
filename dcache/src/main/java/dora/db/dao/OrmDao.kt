@@ -3,6 +3,7 @@ package dora.db.dao
 import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteException
 import dora.db.Orm
 import dora.db.OrmLog
 import dora.db.builder.Condition
@@ -379,7 +380,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
 
     private fun selectInternal(builder: QueryBuilder): List<T> {
         val tableName: String = TableManager.getTableName(beanClass)
-        val columns: Array<String>? = builder.columns
+        val columns: Array<String>? = builder.getColumns()
         val group: String = builder.getGroup()
         val having: String = builder.getHaving()
         val order: String = builder.getOrder()
@@ -421,7 +422,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
             return beans[0]
         }
         val tableName: String = TableManager.getTableName(beanClass)
-        val columns: Array<String>? = builder.columns
+        val columns: Array<String>? = builder.getColumns()
         val group: String = builder.getGroup()
         val having: String = builder.getHaving()
         val order: String = builder.getOrder()
@@ -735,6 +736,25 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
         @Throws(Throwable::class)
         override fun invoke(proxy: Any?, method: Method, args: Array<out Any>): Any? {
             return method.invoke(newInstance(clazz), *args)
+        }
+    }
+
+    /**
+     * 在事务中执行，也可以使用Transaction类。
+     */
+    fun runInTransaction(block:() -> T) {
+        try {
+            // 开始事务
+            database.beginTransaction()
+            // 执行事务操作
+            block()
+            // 所有操作都没有问题，成功执行完成，设置成功的标志位，否则回滚所有操作
+            database.setTransactionSuccessful()
+        } catch (e: SQLiteException) {
+            e.printStackTrace()
+        } finally {
+            // 结束事务
+            database.endTransaction()
         }
     }
 }

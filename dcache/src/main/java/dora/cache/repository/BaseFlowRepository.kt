@@ -21,8 +21,8 @@ import java.lang.reflect.ParameterizedType
 
 /**
  * 数据仓库，缓存和加载流程处理基类。一个[BaseFlowRepository]要么用于非集合数据，要么用于集合数据。如果要用于
- * 非集合数据，请在实现类配置[Repository]注解将[.isListMode]的值设置为false，默认为集合模式。注意，
- * 无论是集合模式还是非集合模式，Repository注解都是必须的。
+ * 非集合数据，请在实现类配置[Repository]注解，如果为集合数据，请在实现类配置[ListRepository]注解。必须配置其中
+ * 一个注解。
  */
 abstract class BaseFlowRepository<M>(val context: Context) : ViewModel(), IFlowDataFetcher<M>,
     IListFlowDataFetcher<M> {
@@ -228,7 +228,7 @@ abstract class BaseFlowRepository<M>(val context: Context) : ViewModel(), IFlowD
     }
 
     /**
-     * 抓取非集合数据，返回给livedata，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过[.getLiveData()]
+     * 抓取非集合数据，返回给stateflow，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过[.geFlowData()]
      * 拿到。
      */
     override fun fetchData(description: String?, listener: OnLoadStateListener?): StateFlow<M?> {
@@ -241,7 +241,7 @@ abstract class BaseFlowRepository<M>(val context: Context) : ViewModel(), IFlowD
     }
 
     /**
-     * 抓取集合数据，返回给livedata，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过[.getListLiveData()]
+     * 抓取集合数据，返回给stateflow，以便于展示在UI上。抓取成功后会一直在stateflow中，可以通过[.getListFlowData()]
      * 拿到。
      */
     override fun fetchListData(description: String?, listener: OnLoadStateListener?): StateFlow<MutableList<M>> {

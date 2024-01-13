@@ -2,6 +2,9 @@ package dora.cache.data.page
 
 import dora.cache.data.visitor.IPageDataVisitor
 
+/**
+ * 用于对内存数据进行分页。
+ */
 class DataPager<M>(override val models: MutableList<M>) : IDataPager<M> {
 
     /**

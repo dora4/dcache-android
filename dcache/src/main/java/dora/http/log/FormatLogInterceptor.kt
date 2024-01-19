@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 
 class FormatLogInterceptor : Interceptor {
 
-    var mPrinter: FormatPrinter = DefaultFormatPrinter()
+    var printer: FormatPrinter = DefaultFormatPrinter()
     var printLevel = Level.ALL
 
     @Throws(IOException::class)
@@ -22,9 +22,9 @@ class FormatLogInterceptor : Interceptor {
         if (logRequest) {
             // 打印请求信息
             if (request.body != null && isParseable(request.body!!.contentType())) {
-                mPrinter.printJsonRequest(request, parseParams(request))
+                printer.printJsonRequest(request, parseParams(request))
             } else {
-                mPrinter.printFileRequest(request)
+                printer.printFileRequest(request)
             }
         }
         val logResponse = printLevel == Level.ALL || printLevel != Level.NONE && printLevel == Level.RESPONSE
@@ -52,10 +52,10 @@ class FormatLogInterceptor : Interceptor {
             val message = originalResponse.message
             val url = originalResponse.request.url.toString()
             if (responseBody != null && isParseable(responseBody.contentType())) {
-                mPrinter.printJsonResponse(TimeUnit.NANOSECONDS.toMillis(t2 - t1), isSuccessful,
+                printer.printJsonResponse(TimeUnit.NANOSECONDS.toMillis(t2 - t1), isSuccessful,
                         code, header, responseBody.contentType(), bodyString, segmentList, message, url)
             } else {
-                mPrinter.printFileResponse(TimeUnit.NANOSECONDS.toMillis(t2 - t1),
+                printer.printFileResponse(TimeUnit.NANOSECONDS.toMillis(t2 - t1),
                         isSuccessful, code, header, segmentList, message, url)
             }
         }

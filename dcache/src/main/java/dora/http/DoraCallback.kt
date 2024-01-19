@@ -4,6 +4,9 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+/**
+ * REST API返回非列表数据的回调。
+ */
 abstract class DoraCallback<M> : Callback<M> {
 
     abstract fun onSuccess(model: M)

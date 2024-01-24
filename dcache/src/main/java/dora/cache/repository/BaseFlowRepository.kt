@@ -79,9 +79,10 @@ abstract class BaseFlowRepository<M>(val context: Context) : ViewModel(), IFlowD
      * 手动放入缓存数据，仅listMode为true时使用，注意只会追加到缓存里面去，请调用接口将新数据也更新到服务端，以致
      * 于下次请求api接口时也会有这部分数据。
      */
-    fun addData(data: M) {
+    fun addData(data: M, listener: OnSyncListener<M>?) {
         if (isListMode) {
-            addData(arrayListOf(data))
+            addData(arrayListOf(data), listener)
+            listener?.onSyncData(true, arrayListOf(data))
         }
     }
 
@@ -89,14 +90,17 @@ abstract class BaseFlowRepository<M>(val context: Context) : ViewModel(), IFlowD
      * 手动放入一堆缓存数据，仅listMode为true时使用，注意只会追加到缓存里面去，请调用接口将新数据也更新到服务端，
      * 以致于下次请求api接口时也会有这部分数据。
      */
-    fun addData(data: MutableList<M>) {
+    fun addData(data: MutableList<M>, listener: OnSyncListener<M>?) {
+        if (data.size == 0) return
         if (isListMode) {
-            getListFlowData().value?.let {
+            getListFlowData().value.let {
                 it.addAll(data)
                 listCacheHolder.addNewCache(data)
+                listener?.onSyncData(data.size == 1, data)
             }
         }
     }
+
 
     /**
      * 保证成员属性不为空，而成功调用数据库查询方法，提高查询可靠性。比如用来校验属性，a != null && b != null
@@ -181,6 +185,17 @@ abstract class BaseFlowRepository<M>(val context: Context) : ViewModel(), IFlowD
      * @return 数据是否获取成功
      */
     protected abstract fun selectData(ds: DataSource): Boolean
+
+    /**
+     * 手动添加数据，也需要同步数据给后端。
+     */
+    interface OnSyncListener<M> {
+
+        /**
+         * 在此回调中调用REST API同步数据给后端，isSingle是否为单条数据。
+         */
+        fun onSyncData(isSingle: Boolean, data: MutableList<M>)
+    }
 
     /**
      * 数据的来源。

@@ -12,7 +12,7 @@ import dora.cache.data.fetcher.IListFlowDataFetcher
 import dora.cache.data.fetcher.OnLoadStateListener
 import dora.cache.data.fetcher.OnLoadStateListenerImpl
 import dora.cache.data.page.IDataPager
-import dora.cache.holder.CacheHolder
+import dora.cache.holder.DatabaseCacheHolder
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import io.reactivex.Observable
@@ -40,12 +40,12 @@ abstract class BaseFlowRepository<M>(val context: Context) : ViewModel(), IFlowD
     /**
      * 非集合数据缓存接口。
      */
-    protected lateinit var cacheHolder: CacheHolder<M>
+    protected lateinit var databaseCacheHolder: DatabaseCacheHolder<M>
 
     /**
      * 集合数据缓存接口。
      */
-    protected lateinit var listCacheHolder: CacheHolder<MutableList<M>>
+    protected lateinit var listDatabaseCacheHolder: DatabaseCacheHolder<MutableList<M>>
 
     /**
      * true代表用于集合数据，false用于非集合数据。
@@ -71,9 +71,9 @@ abstract class BaseFlowRepository<M>(val context: Context) : ViewModel(), IFlowD
 
     protected abstract fun createListDataFetcher(): IListFlowDataFetcher<M>
 
-    protected abstract fun createCacheHolder(clazz: Class<M>): CacheHolder<M>
+    protected abstract fun createCacheHolder(clazz: Class<M>): DatabaseCacheHolder<M>
 
-    protected abstract fun createListCacheHolder(clazz: Class<M>): CacheHolder<MutableList<M>>
+    protected abstract fun createListCacheHolder(clazz: Class<M>): DatabaseCacheHolder<MutableList<M>>
 
     /**
      * 手动放入缓存数据，仅listMode为true时使用，注意只会追加到缓存里面去，请调用接口将新数据也更新到服务端，以致
@@ -95,7 +95,7 @@ abstract class BaseFlowRepository<M>(val context: Context) : ViewModel(), IFlowD
         if (isListMode) {
             getListFlowData().value.let {
                 it.addAll(data)
-                listCacheHolder.addNewCache(data)
+                listDatabaseCacheHolder.addNewCache(data)
                 listener?.onSyncData(data.size == 1, data)
             }
         }
@@ -351,12 +351,12 @@ abstract class BaseFlowRepository<M>(val context: Context) : ViewModel(), IFlowD
         Log.d(TAG, "MClass:$MClass,isListMode:$isListMode")
         // 二选一实现CacheHolder和DataFetcher并使用
         if (isListMode) {
-            listCacheHolder = createListCacheHolder(MClass)
-            listCacheHolder.init()
+            listDatabaseCacheHolder = createListCacheHolder(MClass)
+            listDatabaseCacheHolder.init()
             listDataFetcher = createListDataFetcher()
         } else {
-            cacheHolder = createCacheHolder(MClass)
-            cacheHolder.init()
+            databaseCacheHolder = createCacheHolder(MClass)
+            databaseCacheHolder.init()
             dataFetcher = createDataFetcher()
         }
     }

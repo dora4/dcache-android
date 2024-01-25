@@ -167,7 +167,7 @@ constructor(context: Context) : BaseFlowRepository<M>(context) {
 
     private fun onLoadFromCache(flowData: MutableStateFlow<M?>) : Boolean {
         if (checkValuesNotNull()) {
-            val model = cacheHolder.queryCache(query())
+            val model = databaseCacheHolder.queryCache(query())
             model?.let {
                 onInterceptData(DataSource.Type.CACHE, it)
                 flowData.value = it
@@ -179,7 +179,7 @@ constructor(context: Context) : BaseFlowRepository<M>(context) {
 
     private fun onLoadFromCacheList(flowData: MutableStateFlow<MutableList<M>>) : Boolean {
         if (checkValuesNotNull()) {
-            val models = listCacheHolder.queryCache(query())
+            val models = listDatabaseCacheHolder.queryCache(query())
             models?.let {
                 onInterceptData(DataSource.Type.CACHE, it)
                 flowData.value = it
@@ -259,18 +259,18 @@ constructor(context: Context) : BaseFlowRepository<M>(context) {
             onInterceptData(DataSource.Type.NETWORK, it)
             if (!disallowForceUpdate()) {
                 if (checkValuesNotNull()) {
-                    cacheHolder.removeOldCache(query())
+                    databaseCacheHolder.removeOldCache(query())
                 } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
             } else {
                 if (dataMap.containsKey(mapKey())) {
                     if (checkValuesNotNull()) {
-                        cacheHolder.removeOldCache(query())
+                        databaseCacheHolder.removeOldCache(query())
                     } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
                 } else {
                     dataMap[mapKey()] = it
                 }
             }
-            cacheHolder.addNewCache(it)
+            databaseCacheHolder.addNewCache(it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
             if (disallowForceUpdate()) {
                 flowData.value = dataMap[mapKey()]
@@ -291,18 +291,18 @@ constructor(context: Context) : BaseFlowRepository<M>(context) {
             onInterceptData(DataSource.Type.NETWORK, it)
             if (!disallowForceUpdate()) {
                 if (checkValuesNotNull()) {
-                    listCacheHolder.removeOldCache(query())
+                    listDatabaseCacheHolder.removeOldCache(query())
                 } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
             } else {
                 if (listDataMap.containsKey(mapKey())) {
                     if (checkValuesNotNull()) {
-                        listCacheHolder.removeOldCache(query())
+                        listDatabaseCacheHolder.removeOldCache(query())
                     } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
                 } else {
                     listDataMap[mapKey()] = it
                 }
             }
-            listCacheHolder.addNewCache(it)
+            listDatabaseCacheHolder.addNewCache(it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
             if (disallowForceUpdate()) {
                 flowData.value = listDataMap[mapKey()]!!
@@ -323,7 +323,7 @@ constructor(context: Context) : BaseFlowRepository<M>(context) {
         if (isClearDataOnNetworkError) {
             if (checkValuesNotNull()) {
                 clearData()
-                cacheHolder.removeOldCache(query())
+                databaseCacheHolder.removeOldCache(query())
             } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
         }
     }
@@ -339,7 +339,7 @@ constructor(context: Context) : BaseFlowRepository<M>(context) {
         if (isClearDataOnNetworkError) {
             if (checkValuesNotNull()) {
                 clearListData()
-                listCacheHolder.removeOldCache(query())
+                listDatabaseCacheHolder.removeOldCache(query())
             } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
         }
     }

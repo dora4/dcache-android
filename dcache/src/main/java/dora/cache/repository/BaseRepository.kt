@@ -12,6 +12,8 @@ import dora.cache.data.fetcher.OnLoadStateListener
 import dora.cache.data.fetcher.OnLoadStateListenerImpl
 import dora.cache.data.page.IDataPager
 import dora.cache.holder.CacheHolder
+import dora.cache.holder.CacheHolderFactory
+import dora.cache.holder.DatabaseCacheHolder
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import io.reactivex.Observable
@@ -22,7 +24,7 @@ import java.lang.reflect.ParameterizedType
  * 非集合数据，请在实现类配置[Repository]注解，如果为集合数据，请在实现类配置[ListRepository]注解。必须配置其中
  * 一个注解。
  */
-abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetcher<M>, IListDataFetcher<M> {
+abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context) : ViewModel(), IDataFetcher<M>, IListDataFetcher<M> {
 
     /**
      * 非集合数据获取接口。
@@ -33,6 +35,11 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
      * 集合数据获取接口。
      */
     protected lateinit var listDataFetcher: IListDataFetcher<M>
+
+    /**
+     * 抽象工厂。
+     */
+    protected lateinit var cacheHolderFactory: F
 
     /**
      * 非集合数据缓存接口。
@@ -64,47 +71,17 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
     protected val isClearDataOnNetworkError: Boolean
         protected get() = false
 
+    protected abstract fun cacheHolderFactory() : F
+
     protected abstract fun createDataFetcher(): IDataFetcher<M>
 
     protected abstract fun createListDataFetcher(): IListDataFetcher<M>
 
-    protected abstract fun createCacheHolder(clazz: Class<M>): CacheHolder<M>
+    protected abstract fun createCacheHolder(clazz: Class<M>): DatabaseCacheHolder<M>
 
-    protected abstract fun createListCacheHolder(clazz: Class<M>): CacheHolder<MutableList<M>>
+    protected abstract fun createListCacheHolder(clazz: Class<M>): DatabaseCacheHolder<MutableList<M>>
 
-    /**
-     * 手动放入缓存数据，仅listMode为true时使用，注意只会追加到缓存里面去，请调用接口将新数据也更新到服务端，以致
-     * 于下次请求api接口时也会有这部分数据。
-     */
-    fun addData(data: M, listener: OnSyncListener<M>?) {
-        if (isListMode) {
-            addData(arrayListOf(data), listener)
-            listener?.onSyncData(true, arrayListOf(data))
-        }
-    }
 
-    /**
-     * 手动放入一堆缓存数据，仅listMode为true时使用，注意只会追加到缓存里面去，请调用接口将新数据也更新到服务端，
-     * 以致于下次请求api接口时也会有这部分数据。
-     */
-    fun addData(data: MutableList<M>, listener: OnSyncListener<M>?) {
-        if (data.size == 0) return
-        if (isListMode) {
-            getListLiveData().value?.let {
-                it.addAll(data)
-                listCacheHolder.addNewCache(data)
-                listener?.onSyncData(data.size == 1, data)
-            }
-        }
-    }
-
-    /**
-     * 保证成员属性不为空，而成功调用数据库查询方法，提高查询可靠性。比如用来校验属性，a != null && b != null
-     * && c != null。
-     *
-     * @see BaseDatabaseCacheRepository.query
-     */
-    protected open fun checkValuesNotNull() : Boolean { return true }
 
     override fun callback(): DoraCallback<M> {
         return object : DoraCallback<M>() {
@@ -219,9 +196,9 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
             DATABASE,
 
             /**
-             * 自定义的数据仓库。
+             * MMKV缓存。
              */
-            CUSTOM
+            MMKV
         }
 
         /**
@@ -347,11 +324,11 @@ abstract class BaseRepository<M>(val context: Context) : ViewModel(), IDataFetch
         Log.d(TAG, "MClass:$MClass,isListMode:$isListMode")
         // 二选一实现CacheHolder和DataFetcher并使用
         if (isListMode) {
-            listCacheHolder = createListCacheHolder(MClass)
+            listCacheHolder = cacheHolderFactory.createListCacheHolder()
             listCacheHolder.init()
             listDataFetcher = createListDataFetcher()
         } else {
-            cacheHolder = createCacheHolder(MClass)
+            cacheHolder = cacheHolderFactory.createCacheHolder()
             cacheHolder.init()
             dataFetcher = createDataFetcher()
         }

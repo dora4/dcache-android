@@ -9,14 +9,12 @@ import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.fetcher.OnLoadStateListener
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
-import dora.cache.holder.DatabaseCacheHolder
-import dora.cache.holder.DatabaseCacheHolderFactory
-import dora.cache.holder.DoraDatabaseCacheHolder
-import dora.cache.holder.DoraListDatabaseCacheHolder
+import dora.cache.holder.DoraListMMKVCacheHolder
+import dora.cache.holder.DoraMMKVCacheHolder
+import dora.cache.holder.MMKVCacheHolderFactory
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import dora.db.builder.WhereBuilder
-import dora.db.table.OrmTable
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import dora.http.rx.RxTransformer
@@ -28,81 +26,11 @@ import java.lang.IllegalArgumentException
 /**
  * 使用内置SQLite数据库进行缓存的仓库。
  */
-abstract class BaseDatabaseCacheRepository<M, T : OrmTable>
-constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, T>>(context) {
-
-    protected val dataMap = HashMap<String, M>()
-    protected val listDataMap = HashMap<String, MutableList<M>>()
-
-    /**
-     * 保证成员属性不为空，而成功调用数据库查询方法，提高查询可靠性。比如用来校验属性，a != null && b != null
-     * && c != null。
-     *
-     * @see BaseDatabaseCacheRepository.query
-     */
-    protected open fun checkValuesNotNull() : Boolean { return true }
-
-    /**
-     * 手动放入缓存数据，仅listMode为true时使用，注意只会追加到缓存里面去，请调用接口将新数据也更新到服务端，以致
-     * 于下次请求api接口时也会有这部分数据。
-     */
-    fun addData(data: M, listener: OnSyncListener<M>?) {
-        if (isListMode) {
-            addData(arrayListOf(data), listener)
-            listener?.onSyncData(true, arrayListOf(data))
-        }
-    }
-
-    /**
-     * 手动放入一堆缓存数据，仅listMode为true时使用，注意只会追加到缓存里面去，请调用接口将新数据也更新到服务端，
-     * 以致于下次请求api接口时也会有这部分数据。
-     */
-    fun addData(data: MutableList<M>, listener: OnSyncListener<M>?) {
-        if (data.size == 0) return
-        if (isListMode) {
-            getListLiveData().value?.let {
-                it.addAll(data)
-                (listCacheHolder as DoraListDatabaseCacheHolder<M, T>).addNewCache(data)
-                listener?.onSyncData(data.size == 1, data)
-            }
-        }
-    }
-
-    /**
-     * 如果返回true，则放弃强制覆盖原有数据的模式，而采用map映射，注意这种方式在程序退出后会丢失map缓存的数据。
-     */
-    protected open fun disallowForceUpdate() : Boolean {
-        return false
-    }
-
-    /**
-     * 只要mapKey的值不冲突即可追加缓存，读取的时候则通过mapKey取不同条件（如接口的参数不同，请求的时间戳不同等）
-     * 接口返回的数据的缓存。
-     */
-    protected open fun mapKey() : String {
-        // 通过时间戳保证打开disallowForceUpdate后每次接口返回的数据都被缓存到map，而不是livedata
-        return System.currentTimeMillis().toString()
-    }
-
-    /**
-     * 根据查询条件进行初步的过滤从数据库加载的数据，过滤不完全则再调用onInterceptData。通常在断网情况下，指定
-     * 离线数据的过滤条件。
-     *
-     * @return
-     */
-    @Deprecated(message = "Use query() instead.",
-            replaceWith = ReplaceWith("query"),
-            level = DeprecationLevel.ERROR)
-    protected open fun where(): Condition {
-        return WhereBuilder.create().toCondition()
-    }
-
-    protected open fun query(): Condition {
-        return QueryBuilder.create().toCondition()
-    }
+abstract class BaseMMKVCacheRepository<M>
+constructor(context: Context) : BaseRepository<M, MMKVCacheHolderFactory<M>>(context) {
 
     override fun selectData(ds: DataSource): Boolean {
-        val isLoaded = ds.loadFromCache(DataSource.CacheType.DATABASE)
+        val isLoaded = ds.loadFromCache(DataSource.CacheType.MMKV)
         return if (isNetworkAvailable) {
             try {
                 ds.loadFromNetwork()
@@ -117,11 +45,10 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
     override fun createDataFetcher(): DataFetcher<M> {
         return object : DataFetcher<M>() {
 
-
             override fun fetchData(description: String?, listener: OnLoadStateListener?): LiveData<M?> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
-                        if (type === DataSource.CacheType.DATABASE) {
+                        if (type === DataSource.CacheType.MMKV) {
                             return onLoadFromCache(liveData)
                         }
                         liveData.postValue(null)
@@ -164,7 +91,7 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
             override fun fetchListData(description: String?, listener: OnLoadStateListener?): LiveData<MutableList<M>> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
-                        if (type === DataSource.CacheType.DATABASE) {
+                        if (type === DataSource.CacheType.MMKV) {
                             return onLoadFromCacheList(liveData)
                         }
                         liveData.postValue(arrayListOf())
@@ -206,26 +133,22 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
     }
 
     private fun onLoadFromCache(liveData: MutableLiveData<M?>) : Boolean {
-        if (checkValuesNotNull()) {
-            val model = (cacheHolder as DoraDatabaseCacheHolder<M, T>).queryCache(query())
-            model?.let {
-                onInterceptData(DataSource.Type.CACHE, it)
-                liveData.postValue(it)
-                return true
-            }
-        } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        val model = (cacheHolder as DoraMMKVCacheHolder).readCache(TAG)
+        model?.let {
+            onInterceptData(DataSource.Type.CACHE, it)
+            liveData.postValue(it)
+            return true
+        }
         return false
     }
 
     private fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<M>>) : Boolean {
-        if (checkValuesNotNull()) {
-            val models = (listCacheHolder as DoraListDatabaseCacheHolder<M, T>).queryCache(query())
-            models?.let {
-                onInterceptData(DataSource.Type.CACHE, it)
-                liveData.postValue(it)
-                return true
-            }
-        } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        val models = (listCacheHolder as DoraListMMKVCacheHolder).readCache(TAG)
+        models?.let {
+            onInterceptData(DataSource.Type.CACHE, it)
+            liveData.postValue(it)
+            return true
+        }
         return false
     }
 
@@ -297,26 +220,9 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
                 Log.d(TAG, "【$description】$it")
             }
             onInterceptData(DataSource.Type.NETWORK, it)
-            if (!disallowForceUpdate()) {
-                if (checkValuesNotNull()) {
-                    (cacheHolder as DoraDatabaseCacheHolder<M, T>).removeOldCache(query())
-                } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
-            } else {
-                if (dataMap.containsKey(mapKey())) {
-                    if (checkValuesNotNull()) {
-                        (cacheHolder as DoraDatabaseCacheHolder<M, T>).removeOldCache(query())
-                    } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
-                } else {
-                    dataMap[mapKey()] = it
-                }
-            }
-            (cacheHolder as DoraDatabaseCacheHolder<M, T>).addNewCache(it)
+            (cacheHolder as DoraMMKVCacheHolder).addNewCache(TAG, it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
-            if (disallowForceUpdate()) {
-                liveData.postValue(dataMap[mapKey()])
-            } else {
-                liveData.postValue(it)
-            }
+            liveData.postValue(it)
         }
     }
 
@@ -329,26 +235,10 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
                 }
             }
             onInterceptData(DataSource.Type.NETWORK, it)
-            if (!disallowForceUpdate()) {
-                if (checkValuesNotNull()) {
-                    (listCacheHolder as DoraListDatabaseCacheHolder<M, T>).removeOldCache(query())
-                } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
-            } else {
-                if (listDataMap.containsKey(mapKey())) {
-                    if (checkValuesNotNull()) {
-                        (listCacheHolder as DoraListDatabaseCacheHolder<M, T>).removeOldCache(query())
-                    } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
-                } else {
-                    listDataMap[mapKey()] = it
-                }
-            }
-            (listCacheHolder as DoraListDatabaseCacheHolder<M, T>).addNewCache(it)
+            (listCacheHolder as DoraListMMKVCacheHolder).removeOldCache(TAG)
+            (listCacheHolder as DoraListMMKVCacheHolder).addNewCache(TAG, it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
-            if (disallowForceUpdate()) {
-                liveData.postValue(listDataMap[mapKey()])
-            } else {
-                liveData.postValue(it)
-            }
+            liveData.postValue(it)
         }
     }
 
@@ -361,10 +251,8 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
         }
         listener?.onLoad(OnLoadStateListener.FAILURE)
         if (isClearDataOnNetworkError) {
-            if (checkValuesNotNull()) {
-                clearData()
-                (cacheHolder as DoraDatabaseCacheHolder<M, T>).removeOldCache(query())
-            } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            clearData()
+            (cacheHolder as DoraMMKVCacheHolder).removeOldCache(TAG)
         }
     }
 
@@ -377,10 +265,8 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
         }
         listener?.onLoad(OnLoadStateListener.FAILURE)
         if (isClearDataOnNetworkError) {
-            if (checkValuesNotNull()) {
-                clearListData()
-                (listCacheHolder as DoraListDatabaseCacheHolder<M, T>).removeOldCache(query())
-            } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            clearListData()
+            (listCacheHolder as DoraListMMKVCacheHolder).readCache(TAG)
         }
     }
 }

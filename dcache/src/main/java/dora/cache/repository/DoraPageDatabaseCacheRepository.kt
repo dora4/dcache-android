@@ -3,7 +3,7 @@ package dora.cache.repository
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
-import dora.cache.holder.ListCacheHolder
+import dora.cache.holder.ListDatabaseCacheHolder
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import dora.db.table.OrmTable
@@ -68,7 +68,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
             if (!disallowForceUpdate()) {
                 if (checkValuesNotNull()) {
                     // 移除之前所有的条件的数据
-                    for (condition in (listCacheHolder as ListCacheHolder).cacheConditions) {
+                    for (condition in (listCacheHolder as ListDatabaseCacheHolder).cacheConditions) {
                         listCacheHolder.removeOldCache(condition)
                     }
                     listCacheHolder.removeOldCache(query())
@@ -89,7 +89,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
             }
             temp.addAll(it)
             listCacheHolder.addNewCache(temp)
-            (listCacheHolder as ListCacheHolder).cacheConditions.add(query())
+            (listCacheHolder as ListDatabaseCacheHolder).cacheConditions.add(query())
 
             if (disallowForceUpdate()) {
                 liveData.postValue(listDataMap[mapKey()])

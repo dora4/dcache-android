@@ -9,7 +9,7 @@ import dora.db.dao.OrmDao
 /**
  * 内置的ListCacheHolder，默认实现。
  */
-class DoraListCacheHolder<M, T : OrmTable>(var clazz: Class<out OrmTable>) : ListCacheHolder<M>() {
+class DoraListDatabaseCacheHolder<M, T : OrmTable>(var clazz: Class<out OrmTable>) : ListDatabaseCacheHolder<M>() {
 
     private lateinit var dao: OrmDao<T>
 

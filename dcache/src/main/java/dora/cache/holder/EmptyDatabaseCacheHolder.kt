@@ -2,7 +2,7 @@ package dora.cache.holder
 
 import dora.db.builder.Condition
 
-class EmptyCacheHolder<M> : CacheHolder<M> {
+class EmptyDatabaseCacheHolder<M> : DatabaseCacheHolder<M> {
 
     override fun init() {
     }

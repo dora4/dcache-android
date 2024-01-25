@@ -2,7 +2,7 @@ package dora.cache.repository
 
 import android.content.Context
 import android.util.Log
-import dora.cache.holder.ListCacheHolder
+import dora.cache.holder.ListDatabaseCacheHolder
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import dora.db.table.OrmTable
@@ -68,15 +68,15 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
             if (!disallowForceUpdate()) {
                 if (checkValuesNotNull()) {
                     // 移除之前所有的条件的数据
-                    for (condition in (listCacheHolder as ListCacheHolder).cacheConditions) {
-                        listCacheHolder.removeOldCache(condition)
+                    for (condition in (listDatabaseCacheHolder as ListDatabaseCacheHolder).cacheConditions) {
+                        listDatabaseCacheHolder.removeOldCache(condition)
                     }
-                    listCacheHolder.removeOldCache(query())
+                    listDatabaseCacheHolder.removeOldCache(query())
                 } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
             } else {
                 if (listDataMap.containsKey(mapKey())) {
                     if (checkValuesNotNull()) {
-                        listCacheHolder.removeOldCache(query())
+                        listDatabaseCacheHolder.removeOldCache(query())
                     } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
                 } else {
                     listDataMap[mapKey()] = it
@@ -88,8 +88,8 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
                 temp.addAll(v)
             }
             temp.addAll(it)
-            listCacheHolder.addNewCache(temp)
-            (listCacheHolder as ListCacheHolder).cacheConditions.add(query())
+            listDatabaseCacheHolder.addNewCache(temp)
+            (listDatabaseCacheHolder as ListDatabaseCacheHolder).cacheConditions.add(query())
 
             if (disallowForceUpdate()) {
                 flowData.value = listDataMap[mapKey()]!!

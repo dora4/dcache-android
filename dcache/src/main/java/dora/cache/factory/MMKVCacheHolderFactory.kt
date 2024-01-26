@@ -1,5 +1,6 @@
 package dora.cache.factory
 
+import com.google.gson.reflect.TypeToken
 import dora.cache.holder.CacheHolder
 import dora.cache.holder.DoraListMMKVCacheHolder
 import dora.cache.holder.DoraMMKVCacheHolder
@@ -12,7 +13,7 @@ class MMKVCacheHolderFactory<M> : CacheHolderFactory<M> {
     }
 
     override fun createListCacheHolder(): CacheHolder<MutableList<M>> {
-        return DoraListMMKVCacheHolder<M>(getGenericType(this) as Class<MutableList<M>>)
+        return DoraListMMKVCacheHolder<M>((object : TypeToken<MutableList<M>>(){}.rawType) as Class<MutableList<M>>)
     }
 
     private fun getGenericType(obj: Any): Class<*> {

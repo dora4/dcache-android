@@ -8,12 +8,12 @@ import dora.cache.holder.CacheHolder
 interface CacheHolderFactory<M> {
 
     /**
-     * 创建一个非集合模式的[CacheHolder]
+     * 创建一个非集合模式的[CacheHolder]。
      */
     fun createCacheHolder() : CacheHolder<M>
 
     /**
-     * 创建一个集合模式的[CacheHolder]
+     * 创建一个集合模式的[CacheHolder]。
      */
     fun createListCacheHolder() : CacheHolder<MutableList<M>>
 }

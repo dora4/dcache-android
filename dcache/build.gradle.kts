@@ -41,6 +41,7 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
 
     api("com.tencent:mmkv:1.2.16")
+    implementation("com.google.firebase:firebase-crashlytics-buildtools:2.9.9")
 }
 
 afterEvaluate {
@@ -50,7 +51,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.github.dora4"
                 artifactId = "dcache-android"
-                version = "2.2.3"
+                version = "2.2.4"
             }
         }
     }

@@ -15,5 +15,8 @@ interface MMKVCacheHolder<M> : CacheHolder<M> {
      */
     fun addNewCache(key: String, model: M)
 
+    /**
+     * 读取mmkv缓存。
+     */
     fun readCache(key: String) : M?
 }

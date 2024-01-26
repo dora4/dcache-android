@@ -7,9 +7,13 @@ import dora.cache.data.fetcher.ListFlowDataFetcher
 import dora.cache.data.fetcher.OnLoadStateListener
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
+import dora.cache.factory.DatabaseCacheHolderFactory
+import dora.cache.holder.DatabaseCacheHolder
+import dora.cache.holder.ListDatabaseCacheHolder
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import dora.db.builder.WhereBuilder
+import dora.db.table.OrmTable
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import dora.http.rx.RxTransformer
@@ -23,11 +27,11 @@ import java.lang.IllegalArgumentException
 /**
  * 使用内置SQLite数据库进行缓存的仓库。
  */
-abstract class BaseFlowDatabaseCacheRepository<M>
-constructor(context: Context) : BaseFlowRepository<M>(context) {
+abstract class BaseFlowDatabaseCacheRepository<T : OrmTable>
+constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory<T>>(context) {
 
-    protected val dataMap = HashMap<String, M>()
-    protected val listDataMap = HashMap<String, MutableList<M>>()
+    protected val dataMap = HashMap<String, T>()
+    protected val listDataMap = HashMap<String, MutableList<T>>()
 
     /**
      * 如果返回true，则放弃强制覆盖原有数据的模式，而采用map映射，注意这种方式在程序退出后会丢失map缓存的数据。
@@ -75,10 +79,10 @@ constructor(context: Context) : BaseFlowRepository<M>(context) {
         } else isLoaded
     }
 
-    override fun createDataFetcher(): FlowDataFetcher<M> {
-        return object : FlowDataFetcher<M>() {
+    override fun createDataFetcher(): FlowDataFetcher<T> {
+        return object : FlowDataFetcher<T>() {
 
-            override fun fetchData(description: String?, listener: OnLoadStateListener?): StateFlow<M?> {
+            override fun fetchData(description: String?, listener: OnLoadStateListener?): StateFlow<T?> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
@@ -100,9 +104,9 @@ constructor(context: Context) : BaseFlowRepository<M>(context) {
                 return flowData
             }
 
-            override fun callback(): DoraCallback<M> {
-                return object : DoraCallback<M>() {
-                    override fun onSuccess(model: M) {
+            override fun callback(): DoraCallback<T> {
+                return object : DoraCallback<T>() {
+                    override fun onSuccess(model: T) {
                         parseModel(model, flowData)
                     }
 
@@ -118,10 +122,10 @@ constructor(context: Context) : BaseFlowRepository<M>(context) {
         }
     }
 
-    override fun createListDataFetcher(): ListFlowDataFetcher<M> {
-        return object : ListFlowDataFetcher<M>() {
+    override fun createListDataFetcher(): ListFlowDataFetcher<T> {
+        return object : ListFlowDataFetcher<T>() {
 
-            override fun fetchListData(description: String?, listener: OnLoadStateListener?): StateFlow<MutableList<M>> {
+            override fun fetchListData(description: String?, listener: OnLoadStateListener?): StateFlow<MutableList<T>> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
@@ -143,9 +147,9 @@ constructor(context: Context) : BaseFlowRepository<M>(context) {
                 return flowData
             }
 
-            override fun listCallback(): DoraListCallback<M> {
-                return object : DoraListCallback<M>() {
-                    override fun onSuccess(models: MutableList<M>) {
+            override fun listCallback(): DoraListCallback<T> {
+                return object : DoraListCallback<T>() {
+                    override fun onSuccess(models: MutableList<T>) {
                         parseModels(models, flowData)
                     }
 
@@ -155,7 +159,7 @@ constructor(context: Context) : BaseFlowRepository<M>(context) {
                 }
             }
 
-            override fun obtainPager(): IDataPager<M> {
+            override fun obtainPager(): IDataPager<T> {
                 return DataPager(flowData.value)
             }
 
@@ -165,9 +169,9 @@ constructor(context: Context) : BaseFlowRepository<M>(context) {
         }
     }
 
-    private fun onLoadFromCache(flowData: MutableStateFlow<M?>) : Boolean {
+    private fun onLoadFromCache(flowData: MutableStateFlow<T?>) : Boolean {
         if (checkValuesNotNull()) {
-            val model = databaseCacheHolder.queryCache(query())
+            val model = (cacheHolder as DatabaseCacheHolder<T>).queryCache(query())
             model?.let {
                 onInterceptData(DataSource.Type.CACHE, it)
                 flowData.value = it
@@ -177,9 +181,9 @@ constructor(context: Context) : BaseFlowRepository<M>(context) {
         return false
     }
 
-    private fun onLoadFromCacheList(flowData: MutableStateFlow<MutableList<M>>) : Boolean {
+    private fun onLoadFromCacheList(flowData: MutableStateFlow<MutableList<T>>) : Boolean {
         if (checkValuesNotNull()) {
-            val models = listDatabaseCacheHolder.queryCache(query())
+            val models = (listCacheHolder as ListDatabaseCacheHolder<T>).queryCache(query())
             models?.let {
                 onInterceptData(DataSource.Type.CACHE, it)
                 flowData.value = it
@@ -192,35 +196,35 @@ constructor(context: Context) : BaseFlowRepository<M>(context) {
     /**
      * 非集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetwork(callback: DoraCallback<M>, listener: OnLoadStateListener?) {
+    override fun onLoadFromNetwork(callback: DoraCallback<T>, listener: OnLoadStateListener?) {
     }
 
     /**
      * 集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetwork(callback: DoraListCallback<M>, listener: OnLoadStateListener?) {
+    override fun onLoadFromNetwork(callback: DoraListCallback<T>, listener: OnLoadStateListener?) {
     }
 
     /**
      * 非集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetworkObservable(listener: OnLoadStateListener?) : Observable<M> {
+    override fun onLoadFromNetworkObservable(listener: OnLoadStateListener?) : Observable<T> {
         return Observable.empty()
     }
 
     /**
      * 集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetworkObservableList(listener: OnLoadStateListener?) : Observable<MutableList<M>> {
+    override fun onLoadFromNetworkObservableList(listener: OnLoadStateListener?) : Observable<MutableList<T>> {
         return Observable.empty()
     }
 
-    private fun rxOnLoadFromNetwork(flowData: MutableStateFlow<M?>, listener: OnLoadStateListener? = null) {
-        RxTransformer.doApiObserver(onLoadFromNetworkObservable(listener), object : Observer<M> {
+    private fun rxOnLoadFromNetwork(flowData: MutableStateFlow<T?>, listener: OnLoadStateListener? = null) {
+        RxTransformer.doApiObserver(onLoadFromNetworkObservable(listener), object : Observer<T> {
             override fun onSubscribe(d: Disposable) {
             }
 
-            override fun onNext(model: M) {
+            override fun onNext(model: T) {
                 parseModel(model, flowData)
             }
 
@@ -233,12 +237,12 @@ constructor(context: Context) : BaseFlowRepository<M>(context) {
         })
     }
 
-    private fun rxOnLoadFromNetworkForList(flowData: MutableStateFlow<MutableList<M>>, listener: OnLoadStateListener? = null) {
-        RxTransformer.doApiObserver(onLoadFromNetworkObservableList(listener), object : Observer<MutableList<M>> {
+    private fun rxOnLoadFromNetworkForList(flowData: MutableStateFlow<MutableList<T>>, listener: OnLoadStateListener? = null) {
+        RxTransformer.doApiObserver(onLoadFromNetworkObservableList(listener), object : Observer<MutableList<T>> {
             override fun onSubscribe(d: Disposable) {
             }
 
-            override fun onNext(models: MutableList<M>) {
+            override fun onNext(models: MutableList<T>) {
                 parseModels(models, flowData)
             }
 
@@ -251,7 +255,7 @@ constructor(context: Context) : BaseFlowRepository<M>(context) {
         })
     }
 
-    protected open fun parseModel(model: M, flowData: MutableStateFlow<M?>) {
+    protected open fun parseModel(model: T, flowData: MutableStateFlow<T?>) {
         model?.let {
             if (isLogPrint) {
                 Log.d(TAG, "【$description】$it")
@@ -259,18 +263,18 @@ constructor(context: Context) : BaseFlowRepository<M>(context) {
             onInterceptData(DataSource.Type.NETWORK, it)
             if (!disallowForceUpdate()) {
                 if (checkValuesNotNull()) {
-                    databaseCacheHolder.removeOldCache(query())
+                    (cacheHolder as DatabaseCacheHolder<T>).removeOldCache(query())
                 } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
             } else {
                 if (dataMap.containsKey(mapKey())) {
                     if (checkValuesNotNull()) {
-                        databaseCacheHolder.removeOldCache(query())
+                        (cacheHolder as DatabaseCacheHolder<T>).removeOldCache(query())
                     } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
                 } else {
                     dataMap[mapKey()] = it
                 }
             }
-            databaseCacheHolder.addNewCache(it)
+            (cacheHolder as DatabaseCacheHolder<T>).addNewCache(it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
             if (disallowForceUpdate()) {
                 flowData.value = dataMap[mapKey()]
@@ -280,8 +284,8 @@ constructor(context: Context) : BaseFlowRepository<M>(context) {
         }
     }
 
-    protected open fun parseModels(models: MutableList<M>?,
-                                   flowData: MutableStateFlow<MutableList<M>>) {
+    protected open fun parseModels(models: MutableList<T>?,
+                                   flowData: MutableStateFlow<MutableList<T>>) {
         models?.let {
             if (isLogPrint) {
                 for (model in it) {
@@ -291,18 +295,18 @@ constructor(context: Context) : BaseFlowRepository<M>(context) {
             onInterceptData(DataSource.Type.NETWORK, it)
             if (!disallowForceUpdate()) {
                 if (checkValuesNotNull()) {
-                    listDatabaseCacheHolder.removeOldCache(query())
+                    (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
                 } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
             } else {
                 if (listDataMap.containsKey(mapKey())) {
                     if (checkValuesNotNull()) {
-                        listDatabaseCacheHolder.removeOldCache(query())
+                        (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
                     } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
                 } else {
                     listDataMap[mapKey()] = it
                 }
             }
-            listDatabaseCacheHolder.addNewCache(it)
+            (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
             if (disallowForceUpdate()) {
                 flowData.value = listDataMap[mapKey()]!!
@@ -323,7 +327,7 @@ constructor(context: Context) : BaseFlowRepository<M>(context) {
         if (isClearDataOnNetworkError) {
             if (checkValuesNotNull()) {
                 clearData()
-                databaseCacheHolder.removeOldCache(query())
+                (cacheHolder as DatabaseCacheHolder<T>).removeOldCache(query())
             } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
         }
     }
@@ -339,7 +343,7 @@ constructor(context: Context) : BaseFlowRepository<M>(context) {
         if (isClearDataOnNetworkError) {
             if (checkValuesNotNull()) {
                 clearListData()
-                listDatabaseCacheHolder.removeOldCache(query())
+                (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
             } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
         }
     }

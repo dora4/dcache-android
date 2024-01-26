@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.viewModelScope
 import dora.cache.data.adapter.ResultAdapter
+import dora.cache.factory.CacheHolderFactory
 import dora.cache.repository.BaseRepository
 import dora.http.coroutine.ContextContinuation
 import dora.http.coroutine.DoraCoroutineContext
@@ -38,7 +39,7 @@ object DoraHttp {
         block.startCoroutine(ContextContinuation(DoraCoroutineContext(fragment.requireActivity())))
     }
 
-    fun <M> netScope(repository: BaseRepository<M>, block: suspend () -> Unit) {
+    fun <M, F : CacheHolderFactory<M>> netScope(repository: BaseRepository<M, F>, block: suspend () -> Unit) {
         repository.viewModelScope.launch(DoraCoroutineContext(repository.context), CoroutineStart.DEFAULT) {
             block()
         }
@@ -52,7 +53,7 @@ object DoraHttp {
         block.startCoroutine(ContextContinuation(DoraCoroutineContext(requireActivity())))
     }
 
-    fun <M> BaseRepository<M>.net(block: suspend () -> Unit) {
+    fun <M, F : CacheHolderFactory<M>> BaseRepository<M, F>.net(block: suspend () -> Unit) {
         viewModelScope.launch(DoraCoroutineContext(context), CoroutineStart.DEFAULT) {
             block()
         }

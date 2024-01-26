@@ -10,10 +10,10 @@ abstract class DoraFlowDatabaseCacheRepository<T: OrmTable>(context: Context)
     : BaseFlowDatabaseCacheRepository<T>(context) {
 
     override fun createCacheHolder(clazz: Class<T>): DatabaseCacheHolder<T> {
-        return DoraDatabaseCacheHolder<T, T>(clazz)
+        return DoraDatabaseCacheHolder<T>(clazz)
     }
 
     override fun createListCacheHolder(clazz: Class<T>): DatabaseCacheHolder<MutableList<T>> {
-        return DoraListDatabaseCacheHolder<T, T>(clazz)
+        return DoraListDatabaseCacheHolder<T>(clazz)
     }
 }

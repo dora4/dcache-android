@@ -9,7 +9,7 @@ import dora.db.dao.OrmDao
 /**
  * 内置的ListCacheHolder，默认实现。
  */
-class DoraListDatabaseCacheHolder<M, T : OrmTable>(var clazz: Class<out OrmTable>) : ListDatabaseCacheHolder<M>() {
+class DoraListDatabaseCacheHolder<T : OrmTable>(var clazz: Class<out OrmTable>) : ListDatabaseCacheHolder<T>() {
 
     private lateinit var dao: OrmDao<T>
 
@@ -18,16 +18,16 @@ class DoraListDatabaseCacheHolder<M, T : OrmTable>(var clazz: Class<out OrmTable
         dao = DaoFactory.getDao(clazz) as OrmDao<T>
     }
 
-    override fun queryCache(condition: Condition): MutableList<M>? {
-        return dao.select(WhereBuilder.create(condition)) as MutableList<M>?
+    override fun queryCache(condition: Condition): MutableList<T>? {
+        return dao.select(WhereBuilder.create(condition)) as MutableList<T>?
     }
 
     override fun removeOldCache(condition: Condition) {
         dao.delete(WhereBuilder.create(condition))
     }
 
-    override fun addNewCache(models: MutableList<M>) {
-        dao.insert(models as MutableList<T>)
+    override fun addNewCache(models: MutableList<T>) {
+        dao.insert(models)
     }
 
     override fun queryCacheSize(condition: Condition): Long {

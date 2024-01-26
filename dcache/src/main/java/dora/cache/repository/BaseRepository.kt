@@ -12,7 +12,7 @@ import dora.cache.data.fetcher.OnLoadStateListener
 import dora.cache.data.fetcher.OnLoadStateListenerImpl
 import dora.cache.data.page.IDataPager
 import dora.cache.holder.CacheHolder
-import dora.cache.holder.CacheHolderFactory
+import dora.cache.factory.CacheHolderFactory
 import dora.cache.holder.DatabaseCacheHolder
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
@@ -70,8 +70,8 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
      */
     protected val isClearDataOnNetworkError: Boolean
         protected get() = false
-
-    protected abstract fun cacheHolderFactory() : F
+    protected val MClass: Class<M>
+    protected abstract fun createCacheHolderFactory() : F
 
     protected abstract fun createDataFetcher(): IDataFetcher<M>
 
@@ -320,7 +320,7 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
         } else {
             isLogPrint = repository.isLogPrint
         }
-        val MClass: Class<M> = getGenericType(this) as Class<M>
+        MClass = getGenericType(this) as Class<M>
         Log.d(TAG, "MClass:$MClass,isListMode:$isListMode")
         // 二选一实现CacheHolder和DataFetcher并使用
         if (isListMode) {

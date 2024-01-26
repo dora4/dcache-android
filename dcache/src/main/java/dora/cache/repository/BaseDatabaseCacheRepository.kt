@@ -9,8 +9,7 @@ import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.fetcher.OnLoadStateListener
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
-import dora.cache.holder.DatabaseCacheHolder
-import dora.cache.holder.DatabaseCacheHolderFactory
+import dora.cache.factory.DatabaseCacheHolderFactory
 import dora.cache.holder.DoraDatabaseCacheHolder
 import dora.cache.holder.DoraListDatabaseCacheHolder
 import dora.db.builder.Condition
@@ -28,11 +27,11 @@ import java.lang.IllegalArgumentException
 /**
  * 使用内置SQLite数据库进行缓存的仓库。
  */
-abstract class BaseDatabaseCacheRepository<M, T : OrmTable>
-constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, T>>(context) {
+abstract class BaseDatabaseCacheRepository<T : OrmTable>
+constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>(context) {
 
-    protected val dataMap = HashMap<String, M>()
-    protected val listDataMap = HashMap<String, MutableList<M>>()
+    protected val dataMap = HashMap<String, T>()
+    protected val listDataMap = HashMap<String, MutableList<T>>()
 
     /**
      * 保证成员属性不为空，而成功调用数据库查询方法，提高查询可靠性。比如用来校验属性，a != null && b != null
@@ -46,7 +45,7 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
      * 手动放入缓存数据，仅listMode为true时使用，注意只会追加到缓存里面去，请调用接口将新数据也更新到服务端，以致
      * 于下次请求api接口时也会有这部分数据。
      */
-    fun addData(data: M, listener: OnSyncListener<M>?) {
+    fun addData(data: T, listener: OnSyncListener<T>?) {
         if (isListMode) {
             addData(arrayListOf(data), listener)
             listener?.onSyncData(true, arrayListOf(data))
@@ -57,12 +56,12 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
      * 手动放入一堆缓存数据，仅listMode为true时使用，注意只会追加到缓存里面去，请调用接口将新数据也更新到服务端，
      * 以致于下次请求api接口时也会有这部分数据。
      */
-    fun addData(data: MutableList<M>, listener: OnSyncListener<M>?) {
+    fun addData(data: MutableList<T>, listener: OnSyncListener<T>?) {
         if (data.size == 0) return
         if (isListMode) {
             getListLiveData().value?.let {
                 it.addAll(data)
-                (listCacheHolder as DoraListDatabaseCacheHolder<M, T>).addNewCache(data)
+                (listCacheHolder as DoraListDatabaseCacheHolder<T>).addNewCache(data)
                 listener?.onSyncData(data.size == 1, data)
             }
         }
@@ -114,11 +113,11 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
         } else isLoaded
     }
 
-    override fun createDataFetcher(): DataFetcher<M> {
-        return object : DataFetcher<M>() {
+    override fun createDataFetcher(): DataFetcher<T> {
+        return object : DataFetcher<T>() {
 
 
-            override fun fetchData(description: String?, listener: OnLoadStateListener?): LiveData<M?> {
+            override fun fetchData(description: String?, listener: OnLoadStateListener?): LiveData<T?> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
@@ -140,9 +139,9 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
                 return liveData
             }
 
-            override fun callback(): DoraCallback<M> {
-                return object : DoraCallback<M>() {
-                    override fun onSuccess(model: M) {
+            override fun callback(): DoraCallback<T> {
+                return object : DoraCallback<T>() {
+                    override fun onSuccess(model: T) {
                         parseModel(model, liveData)
                     }
 
@@ -158,10 +157,10 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
         }
     }
 
-    override fun createListDataFetcher(): ListDataFetcher<M> {
-        return object : ListDataFetcher<M>() {
+    override fun createListDataFetcher(): ListDataFetcher<T> {
+        return object : ListDataFetcher<T>() {
 
-            override fun fetchListData(description: String?, listener: OnLoadStateListener?): LiveData<MutableList<M>> {
+            override fun fetchListData(description: String?, listener: OnLoadStateListener?): LiveData<MutableList<T>> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
@@ -183,9 +182,9 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
                 return liveData
             }
 
-            override fun listCallback(): DoraListCallback<M> {
-                return object : DoraListCallback<M>() {
-                    override fun onSuccess(models: MutableList<M>) {
+            override fun listCallback(): DoraListCallback<T> {
+                return object : DoraListCallback<T>() {
+                    override fun onSuccess(models: MutableList<T>) {
                         parseModels(models, liveData)
                     }
 
@@ -195,7 +194,7 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
                 }
             }
 
-            override fun obtainPager(): IDataPager<M> {
+            override fun obtainPager(): IDataPager<T> {
                 return DataPager(liveData.value ?: arrayListOf())
             }
 
@@ -205,9 +204,9 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
         }
     }
 
-    private fun onLoadFromCache(liveData: MutableLiveData<M?>) : Boolean {
+    private fun onLoadFromCache(liveData: MutableLiveData<T?>) : Boolean {
         if (checkValuesNotNull()) {
-            val model = (cacheHolder as DoraDatabaseCacheHolder<M, T>).queryCache(query())
+            val model = (cacheHolder as DoraDatabaseCacheHolder<T>).queryCache(query())
             model?.let {
                 onInterceptData(DataSource.Type.CACHE, it)
                 liveData.postValue(it)
@@ -217,9 +216,9 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
         return false
     }
 
-    private fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<M>>) : Boolean {
+    private fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<T>>) : Boolean {
         if (checkValuesNotNull()) {
-            val models = (listCacheHolder as DoraListDatabaseCacheHolder<M, T>).queryCache(query())
+            val models = (listCacheHolder as DoraListDatabaseCacheHolder<T>).queryCache(query())
             models?.let {
                 onInterceptData(DataSource.Type.CACHE, it)
                 liveData.postValue(it)
@@ -232,35 +231,35 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
     /**
      * 非集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetwork(callback: DoraCallback<M>, listener: OnLoadStateListener?) {
+    override fun onLoadFromNetwork(callback: DoraCallback<T>, listener: OnLoadStateListener?) {
     }
 
     /**
      * 集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetwork(callback: DoraListCallback<M>, listener: OnLoadStateListener?) {
+    override fun onLoadFromNetwork(callback: DoraListCallback<T>, listener: OnLoadStateListener?) {
     }
 
     /**
      * 非集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetworkObservable(listener: OnLoadStateListener?) : Observable<M> {
+    override fun onLoadFromNetworkObservable(listener: OnLoadStateListener?) : Observable<T> {
         return Observable.empty()
     }
 
     /**
      * 集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetworkObservableList(listener: OnLoadStateListener?) : Observable<MutableList<M>> {
+    override fun onLoadFromNetworkObservableList(listener: OnLoadStateListener?) : Observable<MutableList<T>> {
         return Observable.empty()
     }
 
-    private fun rxOnLoadFromNetwork(liveData: MutableLiveData<M?>, listener: OnLoadStateListener? = null) {
-        RxTransformer.doApiObserver(onLoadFromNetworkObservable(listener), object : Observer<M> {
+    private fun rxOnLoadFromNetwork(liveData: MutableLiveData<T?>, listener: OnLoadStateListener? = null) {
+        RxTransformer.doApiObserver(onLoadFromNetworkObservable(listener), object : Observer<T> {
             override fun onSubscribe(d: Disposable) {
             }
 
-            override fun onNext(model: M) {
+            override fun onNext(model: T) {
                 parseModel(model, liveData)
             }
 
@@ -273,12 +272,12 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
         })
     }
 
-    private fun rxOnLoadFromNetworkForList(liveData: MutableLiveData<MutableList<M>>, listener: OnLoadStateListener? = null) {
-        RxTransformer.doApiObserver(onLoadFromNetworkObservableList(listener), object : Observer<MutableList<M>> {
+    private fun rxOnLoadFromNetworkForList(liveData: MutableLiveData<MutableList<T>>, listener: OnLoadStateListener? = null) {
+        RxTransformer.doApiObserver(onLoadFromNetworkObservableList(listener), object : Observer<MutableList<T>> {
             override fun onSubscribe(d: Disposable) {
             }
 
-            override fun onNext(models: MutableList<M>) {
+            override fun onNext(models: MutableList<T>) {
                 parseModels(models, liveData)
             }
 
@@ -291,7 +290,7 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
         })
     }
 
-    protected open fun parseModel(model: M, liveData: MutableLiveData<M?>) {
+    protected open fun parseModel(model: T, liveData: MutableLiveData<T?>) {
         model?.let {
             if (isLogPrint) {
                 Log.d(TAG, "【$description】$it")
@@ -299,18 +298,18 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
             onInterceptData(DataSource.Type.NETWORK, it)
             if (!disallowForceUpdate()) {
                 if (checkValuesNotNull()) {
-                    (cacheHolder as DoraDatabaseCacheHolder<M, T>).removeOldCache(query())
+                    (cacheHolder as DoraDatabaseCacheHolder<T>).removeOldCache(query())
                 } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
             } else {
                 if (dataMap.containsKey(mapKey())) {
                     if (checkValuesNotNull()) {
-                        (cacheHolder as DoraDatabaseCacheHolder<M, T>).removeOldCache(query())
+                        (cacheHolder as DoraDatabaseCacheHolder<T>).removeOldCache(query())
                     } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
                 } else {
                     dataMap[mapKey()] = it
                 }
             }
-            (cacheHolder as DoraDatabaseCacheHolder<M, T>).addNewCache(it)
+            (cacheHolder as DoraDatabaseCacheHolder<T>).addNewCache(it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
             if (disallowForceUpdate()) {
                 liveData.postValue(dataMap[mapKey()])
@@ -320,8 +319,8 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
         }
     }
 
-    protected open fun parseModels(models: MutableList<M>?,
-                            liveData: MutableLiveData<MutableList<M>>) {
+    protected open fun parseModels(models: MutableList<T>?,
+                            liveData: MutableLiveData<MutableList<T>>) {
         models?.let {
             if (isLogPrint) {
                 for (model in it) {
@@ -331,18 +330,18 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
             onInterceptData(DataSource.Type.NETWORK, it)
             if (!disallowForceUpdate()) {
                 if (checkValuesNotNull()) {
-                    (listCacheHolder as DoraListDatabaseCacheHolder<M, T>).removeOldCache(query())
+                    (listCacheHolder as DoraListDatabaseCacheHolder<T>).removeOldCache(query())
                 } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
             } else {
                 if (listDataMap.containsKey(mapKey())) {
                     if (checkValuesNotNull()) {
-                        (listCacheHolder as DoraListDatabaseCacheHolder<M, T>).removeOldCache(query())
+                        (listCacheHolder as DoraListDatabaseCacheHolder<T>).removeOldCache(query())
                     } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
                 } else {
                     listDataMap[mapKey()] = it
                 }
             }
-            (listCacheHolder as DoraListDatabaseCacheHolder<M, T>).addNewCache(it)
+            (listCacheHolder as DoraListDatabaseCacheHolder<T>).addNewCache(it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
             if (disallowForceUpdate()) {
                 liveData.postValue(listDataMap[mapKey()])
@@ -363,7 +362,7 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
         if (isClearDataOnNetworkError) {
             if (checkValuesNotNull()) {
                 clearData()
-                (cacheHolder as DoraDatabaseCacheHolder<M, T>).removeOldCache(query())
+                (cacheHolder as DoraDatabaseCacheHolder<T>).removeOldCache(query())
             } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
         }
     }
@@ -379,7 +378,7 @@ constructor(context: Context) : BaseRepository<M, DatabaseCacheHolderFactory<M, 
         if (isClearDataOnNetworkError) {
             if (checkValuesNotNull()) {
                 clearListData()
-                (listCacheHolder as DoraListDatabaseCacheHolder<M, T>).removeOldCache(query())
+                (listCacheHolder as DoraListDatabaseCacheHolder<T>).removeOldCache(query())
             } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
         }
     }

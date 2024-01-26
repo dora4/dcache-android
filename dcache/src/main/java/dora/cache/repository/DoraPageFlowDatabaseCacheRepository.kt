@@ -9,7 +9,7 @@ import dora.db.table.OrmTable
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.lang.IllegalArgumentException
 
-abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Context)
+abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Context)
     : DoraFlowDatabaseCacheRepository<T>(context) {
 
     private var pageNo: Int = 0
@@ -23,7 +23,7 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
         return pageSize
     }
 
-    open fun setCurrentPage(pageNo: Int, pageSize: Int): DoraPageFlowDatabaseCacheRepository<T> {
+    open fun setCurrentPage(pageNo: Int, pageSize: Int): DoraPageFlowDatabaseCacheRepository<M, T> {
         this.pageNo = pageNo
         this.pageSize = pageSize
         return this
@@ -68,15 +68,15 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
             if (!disallowForceUpdate()) {
                 if (checkValuesNotNull()) {
                     // 移除之前所有的条件的数据
-                    for (condition in (listDatabaseCacheHolder as ListDatabaseCacheHolder).cacheConditions) {
-                        listDatabaseCacheHolder.removeOldCache(condition)
+                    for (condition in (listCacheHolder as ListDatabaseCacheHolder).cacheConditions) {
+                        (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(condition)
                     }
-                    listDatabaseCacheHolder.removeOldCache(query())
+                    (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(query())
                 } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
             } else {
                 if (listDataMap.containsKey(mapKey())) {
                     if (checkValuesNotNull()) {
-                        listDatabaseCacheHolder.removeOldCache(query())
+                        (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(query())
                     } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
                 } else {
                     listDataMap[mapKey()] = it
@@ -88,8 +88,8 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
                 temp.addAll(v)
             }
             temp.addAll(it)
-            listDatabaseCacheHolder.addNewCache(temp)
-            (listDatabaseCacheHolder as ListDatabaseCacheHolder).cacheConditions.add(query())
+            (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(temp)
+            (listCacheHolder as ListDatabaseCacheHolder).cacheConditions.add(query())
 
             if (disallowForceUpdate()) {
                 flowData.value = listDataMap[mapKey()]!!

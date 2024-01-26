@@ -2,10 +2,8 @@ package dora.cache.repository
 
 import android.content.Context
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import dora.cache.data.fetcher.DataFetcher
-import dora.cache.data.fetcher.ListDataFetcher
+import dora.cache.data.fetcher.FlowDataFetcher
+import dora.cache.data.fetcher.ListFlowDataFetcher
 import dora.cache.data.fetcher.OnLoadStateListener
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
@@ -18,12 +16,13 @@ import dora.http.rx.RxTransformer
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * 使用内置SQLite数据库进行缓存的仓库。
  */
-abstract class BaseMMKVCacheRepository<M>
-constructor(context: Context) : BaseRepository<M, MMKVCacheHolderFactory<M>>(context) {
+abstract class BaseFlowMMKVCacheRepository<M>
+constructor(context: Context) : BaseFlowRepository<M, MMKVCacheHolderFactory<M>>(context) {
 
     override fun selectData(ds: DataSource): Boolean {
         val isLoaded = ds.loadFromCache(DataSource.CacheType.MMKV)
@@ -38,35 +37,35 @@ constructor(context: Context) : BaseRepository<M, MMKVCacheHolderFactory<M>>(con
         } else isLoaded
     }
 
-    override fun createDataFetcher(): DataFetcher<M> {
-        return object : DataFetcher<M>() {
+    override fun createDataFetcher(): FlowDataFetcher<M> {
+        return object : FlowDataFetcher<M>() {
 
-            override fun fetchData(description: String?, listener: OnLoadStateListener?): LiveData<M?> {
+            override fun fetchData(description: String?, listener: OnLoadStateListener?): MutableStateFlow<M?> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.MMKV) {
-                            return onLoadFromCache(liveData)
+                            return onLoadFromCache(flowData)
                         }
-                        liveData.postValue(null)
+                        flowData.value = null
                         return false
                     }
 
                     override fun loadFromNetwork() {
                         try {
-                            rxOnLoadFromNetwork(liveData, listener)
+                            rxOnLoadFromNetwork(flowData, listener)
                             onLoadFromNetwork(callback(), listener)
                         } catch (ignore: Exception) {
                             listener?.onLoad(OnLoadStateListener.FAILURE)
                         }
                     }
                 })
-                return liveData
+                return flowData
             }
 
             override fun callback(): DoraCallback<M> {
                 return object : DoraCallback<M>() {
                     override fun onSuccess(model: M) {
-                        parseModel(model, liveData)
+                        parseModel(model, flowData)
                     }
 
                     override fun onFailure(msg: String) {
@@ -76,40 +75,40 @@ constructor(context: Context) : BaseRepository<M, MMKVCacheHolderFactory<M>>(con
             }
 
             override fun clearData() {
-                liveData.postValue(null)
+                flowData.value = null
             }
         }
     }
 
-    override fun createListDataFetcher(): ListDataFetcher<M> {
-        return object : ListDataFetcher<M>() {
+    override fun createListDataFetcher(): ListFlowDataFetcher<M> {
+        return object : ListFlowDataFetcher<M>() {
 
-            override fun fetchListData(description: String?, listener: OnLoadStateListener?): LiveData<MutableList<M>> {
+            override fun fetchListData(description: String?, listener: OnLoadStateListener?): MutableStateFlow<MutableList<M>> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.MMKV) {
-                            return onLoadFromCacheList(liveData)
+                            return onLoadFromCacheList(flowData)
                         }
-                        liveData.postValue(arrayListOf())
+                        flowData.value = arrayListOf()
                         return false
                     }
 
                     override fun loadFromNetwork() {
                         try {
-                            rxOnLoadFromNetworkForList(liveData, listener)
+                            rxOnLoadFromNetworkForList(flowData, listener)
                             onLoadFromNetwork(listCallback(), listener)
                         } catch (ignore: Exception) {
                             listener?.onLoad(OnLoadStateListener.FAILURE)
                         }
                     }
                 })
-                return liveData
+                return flowData
             }
 
             override fun listCallback(): DoraListCallback<M> {
                 return object : DoraListCallback<M>() {
                     override fun onSuccess(models: MutableList<M>) {
-                        parseModels(models, liveData)
+                        parseModels(models, flowData)
                     }
 
                     override fun onFailure(msg: String) {
@@ -119,30 +118,30 @@ constructor(context: Context) : BaseRepository<M, MMKVCacheHolderFactory<M>>(con
             }
 
             override fun obtainPager(): IDataPager<M> {
-                return DataPager(liveData.value ?: arrayListOf())
+                return DataPager(flowData.value ?: arrayListOf())
             }
 
             override fun clearListData() {
-                liveData.postValue(arrayListOf())
+                flowData.value = arrayListOf()
             }
         }
     }
 
-    private fun onLoadFromCache(liveData: MutableLiveData<M?>) : Boolean {
+    private fun onLoadFromCache(flowData: MutableStateFlow<M?>) : Boolean {
         val model = (cacheHolder as DoraMMKVCacheHolder).readCache(TAG)
         model?.let {
             onInterceptData(DataSource.Type.CACHE, it)
-            liveData.postValue(it)
+            flowData.value = it
             return true
         }
         return false
     }
 
-    private fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<M>>) : Boolean {
+    private fun onLoadFromCacheList(liveData: MutableStateFlow<MutableList<M>>) : Boolean {
         val models = (listCacheHolder as DoraListMMKVCacheHolder).readCache(TAG)
         models?.let {
             onInterceptData(DataSource.Type.CACHE, it)
-            liveData.postValue(it)
+            liveData.value = it
             return true
         }
         return false
@@ -174,13 +173,13 @@ constructor(context: Context) : BaseRepository<M, MMKVCacheHolderFactory<M>>(con
         return Observable.empty()
     }
 
-    private fun rxOnLoadFromNetwork(liveData: MutableLiveData<M?>, listener: OnLoadStateListener? = null) {
+    private fun rxOnLoadFromNetwork(flowData: MutableStateFlow<M?>, listener: OnLoadStateListener? = null) {
         RxTransformer.doApiObserver(onLoadFromNetworkObservable(listener), object : Observer<M> {
             override fun onSubscribe(d: Disposable) {
             }
 
             override fun onNext(model: M) {
-                parseModel(model, liveData)
+                parseModel(model, flowData)
             }
 
             override fun onError(e: Throwable) {
@@ -192,13 +191,13 @@ constructor(context: Context) : BaseRepository<M, MMKVCacheHolderFactory<M>>(con
         })
     }
 
-    private fun rxOnLoadFromNetworkForList(liveData: MutableLiveData<MutableList<M>>, listener: OnLoadStateListener? = null) {
+    private fun rxOnLoadFromNetworkForList(flowData: MutableStateFlow<MutableList<M>>, listener: OnLoadStateListener? = null) {
         RxTransformer.doApiObserver(onLoadFromNetworkObservableList(listener), object : Observer<MutableList<M>> {
             override fun onSubscribe(d: Disposable) {
             }
 
             override fun onNext(models: MutableList<M>) {
-                parseModels(models, liveData)
+                parseModels(models, flowData)
             }
 
             override fun onError(e: Throwable) {
@@ -210,7 +209,7 @@ constructor(context: Context) : BaseRepository<M, MMKVCacheHolderFactory<M>>(con
         })
     }
 
-    protected open fun parseModel(model: M, liveData: MutableLiveData<M?>) {
+    protected open fun parseModel(model: M, flowData: MutableStateFlow<M?>) {
         model?.let {
             if (isLogPrint) {
                 Log.d(TAG, "【$description】$it")
@@ -218,12 +217,12 @@ constructor(context: Context) : BaseRepository<M, MMKVCacheHolderFactory<M>>(con
             onInterceptData(DataSource.Type.NETWORK, it)
             (cacheHolder as DoraMMKVCacheHolder).addNewCache(TAG, it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
-            liveData.postValue(it)
+            flowData.value = it
         }
     }
 
     protected open fun parseModels(models: MutableList<M>?,
-                            liveData: MutableLiveData<MutableList<M>>) {
+                                   flowData: MutableStateFlow<MutableList<M>>) {
         models?.let {
             if (isLogPrint) {
                 for (model in it) {
@@ -234,7 +233,7 @@ constructor(context: Context) : BaseRepository<M, MMKVCacheHolderFactory<M>>(con
             (listCacheHolder as DoraListMMKVCacheHolder).removeOldCache(TAG)
             (listCacheHolder as DoraListMMKVCacheHolder).addNewCache(TAG, it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
-            liveData.postValue(it)
+            flowData.value = it
         }
     }
 

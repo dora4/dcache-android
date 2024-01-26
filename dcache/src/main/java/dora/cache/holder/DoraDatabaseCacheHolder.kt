@@ -6,10 +6,7 @@ import dora.db.builder.WhereBuilder
 import dora.db.dao.DaoFactory
 import dora.db.dao.OrmDao
 
-/**
- * 内置的CacheHolder，默认实现。
- */
-class DoraDatabaseCacheHolder<M, T : OrmTable>(var clazz: Class<out OrmTable>) : DatabaseCacheHolder<M> {
+class DoraDatabaseCacheHolder<T : OrmTable>(val clazz: Class<out OrmTable>) : DatabaseCacheHolder<T> {
 
     private lateinit var dao: OrmDao<T>
 
@@ -18,16 +15,16 @@ class DoraDatabaseCacheHolder<M, T : OrmTable>(var clazz: Class<out OrmTable>) :
         dao = DaoFactory.getDao(clazz) as OrmDao<T>
     }
 
-    override fun queryCache(condition: Condition): M? {
-        return dao.selectOne(WhereBuilder.create(condition)) as M?
+    override fun queryCache(condition: Condition): T? {
+        return dao.selectOne(WhereBuilder.create(condition)) as T?
     }
 
     override fun removeOldCache(condition: Condition) {
         dao.delete(WhereBuilder.create(condition))
     }
 
-    override fun addNewCache(model: M) {
-        dao.insert(model as T)
+    override fun addNewCache(model: T) {
+        dao.insert(model)
     }
 
     override fun queryCacheSize(condition: Condition): Long {

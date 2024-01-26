@@ -69,14 +69,14 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                 if (checkValuesNotNull()) {
                     // 移除之前所有的条件的数据
                     for (condition in (listCacheHolder as ListDatabaseCacheHolder).cacheConditions) {
-                        listCacheHolder.removeOldCache(condition)
+                        (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(condition)
                     }
-                    listCacheHolder.removeOldCache(query())
+                    (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
                 } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
             } else {
                 if (listDataMap.containsKey(mapKey())) {
                     if (checkValuesNotNull()) {
-                        listCacheHolder.removeOldCache(query())
+                        (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
                     } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
                 } else {
                     listDataMap[mapKey()] = it
@@ -88,7 +88,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                 temp.addAll(v)
             }
             temp.addAll(it)
-            listCacheHolder.addNewCache(temp)
+            (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(temp)
             (listCacheHolder as ListDatabaseCacheHolder).cacheConditions.add(query())
 
             if (disallowForceUpdate()) {

@@ -3,7 +3,7 @@ package dora.cache.holder;
 import dora.cache.mmkv.MMKVConfig
 import dora.cache.mmkv.MMKVUtils
 
-class DoraListMMKVCacheHolder<M>(val path: String, val clazz: Class<MutableList<M>>) : ListMMKVCacheHolder<M>() {
+class DoraListMMKVCacheHolder<M>(private val path: String, val clazz: Class<MutableList<M>>) : ListMMKVCacheHolder<M>() {
 
     constructor(clazz: Class<MutableList<M>>) : this("", clazz)
 

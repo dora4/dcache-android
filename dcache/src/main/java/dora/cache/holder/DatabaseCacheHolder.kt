@@ -7,7 +7,6 @@ import dora.db.builder.Condition
  */
 interface DatabaseCacheHolder<M> : CacheHolder<M> {
 
-
     /**
      * 从数据库中加载数据到内存。
      */

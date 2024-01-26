@@ -12,7 +12,10 @@ import dora.cache.data.fetcher.IListFlowDataFetcher
 import dora.cache.data.fetcher.OnLoadStateListener
 import dora.cache.data.fetcher.OnLoadStateListenerImpl
 import dora.cache.data.page.IDataPager
+import dora.cache.factory.CacheHolderFactory
+import dora.cache.holder.CacheHolder
 import dora.cache.holder.DatabaseCacheHolder
+import dora.cache.holder.ListDatabaseCacheHolder
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import io.reactivex.Observable
@@ -24,7 +27,7 @@ import java.lang.reflect.ParameterizedType
  * 非集合数据，请在实现类配置[Repository]注解，如果为集合数据，请在实现类配置[ListRepository]注解。必须配置其中
  * 一个注解。
  */
-abstract class BaseFlowRepository<M>(val context: Context) : ViewModel(), IFlowDataFetcher<M>,
+abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Context) : ViewModel(), IFlowDataFetcher<M>,
     IListFlowDataFetcher<M> {
 
     /**
@@ -38,14 +41,19 @@ abstract class BaseFlowRepository<M>(val context: Context) : ViewModel(), IFlowD
     protected lateinit var listDataFetcher: IListFlowDataFetcher<M>
 
     /**
+     * 抽象工厂。
+     */
+    protected lateinit var cacheHolderFactory: F
+
+    /**
      * 非集合数据缓存接口。
      */
-    protected lateinit var databaseCacheHolder: DatabaseCacheHolder<M>
+    protected lateinit var cacheHolder: CacheHolder<M>
 
     /**
      * 集合数据缓存接口。
      */
-    protected lateinit var listDatabaseCacheHolder: DatabaseCacheHolder<MutableList<M>>
+    protected lateinit var listCacheHolder: CacheHolder<MutableList<M>>
 
     /**
      * true代表用于集合数据，false用于非集合数据。
@@ -66,6 +74,9 @@ abstract class BaseFlowRepository<M>(val context: Context) : ViewModel(), IFlowD
      */
     protected val isClearDataOnNetworkError: Boolean
         protected get() = false
+    protected val MClass: Class<M>
+
+    protected abstract fun createCacheHolderFactory() : F
 
     protected abstract fun createDataFetcher(): IFlowDataFetcher<M>
 
@@ -95,7 +106,7 @@ abstract class BaseFlowRepository<M>(val context: Context) : ViewModel(), IFlowD
         if (isListMode) {
             getListFlowData().value.let {
                 it.addAll(data)
-                listDatabaseCacheHolder.addNewCache(data)
+                (listCacheHolder as ListDatabaseCacheHolder<M>).addNewCache(data)
                 listener?.onSyncData(data.size == 1, data)
             }
         }
@@ -223,9 +234,9 @@ abstract class BaseFlowRepository<M>(val context: Context) : ViewModel(), IFlowD
             DATABASE,
 
             /**
-             * 自定义的数据仓库。
+             * MMKV缓存。
              */
-            CUSTOM
+            MMKV
         }
 
         /**
@@ -347,16 +358,16 @@ abstract class BaseFlowRepository<M>(val context: Context) : ViewModel(), IFlowD
         } else {
             isLogPrint = repository.isLogPrint
         }
-        val MClass: Class<M> = getGenericType(this) as Class<M>
+        MClass = getGenericType(this) as Class<M>
         Log.d(TAG, "MClass:$MClass,isListMode:$isListMode")
         // 二选一实现CacheHolder和DataFetcher并使用
         if (isListMode) {
-            listDatabaseCacheHolder = createListCacheHolder(MClass)
-            listDatabaseCacheHolder.init()
+            listCacheHolder = cacheHolderFactory.createListCacheHolder()
+            listCacheHolder.init()
             listDataFetcher = createListDataFetcher()
         } else {
-            databaseCacheHolder = createCacheHolder(MClass)
-            databaseCacheHolder.init()
+            cacheHolder = cacheHolderFactory.createCacheHolder()
+            cacheHolder.init()
             dataFetcher = createDataFetcher()
         }
     }

@@ -6,8 +6,8 @@ import dora.cache.holder.DoraDatabaseCacheHolder
 import dora.cache.holder.DoraListDatabaseCacheHolder
 import dora.db.table.OrmTable
 
-abstract class DoraDatabaseCacheRepository<T : OrmTable>(context: Context)
-    : BaseDatabaseCacheRepository<T>(context) {
+abstract class DoraFlowMMKVCacheRepository<T: OrmTable>(context: Context)
+    : BaseFlowMMKVCacheRepository<T>(context) {
 
     override fun createCacheHolder(clazz: Class<T>): DatabaseCacheHolder<T> {
         return DoraDatabaseCacheHolder<T>(clazz)

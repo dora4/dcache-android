@@ -360,6 +360,7 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
         }
         MClass = getGenericType(this) as Class<M>
         Log.d(TAG, "MClass:$MClass,isListMode:$isListMode")
+        cacheHolderFactory = createCacheHolderFactory()
         // 二选一实现CacheHolder和DataFetcher并使用
         if (isListMode) {
             listCacheHolder = cacheHolderFactory.createListCacheHolder()

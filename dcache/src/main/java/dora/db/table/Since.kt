@@ -5,4 +5,4 @@ package dora.db.table
  */
 @Target(AnnotationTarget.FIELD)
 @Retention(AnnotationRetention.SOURCE)
-annotation class Since(val columnName: String, val version: Int = 1)
+annotation class Since(val version: Int)

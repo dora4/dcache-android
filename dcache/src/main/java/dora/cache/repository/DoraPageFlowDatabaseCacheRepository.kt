@@ -65,19 +65,18 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
                 }
             }
             onInterceptData(DataSource.Type.NETWORK, it)
+            if (checkValuesNotNull()) {
+                throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            }
             if (!disallowForceUpdate()) {
-                if (checkValuesNotNull()) {
-                    // 移除之前所有的条件的数据
-                    for (condition in (listCacheHolder as ListDatabaseCacheHolder).cacheConditions) {
-                        (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(condition)
-                    }
-                    (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(query())
-                } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+                // 移除之前所有的条件的数据
+                for (condition in (listCacheHolder as ListDatabaseCacheHolder).cacheConditions) {
+                    (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(condition)
+                }
+                (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(query())
             } else {
                 if (listDataMap.containsKey(mapKey())) {
-                    if (checkValuesNotNull()) {
-                        (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(query())
-                    } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+                    (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(query())
                 } else {
                     listDataMap[mapKey()] = it
                 }

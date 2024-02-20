@@ -160,17 +160,6 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
     protected abstract fun selectData(ds: DataSource): Boolean
 
     /**
-     * 手动添加数据，也需要同步数据给后端。
-     */
-    interface OnSyncListener<M> {
-        
-        /**
-         * 在此回调中调用REST API同步数据给后端，isSingle是否为单条数据。
-         */
-        fun onSyncData(isSingle: Boolean, data: MutableList<M>)
-    }
-
-    /**
      * 数据的来源。
      */
     interface DataSource {

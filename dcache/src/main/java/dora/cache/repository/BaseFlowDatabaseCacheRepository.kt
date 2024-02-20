@@ -66,6 +66,44 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
         return QueryBuilder.create().toCondition()
     }
 
+
+    /**
+     * 手动添加数据，也需要同步数据给后端。
+     */
+    interface OnSyncListener<T> {
+
+        /**
+         * 在此回调中调用REST API同步数据给后端，isSingle是否为单条数据。
+         */
+        fun onSyncData(isSingle: Boolean, data: MutableList<T>)
+    }
+
+    /**
+     * 手动放入缓存数据，仅listMode为true时使用，注意只会追加到缓存里面去，请调用接口将新数据也更新到服务端，以致
+     * 于下次请求api接口时也会有这部分数据。
+     */
+    fun addData(data: T, listener: OnSyncListener<T>?) {
+        if (isListMode) {
+            addData(arrayListOf(data), listener)
+            listener?.onSyncData(true, arrayListOf(data))
+        }
+    }
+
+    /**
+     * 手动放入一堆缓存数据，仅listMode为true时使用，注意只会追加到缓存里面去，请调用接口将新数据也更新到服务端，
+     * 以致于下次请求api接口时也会有这部分数据。
+     */
+    fun addData(data: MutableList<T>, listener: OnSyncListener<T>?) {
+        if (data.size == 0) return
+        if (isListMode) {
+            getListFlowData().value.let {
+                it.addAll(data)
+                (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(data)
+                listener?.onSyncData(data.size == 1, data)
+            }
+        }
+    }
+
     override fun selectData(ds: DataSource): Boolean {
         val isLoaded = ds.loadFromCache(DataSource.CacheType.DATABASE)
         return if (isNetworkAvailable) {

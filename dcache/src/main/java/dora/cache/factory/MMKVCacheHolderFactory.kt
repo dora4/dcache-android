@@ -9,11 +9,11 @@ import java.lang.reflect.ParameterizedType
 class MMKVCacheHolderFactory<M> : CacheHolderFactory<M> {
 
     override fun createCacheHolder(): CacheHolder<M> {
-        return DoraMMKVCacheHolder<M>(getGenericType(this) as Class<M>)
+        return DoraMMKVCacheHolder(getGenericType(this) as Class<M>)
     }
 
     override fun createListCacheHolder(): CacheHolder<MutableList<M>> {
-        return DoraListMMKVCacheHolder<M>((object : TypeToken<MutableList<M>>(){}.rawType) as Class<MutableList<M>>)
+        return DoraListMMKVCacheHolder((object : TypeToken<MutableList<M>>(){}.rawType) as Class<MutableList<M>>)
     }
 
     private fun getGenericType(obj: Any): Class<*> {

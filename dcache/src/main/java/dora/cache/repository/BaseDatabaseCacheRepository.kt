@@ -216,26 +216,24 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
     }
 
     private fun onLoadFromCache(liveData: MutableLiveData<T?>) : Boolean {
-        if (checkValuesNotNull()) {
-            val model = (cacheHolder as DoraDatabaseCacheHolder<T>).queryCache(query())
-            model?.let {
-                onInterceptData(DataSource.Type.CACHE, it)
-                liveData.postValue(it)
-                return true
-            }
-        } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        val model = (cacheHolder as DoraDatabaseCacheHolder<T>).queryCache(query())
+        model?.let {
+            onInterceptData(DataSource.Type.CACHE, it)
+            liveData.postValue(it)
+            return true
+        }
         return false
     }
 
     private fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<T>>) : Boolean {
-        if (checkValuesNotNull()) {
-            val models = (listCacheHolder as DoraListDatabaseCacheHolder<T>).queryCache(query())
-            models?.let {
-                onInterceptData(DataSource.Type.CACHE, it)
-                liveData.postValue(it)
-                return true
-            }
-        } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        val models = (listCacheHolder as DoraListDatabaseCacheHolder<T>).queryCache(query())
+        models?.let {
+            onInterceptData(DataSource.Type.CACHE, it)
+            liveData.postValue(it)
+            return true
+        }
         return false
     }
 
@@ -302,20 +300,18 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
     }
 
     protected open fun parseModel(model: T, liveData: MutableLiveData<T?>) {
-        model?.let {
+        model.let {
             if (isLogPrint) {
                 Log.d(TAG, "【$description】$it")
             }
             onInterceptData(DataSource.Type.NETWORK, it)
             if (!disallowForceUpdate()) {
-                if (checkValuesNotNull()) {
-                    (cacheHolder as DoraDatabaseCacheHolder<T>).removeOldCache(query())
-                } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+                if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+                (cacheHolder as DoraDatabaseCacheHolder<T>).removeOldCache(query())
             } else {
                 if (dataMap.containsKey(mapKey())) {
-                    if (checkValuesNotNull()) {
-                        (cacheHolder as DoraDatabaseCacheHolder<T>).removeOldCache(query())
-                    } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+                    if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+                    (cacheHolder as DoraDatabaseCacheHolder<T>).removeOldCache(query())
                 } else {
                     dataMap[mapKey()] = it
                 }
@@ -335,19 +331,17 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
         models?.let {
             if (isLogPrint) {
                 for (model in it) {
-                    Log.d(TAG, "【$description】${model.toString()}")
+                    Log.d(TAG, "【$description】$model")
                 }
             }
             onInterceptData(DataSource.Type.NETWORK, it)
             if (!disallowForceUpdate()) {
-                if (checkValuesNotNull()) {
-                    (listCacheHolder as DoraListDatabaseCacheHolder<T>).removeOldCache(query())
-                } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+                if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+                (listCacheHolder as DoraListDatabaseCacheHolder<T>).removeOldCache(query())
             } else {
                 if (listDataMap.containsKey(mapKey())) {
-                    if (checkValuesNotNull()) {
-                        (listCacheHolder as DoraListDatabaseCacheHolder<T>).removeOldCache(query())
-                    } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+                    if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+                    (listCacheHolder as DoraListDatabaseCacheHolder<T>).removeOldCache(query())
                 } else {
                     listDataMap[mapKey()] = it
                 }
@@ -371,10 +365,9 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
         }
         listener?.onLoad(OnLoadStateListener.FAILURE)
         if (isClearDataOnNetworkError) {
-            if (checkValuesNotNull()) {
-                clearData()
-                (cacheHolder as DoraDatabaseCacheHolder<T>).removeOldCache(query())
-            } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            clearData()
+            (cacheHolder as DoraDatabaseCacheHolder<T>).removeOldCache(query())
         }
     }
 
@@ -387,10 +380,9 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
         }
         listener?.onLoad(OnLoadStateListener.FAILURE)
         if (isClearDataOnNetworkError) {
-            if (checkValuesNotNull()) {
-                clearListData()
-                (listCacheHolder as DoraListDatabaseCacheHolder<T>).removeOldCache(query())
-            } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            clearListData()
+            (listCacheHolder as DoraListDatabaseCacheHolder<T>).removeOldCache(query())
         }
     }
 }

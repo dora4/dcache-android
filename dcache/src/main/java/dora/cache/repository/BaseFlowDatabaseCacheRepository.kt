@@ -208,26 +208,24 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
     }
 
     private fun onLoadFromCache(flowData: MutableStateFlow<T?>) : Boolean {
-        if (checkValuesNotNull()) {
-            val model = (cacheHolder as DatabaseCacheHolder<T>).queryCache(query())
-            model?.let {
-                onInterceptData(DataSource.Type.CACHE, it)
-                flowData.value = it
-                return true
-            }
-        } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        val model = (cacheHolder as DatabaseCacheHolder<T>).queryCache(query())
+        model?.let {
+            onInterceptData(DataSource.Type.CACHE, it)
+            flowData.value = it
+            return true
+        }
         return false
     }
 
     private fun onLoadFromCacheList(flowData: MutableStateFlow<MutableList<T>>) : Boolean {
-        if (checkValuesNotNull()) {
-            val models = (listCacheHolder as ListDatabaseCacheHolder<T>).queryCache(query())
-            models?.let {
-                onInterceptData(DataSource.Type.CACHE, it)
-                flowData.value = it
-                return true
-            }
-        } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        val models = (listCacheHolder as ListDatabaseCacheHolder<T>).queryCache(query())
+        models?.let {
+            onInterceptData(DataSource.Type.CACHE, it)
+            flowData.value = it
+            return true
+        }
         return false
     }
 
@@ -300,14 +298,12 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
             }
             onInterceptData(DataSource.Type.NETWORK, it)
             if (!disallowForceUpdate()) {
-                if (checkValuesNotNull()) {
-                    (cacheHolder as DatabaseCacheHolder<T>).removeOldCache(query())
-                } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+                if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+                (cacheHolder as DatabaseCacheHolder<T>).removeOldCache(query())
             } else {
                 if (dataMap.containsKey(mapKey())) {
-                    if (checkValuesNotNull()) {
-                        (cacheHolder as DatabaseCacheHolder<T>).removeOldCache(query())
-                    } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+                    if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+                    (cacheHolder as DatabaseCacheHolder<T>).removeOldCache(query())
                 } else {
                     dataMap[mapKey()] = it
                 }
@@ -332,14 +328,12 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
             }
             onInterceptData(DataSource.Type.NETWORK, it)
             if (!disallowForceUpdate()) {
-                if (checkValuesNotNull()) {
-                    (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
-                } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+                if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+                (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
             } else {
                 if (listDataMap.containsKey(mapKey())) {
-                    if (checkValuesNotNull()) {
-                        (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
-                    } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+                    if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+                    (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
                 } else {
                     listDataMap[mapKey()] = it
                 }
@@ -363,10 +357,9 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
         }
         listener?.onLoad(OnLoadStateListener.FAILURE)
         if (isClearDataOnNetworkError) {
-            if (checkValuesNotNull()) {
-                clearData()
-                (cacheHolder as DatabaseCacheHolder<T>).removeOldCache(query())
-            } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            clearData()
+            (cacheHolder as DatabaseCacheHolder<T>).removeOldCache(query())
         }
     }
 
@@ -379,10 +372,9 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
         }
         listener?.onLoad(OnLoadStateListener.FAILURE)
         if (isClearDataOnNetworkError) {
-            if (checkValuesNotNull()) {
-                clearListData()
-                (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
-            } else throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            clearListData()
+            (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
         }
     }
 }

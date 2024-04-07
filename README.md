@@ -355,7 +355,7 @@ api "com.github.dora4:dcache-android:$latest_version"
 
    ```kotlin
        val repository = AccountRepository(this, Account::class.java)
-       repository.fetchListData("接口描述信息").observe(this,
+       repository.fetchListData().observe(this,
            Observer<List<Account>> {
    		})
    ```

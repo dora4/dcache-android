@@ -51,4 +51,4 @@ api "com.github.dora4:dcache-android:$latest_version"
 | LTC(莱特币)   | LdQhi87wsayEnyJ2MKn42NYZdA3LK9UkMy | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账速度适中，手续费很低 |
 | BCH(比特现金)   | bitcoincash:qq7ppehjjwtcmahtdyraak3trkfzgf6vnv29wnufun | 先发送github用户名至邮箱dora924666990@gmail.com再发送加密货币，转账速度适中，手续费很低 |
 
-广告：助记词保管推荐【隐私保险箱】，https://www.pgyer.com/privacybox 激活码限时免费🎉
+广告：助记词推荐【隐私保险箱】，[https://www.pgyer.com/privacybox 激活码限时免费](https://dorachat.oss-cn-hongkong.aliyuncs.com/Dora_Box_1.7.apk)🎉

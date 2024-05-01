@@ -443,3 +443,5 @@ implementation 'com.github.dora4:dcache-greendao-support:1.1'
 
 2.2.0版本新增对StateFlow的支持，数据载体LiveData和StateFlow自由选择。
 视频教程：https://www.youtube.com/watch?v=SP_btJHXqN8
+
+Tip：BIP39助记词安全保存推荐使用[【隐私保险箱】](https://dorachat.oss-cn-hongkong.aliyuncs.com/Dora_Box_1.11.apk)🎉

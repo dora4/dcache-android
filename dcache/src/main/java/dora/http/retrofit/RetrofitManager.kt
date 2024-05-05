@@ -1,11 +1,17 @@
 package dora.http.retrofit
 
+import android.annotation.SuppressLint
 import dora.http.coroutine.flow.FlowCallAdapterFactory
 import dora.http.exception.DoraHttpException
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 import kotlin.collections.HashMap
 
 /**
@@ -104,6 +110,11 @@ object RetrofitManager {
         private var useFlow: Boolean = false
 
         /**
+         * 信任所有证书。
+         */
+        private var useHttps: Boolean = false
+
+        /**
          * builder保持public。
          */
         val builder = OkHttpClient.Builder()
@@ -123,6 +134,11 @@ object RetrofitManager {
             return this
         }
 
+        fun https(useHttps: Boolean) : Config {
+            this.useHttps = useHttps
+            return this
+        }
+
         fun getClient() : OkHttpClient {
             return client
         }
@@ -135,7 +151,38 @@ object RetrofitManager {
             return useFlow
         }
 
+        fun isUseHttps() : Boolean {
+            return useHttps
+        }
+
         fun okhttp(block: OkHttpClient.Builder.() -> OkHttpClient) {
+            if (useHttps) {
+                val trustAllCerts = arrayOf<TrustManager>(
+                    @SuppressLint("CustomX509TrustManager")
+                    object : X509TrustManager {
+                        @SuppressLint("TrustAllX509TrustManager")
+                        override fun checkClientTrusted(
+                            chain: Array<X509Certificate>,
+                            authType: String
+                        ) {
+                        }
+
+                        @SuppressLint("TrustAllX509TrustManager")
+                        override fun checkServerTrusted(
+                            chain: Array<X509Certificate>,
+                            authType: String
+                        ) {
+                        }
+
+                        override fun getAcceptedIssuers(): Array<X509Certificate> {
+                            return arrayOf()
+                        }
+                    }
+                )
+                val sslContext = SSLContext.getInstance("SSL")
+                sslContext.init(null, trustAllCerts, SecureRandom())
+                builder.sslSocketFactory(sslContext.socketFactory, trustAllCerts[0] as X509TrustManager)
+            }
             client = block(builder)
         }
 

@@ -1,9 +1,11 @@
 package dora.http
 
 import android.app.Activity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import dora.cache.data.adapter.ResultAdapter
 import dora.cache.factory.CacheHolderFactory
@@ -17,6 +19,7 @@ import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -41,10 +44,10 @@ object DoraHttp {
         block.startCoroutine(ContextContinuation(DoraCoroutineContext(fragment.requireActivity())))
     }
 
-    fun <M, F : CacheHolderFactory<M>> netScope(repository: BaseRepository<M, F>, block: suspend () -> Unit) {
-        repository.viewModelScope.launch(DoraCoroutineContext(repository.context), CoroutineStart.DEFAULT) {
-            block()
-        }
+    fun <M, F : CacheHolderFactory<M>> netScope(repository: BaseRepository<M, F>,
+                                                block: suspend () -> Unit) {
+        repository.viewModelScope.launch(DoraCoroutineContext(repository.context),
+            CoroutineStart.DEFAULT) { block() }
     }
 
     fun Activity.net(block: suspend () -> Unit) {
@@ -56,15 +59,14 @@ object DoraHttp {
     }
 
     fun <M, F : CacheHolderFactory<M>> BaseRepository<M, F>.net(block: suspend () -> Unit) {
-        viewModelScope.launch(DoraCoroutineContext(context), CoroutineStart.DEFAULT) {
-            block()
-        }
+        viewModelScope.launch(DoraCoroutineContext(context), CoroutineStart.DEFAULT) { block() }
     }
 
     /**
      * 在net作用域下使用，可将请求结果[DoraCallback]进行转换。
      */
-    suspend fun <T, R : dora.cache.data.adapter.Result<T>> callback(call: Call<T>, success: (model: T) -> Unit, failure: ((msg: String)
+    suspend fun <T, R : dora.cache.data.adapter.Result<T>> callback(
+        call: Call<T>, success: (model: T) -> Unit, failure: ((msg: String)
             -> Unit)? = null, realType: Class<R>? = null) = suspendCoroutine {
         if (realType != null) {
             call.enqueue(ResultAdapter<T, R>(object : DoraCallback<T>() {
@@ -118,8 +120,8 @@ object DoraHttp {
     suspend fun <T> api(apiMethod: ()-> Call<T>) = suspendCoroutine<T> {
         val data = apiMethod()
         data.enqueue(object : DoraCallback<T>() {
-            override fun onSuccess(data: T) {
-                it.resume(data)
+            override fun onSuccess(model: T) {
+                it.resume(model)
             }
 
             override fun onFailure(msg: String) {
@@ -156,8 +158,8 @@ object DoraHttp {
     suspend fun <T> result(apiMethod: ()-> Call<T>) = suspendCoroutine<T?> {
         val data = apiMethod()
         data.enqueue(object : DoraCallback<T?>() {
-            override fun onSuccess(data: T?) {
-                it.resume(data)
+            override fun onSuccess(model: T?) {
+                it.resume(model)
             }
 
             override fun onFailure(msg: String) {
@@ -250,7 +252,7 @@ object DoraHttp {
      * 将一个普通的api接口包装成Flow返回值的接口。
      */
     suspend fun <T> flowResult(lifecycle: Lifecycle,
-                               lifecycleState: Lifecycle.State,
+                               lifecycleState: Lifecycle.State = Lifecycle.State.STARTED,
                                requestBlock: suspend () -> T,
                                loadingBlock: ((Boolean) -> Unit)? = null,
                                errorBlock: ((String) -> Unit)? = null,
@@ -289,7 +291,7 @@ object DoraHttp {
      */
     suspend fun <T> flowRequest(
                 lifecycle: Lifecycle,
-                lifecycleState: Lifecycle.State,
+                lifecycleState: Lifecycle.State = Lifecycle.State.STARTED,
                 requestBlock: () -> Flow<T>,
                 successBlock: ((T) -> Unit),
                 failureBlock: ((String) -> Unit)? = null,
@@ -297,5 +299,29 @@ object DoraHttp {
     ) {
        flowRequest(requestBlock = {requestBlock().flowWithLifecycle(lifecycle, lifecycleState)},
            successBlock, failureBlock, loadingBlock)
+    }
+
+    inline fun <T> Flow<T>.observeWithLifecycle(
+        activity: AppCompatActivity,
+        activeState: Lifecycle.State = Lifecycle.State.STARTED,
+        crossinline action: suspend ((value: T) -> Unit)
+    ): Job {
+        val job = activity.lifecycleScope.launch {
+            flowWithLifecycle(activity.lifecycle, activeState).collect { value -> action(value) }
+        }
+        return job
+    }
+
+    inline fun <T> Flow<T>.observeWithLifecycle(
+        fragment: Fragment,
+        activeState: Lifecycle.State = Lifecycle.State.STARTED,
+        crossinline action: suspend ((value: T) -> Unit)
+    ): Job {
+        val job = fragment.viewLifecycleOwner.lifecycleScope.launch {
+            flowWithLifecycle(fragment.viewLifecycleOwner.lifecycle, activeState).collect { value ->
+                action(value)
+            }
+        }
+        return job
     }
 }

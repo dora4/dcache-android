@@ -28,20 +28,21 @@ dependencies {
 
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
 
     api("com.squareup.okhttp3:okhttp:4.11.0")
     api("com.squareup.retrofit2:converter-gson:2.8.1")
     api("com.squareup.retrofit2:retrofit:2.9.0")
     api("com.squareup.retrofit2:adapter-rxjava2:2.8.1")
-    api("io.reactivex.rxjava2:rxjava:2.2.4")
-    api("io.reactivex.rxjava2:rxandroid:2.1.0")
+    api("io.reactivex.rxjava2:rxjava:2.2.6")
+    api("io.reactivex.rxjava2:rxandroid:2.1.1")
 
     api("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.20")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     api("com.tencent:mmkv:1.2.16")
-    implementation("com.google.firebase:firebase-crashlytics-buildtools:2.9.9")
+    implementation("com.google.firebase:firebase-crashlytics-buildtools:3.0.0")
 }
 
 afterEvaluate {
@@ -51,7 +52,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.github.dora4"
                 artifactId = "dcache-android"
-                version = "2.2.12"
+                version = "2.3.0"
             }
         }
     }

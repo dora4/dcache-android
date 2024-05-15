@@ -2,6 +2,8 @@ package dora.http
 
 import android.app.Activity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.viewModelScope
 import dora.cache.data.adapter.ResultAdapter
 import dora.cache.factory.CacheHolderFactory
@@ -245,6 +247,18 @@ object DoraHttp {
     }
 
     /**
+     * 将一个普通的api接口包装成Flow返回值的接口。
+     */
+    suspend fun <T> flowResult(lifecycle: Lifecycle,
+                               lifecycleState: Lifecycle.State,
+                               requestBlock: suspend () -> T,
+                               loadingBlock: ((Boolean) -> Unit)? = null,
+                               errorBlock: ((String) -> Unit)? = null,
+    ) : Flow<T> {
+        return flowResult(requestBlock, loadingBlock, errorBlock).flowWithLifecycle(lifecycle, lifecycleState)
+    }
+
+    /**
      * 直接发起Flow请求，如果你使用框架内部的[dora.http.retrofit.RetrofitManager]的话，需要开启
      * [dora.http.retrofit.RetrofitManager]的flow配置选项[dora.http.retrofit.RetrofitManager.Config.useFlow]
      * 为true。
@@ -252,8 +266,7 @@ object DoraHttp {
     suspend fun <T> flowRequest(requestBlock: () -> Flow<T>,
                                 successBlock: ((T) -> Unit),
                                 failureBlock: ((String) -> Unit)? = null,
-                                loadingBlock: ((Boolean) -> Unit)? = null
-    ) {
+                                loadingBlock: ((Boolean) -> Unit)? = null) {
         requestBlock()
             .flowOn(Dispatchers.IO)
             .onStart {
@@ -267,5 +280,22 @@ object DoraHttp {
             }.collect {
                 successBlock(it)
             }
+    }
+
+    /**
+     * 直接发起Flow请求，如果你使用框架内部的[dora.http.retrofit.RetrofitManager]的话，需要开启
+     * [dora.http.retrofit.RetrofitManager]的flow配置选项[dora.http.retrofit.RetrofitManager.Config.useFlow]
+     * 为true。
+     */
+    suspend fun <T> flowRequest(
+                lifecycle: Lifecycle,
+                lifecycleState: Lifecycle.State,
+                requestBlock: () -> Flow<T>,
+                successBlock: ((T) -> Unit),
+                failureBlock: ((String) -> Unit)? = null,
+                loadingBlock: ((Boolean) -> Unit)? = null
+    ) {
+       flowRequest(requestBlock = {requestBlock().flowWithLifecycle(lifecycle, lifecycleState)},
+           successBlock, failureBlock, loadingBlock)
     }
 }

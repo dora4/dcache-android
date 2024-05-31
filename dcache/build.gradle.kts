@@ -26,9 +26,9 @@ android {
 dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
 
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.0")
 
     api("com.squareup.okhttp3:okhttp:4.11.0")
     api("com.squareup.retrofit2:converter-gson:2.8.1")
@@ -52,7 +52,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.github.dora4"
                 artifactId = "dcache-android"
-                version = "2.3.2"
+                version = "2.3.3"
             }
         }
     }

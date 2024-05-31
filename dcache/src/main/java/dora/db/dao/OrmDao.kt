@@ -589,7 +589,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
             val convert: Convert? = field.getAnnotation(Convert::class.java)
             val columnIndex = cursor.getColumnIndex(columnName)
             if (columnIndex != -1) {
-                var fieldType: Class<*> = convert?.columnType?.java ?: field.type
+                val fieldType: Class<*> = convert?.columnType?.java ?: field.type
                 if (isAssignableFromCharSequence(fieldType)) {
                     if (convert != null) {
                         val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
@@ -608,7 +608,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
                         val value: Any? = propertyConverter.convertToEntityProperty(cursor.getInt(columnIndex) == 1)
                         field[bean] = value
                     } else {
-                        field[bean] = cursor.getInt(columnIndex) == 1
+                        field[bean] = (cursor.getInt(columnIndex) == 1)
                     }
                 } else if (isAssignableFromLong(fieldType)) {
                     if (convert != null) {

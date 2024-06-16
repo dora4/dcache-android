@@ -23,6 +23,12 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
         return pageSize
     }
 
+    fun isLastPage(pageNo: Int) : Boolean {
+        val size = getListFlowData().value.size
+        val lastPage = if (size % pageSize == 0) size / pageSize - 1 else size / pageSize
+        return lastPage == pageNo
+    }
+
     open fun setCurrentPage(pageNo: Int, pageSize: Int): DoraPageFlowDatabaseCacheRepository<M, T> {
         this.pageNo = pageNo
         this.pageSize = pageSize

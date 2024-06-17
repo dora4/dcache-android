@@ -28,7 +28,12 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import retrofit2.Call
+import java.io.File
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.startCoroutine
@@ -323,5 +328,17 @@ object DoraHttp {
             }
         }
         return job
+    }
+
+    fun createFilePart(file: File, partName: String = "file", mimeType: String = "*/*") : MultipartBody.Part {
+        val requestFile: RequestBody = file
+            .asRequestBody(
+                mimeType.toMediaTypeOrNull()
+            )
+        return MultipartBody.Part.createFormData(
+            partName,
+            file.name,
+            requestFile
+        )
     }
 }

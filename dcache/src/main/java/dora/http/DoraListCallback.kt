@@ -21,6 +21,8 @@ abstract class DoraListCallback<M> : Callback<MutableList<M>> {
             } else {
                 onFailure(EMPTY_BODY)
             }
+        } else {
+            onFailure("${response.code()}:${response.message()}")
         }
     }
 

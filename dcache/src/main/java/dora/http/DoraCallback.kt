@@ -21,6 +21,8 @@ abstract class DoraCallback<M> : Callback<M> {
             } else {
                 onFailure(EMPTY_BODY)
             }
+        } else {
+            onFailure("${response.code()}:${response.message()}")
         }
     }
 

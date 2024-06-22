@@ -3,12 +3,9 @@ package dora.cache.repository
 import android.content.Context
 import android.util.Log
 import dora.cache.data.fetcher.OnLoadStateListener
-import dora.cache.holder.ListDatabaseCacheHolder
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import dora.db.table.OrmTable
-import kotlinx.coroutines.flow.MutableStateFlow
-import java.lang.IllegalArgumentException
 
 abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Context)
     : DoraFlowDatabaseCacheRepository<T>(context) {
@@ -32,21 +29,43 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
     /**
      * 下拉刷新回调，可结合[setPageSize]使用。
      */
-    fun onRefresh(listener: OnLoadStateListener) {
+    @JvmOverloads
+    fun onRefresh(listener: OnLoadStateListener? = null) {
         pageNo = 0
         fetchListData(listener = listener)
     }
 
     /**
+     * 下拉刷新高阶函数，可结合[setPageSize]使用。
+     */
+    fun onRefresh(block: ((Boolean) -> Unit)? = null) {
+        pageNo = 0
+        fetchListData(listener = object : OnLoadStateListener {
+            override fun onLoad(state: Int) {
+                block?.invoke(state == OnLoadStateListener.SUCCESS)
+            }
+        })
+    }
+
+    /**
      * 上拉加载回调，可结合[setPageSize]使用。
      */
-    fun onLoadMore(listener: OnLoadStateListener) {
+    @JvmOverloads
+    fun onLoadMore(listener: OnLoadStateListener? = null) {
         pageNo++
         fetchListData(listener = listener)
     }
 
-    override fun disallowForceUpdate(): Boolean {
-        return true
+    /**
+     * 上拉加载高阶函数，可结合[setPageSize]使用。
+     */
+    fun onLoadMore(block: ((Boolean) -> Unit)? = null) {
+        pageNo++
+        fetchListData(listener = object : OnLoadStateListener {
+            override fun onLoad(state: Int) {
+                block?.invoke(state == OnLoadStateListener.SUCCESS)
+            }
+        })
     }
 
     open fun setPageSize(pageSize: Int): DoraPageFlowDatabaseCacheRepository<M, T> {

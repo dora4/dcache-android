@@ -2,6 +2,8 @@ package dora.cache.repository
 
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.LifecycleOwner
+import androidx.recyclerview.widget.RecyclerView
 import dora.cache.data.fetcher.OnLoadStateListener
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
@@ -26,11 +28,26 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
         return lastPage == pageNo
     }
 
+    fun observeData(owner: LifecycleOwner, adapter: AdapterDelegate<T>) {
+        getListLiveData().observe(owner) {
+            if (pageNo == 0) {
+                adapter.setList(it)
+            } else {
+                adapter.addData(it)
+            }
+        }
+    }
+
+    interface AdapterDelegate<T> {
+
+        fun setList(data: MutableList<T>)
+        fun addData(data: MutableList<T>)
+    }
+
     /**
      * 下拉刷新回调，可结合[setPageSize]使用。
      */
-    @JvmOverloads
-    fun onRefresh(listener: OnLoadStateListener? = null) {
+    fun onRefresh(listener: OnLoadStateListener) {
         pageNo = 0
         fetchListData(listener = listener)
     }
@@ -38,6 +55,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     /**
      * 下拉刷新高阶函数，可结合[setPageSize]使用。
      */
+    @JvmOverloads
     fun onRefresh(block: ((Boolean) -> Unit)? = null) {
         pageNo = 0
         fetchListData(listener = object : OnLoadStateListener {
@@ -50,8 +68,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     /**
      * 上拉加载回调，可结合[setPageSize]使用。
      */
-    @JvmOverloads
-    fun onLoadMore(listener: OnLoadStateListener? = null) {
+    fun onLoadMore(listener: OnLoadStateListener) {
         pageNo++
         fetchListData(listener = listener)
     }
@@ -59,6 +76,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     /**
      * 上拉加载高阶函数，可结合[setPageSize]使用。
      */
+    @JvmOverloads
     fun onLoadMore(block: ((Boolean) -> Unit)? = null) {
         pageNo++
         fetchListData(listener = object : OnLoadStateListener {

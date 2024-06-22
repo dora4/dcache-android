@@ -2,10 +2,12 @@ package dora.cache.repository
 
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.LifecycleOwner
 import dora.cache.data.fetcher.OnLoadStateListener
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import dora.db.table.OrmTable
+import kotlinx.coroutines.flow.count
 
 abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Context)
     : DoraFlowDatabaseCacheRepository<T>(context) {
@@ -26,11 +28,26 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
         return lastPage == pageNo
     }
 
+    suspend fun observeData(adapter: AdapterDelegate<T>) {
+        getListFlowData().collect {
+            if (pageNo == 0) {
+                adapter.setList(it)
+            } else {
+                adapter.addData(it)
+            }
+        }
+    }
+
+    interface AdapterDelegate<T> {
+
+        fun setList(data: MutableList<T>)
+        fun addData(data: MutableList<T>)
+    }
+
     /**
      * 下拉刷新回调，可结合[setPageSize]使用。
      */
-    @JvmOverloads
-    fun onRefresh(listener: OnLoadStateListener? = null) {
+    fun onRefresh(listener: OnLoadStateListener) {
         pageNo = 0
         fetchListData(listener = listener)
     }
@@ -38,6 +55,7 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
     /**
      * 下拉刷新高阶函数，可结合[setPageSize]使用。
      */
+    @JvmOverloads
     fun onRefresh(block: ((Boolean) -> Unit)? = null) {
         pageNo = 0
         fetchListData(listener = object : OnLoadStateListener {
@@ -50,8 +68,7 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
     /**
      * 上拉加载回调，可结合[setPageSize]使用。
      */
-    @JvmOverloads
-    fun onLoadMore(listener: OnLoadStateListener? = null) {
+    fun onLoadMore(listener: OnLoadStateListener) {
         pageNo++
         fetchListData(listener = listener)
     }
@@ -59,6 +76,7 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
     /**
      * 上拉加载高阶函数，可结合[setPageSize]使用。
      */
+    @JvmOverloads
     fun onLoadMore(block: ((Boolean) -> Unit)? = null) {
         pageNo++
         fetchListData(listener = object : OnLoadStateListener {

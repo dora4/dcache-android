@@ -43,6 +43,7 @@ dependencies {
 
     api("com.tencent:mmkv:1.2.16")
     implementation("com.google.firebase:firebase-crashlytics-buildtools:3.0.0")
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
 }
 
 afterEvaluate {
@@ -52,7 +53,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.github.dora4"
                 artifactId = "dcache-android"
-                version = "2.3.10"
+                version = "2.3.11"
             }
         }
     }

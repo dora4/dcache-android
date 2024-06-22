@@ -2,6 +2,7 @@ package dora.cache.repository
 
 import android.content.Context
 import android.util.Log
+import dora.cache.data.fetcher.OnLoadStateListener
 import dora.cache.holder.ListDatabaseCacheHolder
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
@@ -23,8 +24,34 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
         return pageSize
     }
 
+    fun isLastPage(totalSize: Int) : Boolean {
+        val lastPage = if (totalSize % pageSize == 0) totalSize / pageSize - 1 else totalSize / pageSize
+        return lastPage == pageNo
+    }
+
+    /**
+     * 下拉刷新回调，可结合[setPageSize]使用。
+     */
+    fun onRefresh(listener: OnLoadStateListener) {
+        pageNo = 0
+        fetchListData(listener = listener)
+    }
+
+    /**
+     * 上拉加载回调，可结合[setPageSize]使用。
+     */
+    fun onLoadMore(listener: OnLoadStateListener) {
+        pageNo++
+        fetchListData(listener = listener)
+    }
+
     override fun disallowForceUpdate(): Boolean {
         return true
+    }
+
+    open fun setPageSize(pageSize: Int): DoraPageFlowDatabaseCacheRepository<M, T> {
+        this.pageSize = pageSize
+        return this
     }
 
     open fun setCurrentPage(pageNo: Int, pageSize: Int): DoraPageFlowDatabaseCacheRepository<M, T> {

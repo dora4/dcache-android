@@ -23,6 +23,10 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
         return pageSize
     }
 
+    override fun disallowForceUpdate(): Boolean {
+        return true
+    }
+
     fun isLastPage(pageNo: Int) : Boolean {
         val size = getListFlowData().value.size
         val lastPage = if (size % pageSize == 0) size / pageSize - 1 else size / pageSize
@@ -60,47 +64,5 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
                 isLoaded
             }
         } else isLoaded
-    }
-
-    override fun parseModels(models: MutableList<T>?,
-                             flowData: MutableStateFlow<MutableList<T>>) {
-        models?.let {
-            if (isLogPrint) {
-                for (model in it) {
-                    Log.d(TAG, "【$description】$model")
-                }
-            }
-            onInterceptData(DataSource.Type.NETWORK, it)
-            if (checkValuesNotNull()) {
-                throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
-            }
-            if (!disallowForceUpdate()) {
-                // 移除之前所有的条件的数据
-                for (condition in (listCacheHolder as ListDatabaseCacheHolder).cacheConditions) {
-                    (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(condition)
-                }
-                (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(query())
-            } else {
-                if (listDataMap.containsKey(mapKey())) {
-                    (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(query())
-                } else {
-                    listDataMap[mapKey()] = it
-                }
-            }
-            // 追加缓存的模式
-            val temp = arrayListOf<T>()
-            flowData.value.let { v ->
-                temp.addAll(v)
-            }
-            temp.addAll(it)
-            (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(temp)
-            (listCacheHolder as ListDatabaseCacheHolder).cacheConditions.add(query())
-
-            if (disallowForceUpdate()) {
-                flowData.value = listDataMap[mapKey()]!!
-            } else {
-                flowData.value = it
-            }
-        }
     }
 }

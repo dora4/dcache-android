@@ -34,19 +34,10 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
     protected val listDataMap = HashMap<String, MutableList<T>>()
 
     /**
-     * 如果返回true，则放弃强制覆盖原有数据的模式，而采用map映射，注意这种方式在程序退出后会丢失map缓存的数据。
+     * 是否开启追加模式，仅list模式有效。
      */
     protected open fun disallowForceUpdate() : Boolean {
         return false
-    }
-
-    /**
-     * 只要mapKey的值不冲突即可追加缓存，读取的时候则通过mapKey取不同条件（如接口的参数不同，请求的时间戳不同等）
-     * 接口返回的数据的缓存。
-     */
-    protected open fun mapKey() : String {
-        // 通过时间戳保证打开disallowForceUpdate后每次接口返回的数据都被缓存到map，而不是livedata
-        return System.currentTimeMillis().toString()
     }
 
     /**
@@ -292,29 +283,16 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
     }
 
     protected open fun parseModel(model: T, flowData: MutableStateFlow<T?>) {
-        model?.let {
+        model.let {
             if (isLogPrint) {
                 Log.d(TAG, "【$description】$it")
             }
             onInterceptData(DataSource.Type.NETWORK, it)
-            if (!disallowForceUpdate()) {
-                if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
-                (cacheHolder as DatabaseCacheHolder<T>).removeOldCache(query())
-            } else {
-                if (dataMap.containsKey(mapKey())) {
-                    if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
-                    (cacheHolder as DatabaseCacheHolder<T>).removeOldCache(query())
-                } else {
-                    dataMap[mapKey()] = it
-                }
-            }
+            if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            (cacheHolder as DatabaseCacheHolder<T>).removeOldCache(query())
             (cacheHolder as DatabaseCacheHolder<T>).addNewCache(it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
-            if (disallowForceUpdate()) {
-                flowData.value = dataMap[mapKey()]
-            } else {
-                flowData.value = it
-            }
+            flowData.value = it
         }
     }
 
@@ -327,24 +305,16 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
                 }
             }
             onInterceptData(DataSource.Type.NETWORK, it)
-            if (!disallowForceUpdate()) {
-                if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
-                (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
-            } else {
-                if (listDataMap.containsKey(mapKey())) {
-                    if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
-                    (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
-                } else {
-                    listDataMap[mapKey()] = it
-                }
-            }
+            if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
             (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
             if (disallowForceUpdate()) {
-                flowData.value = listDataMap[mapKey()]!!
-            } else {
-                flowData.value = it
+                val oldValue = flowData.value
+                oldValue.addAll(it)
+                flowData.value = oldValue
             }
+            flowData.value = it
         }
     }
 

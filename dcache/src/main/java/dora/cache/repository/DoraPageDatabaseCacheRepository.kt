@@ -23,6 +23,10 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
         return pageSize
     }
 
+    override fun disallowForceUpdate(): Boolean {
+        return true
+    }
+
     fun isLastPage(pageNo: Int) : Boolean {
         val size = getListLiveData().value?.size ?: 0
         val lastPage = if (size % pageSize == 0) size / pageSize - 1 else size / pageSize
@@ -60,47 +64,5 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                 isLoaded
             }
         } else isLoaded
-    }
-
-    override fun parseModels(models: MutableList<T>?,
-                                   liveData: MutableLiveData<MutableList<T>>) {
-        models?.let {
-            if (isLogPrint) {
-                for (model in it) {
-                    Log.d(TAG, "【$description】$model")
-                }
-            }
-            onInterceptData(DataSource.Type.NETWORK, it)
-            if (!checkValuesNotNull()) {
-                throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
-            }
-            if (!disallowForceUpdate()) {
-                // 移除之前所有的条件的数据
-                for (condition in (listCacheHolder as ListDatabaseCacheHolder).cacheConditions) {
-                    (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(condition)
-                }
-                (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
-            } else {
-                if (listDataMap.containsKey(mapKey())) {
-                    (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
-                } else {
-                    listDataMap[mapKey()] = it
-                }
-            }
-            // 追加缓存的模式
-            val temp = arrayListOf<T>()
-            liveData.value?.let { v ->
-                temp.addAll(v)
-            }
-            temp.addAll(it)
-            (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(temp)
-            (listCacheHolder as ListDatabaseCacheHolder).cacheConditions.add(query())
-
-            if (disallowForceUpdate()) {
-                liveData.postValue(listDataMap[mapKey()])
-            } else {
-                liveData.postValue(it)
-            }
-        }
     }
 }

@@ -72,10 +72,10 @@ class QueryBuilder private constructor() {
     }
 
     /**
-     * 指定limit，数据索引从start到end位置。
+     * 指定limit，数据索引从start开始，数size条数据。
      */
-    fun limit(start: Int, end: Int): QueryBuilder {
-        limit = LIMIT + start + COMMA + end
+    fun limit(start: Int, size: Int): QueryBuilder {
+        limit = LIMIT + start + COMMA + size
         return this
     }
 

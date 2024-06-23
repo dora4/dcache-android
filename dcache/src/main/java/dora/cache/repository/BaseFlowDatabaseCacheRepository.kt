@@ -30,9 +30,6 @@ import java.lang.IllegalArgumentException
 abstract class BaseFlowDatabaseCacheRepository<T : OrmTable>
 constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory<T>>(context) {
 
-    protected val dataMap = HashMap<String, T>()
-    protected val listDataMap = HashMap<String, MutableList<T>>()
-
     /**
      * 是否开启追加模式，仅list模式有效。
      */

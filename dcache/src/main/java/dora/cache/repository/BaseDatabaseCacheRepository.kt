@@ -30,9 +30,6 @@ import java.lang.IllegalArgumentException
 abstract class BaseDatabaseCacheRepository<T : OrmTable>
 constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>(context) {
 
-    protected val dataMap = HashMap<String, T>()
-    protected val listDataMap = HashMap<String, MutableList<T>>()
-
     /**
      * 保证成员属性不为空，而成功调用数据库查询方法，提高查询可靠性。比如用来校验属性，a != null && b != null
      * && c != null。

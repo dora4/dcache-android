@@ -310,8 +310,9 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
                 val oldValue = flowData.value
                 oldValue.addAll(it)
                 flowData.value = oldValue
+            } else {
+                flowData.value = it
             }
-            flowData.value = it
         }
     }
 

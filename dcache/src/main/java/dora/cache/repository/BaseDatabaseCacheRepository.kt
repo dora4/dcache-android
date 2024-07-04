@@ -318,8 +318,9 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
                 val oldValue = liveData.value
                 oldValue?.addAll(it)
                 liveData.value = oldValue
+            } else {
+                liveData.postValue(it)
             }
-            liveData.postValue(it)
         }
     }
 

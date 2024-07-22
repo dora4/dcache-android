@@ -318,7 +318,11 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
 
     private fun insertOrUpdateInternal(bean: T): Boolean {
         val primaryKey = bean.primaryKey
-        val result = selectOne(WhereBuilder.create().addWhereEqualTo(primaryKey.name, primaryKey.value))
+        val name: String = primaryKey.name
+        val field = beanClass.getField(name)
+        field.isAccessible = true
+        val value = field.get(bean)
+        val result = selectOne(WhereBuilder.create().addWhereEqualTo(primaryKey.name, value))
         return if (result != null) {
             update(bean)
         } else {

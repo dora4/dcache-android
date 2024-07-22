@@ -5,20 +5,8 @@ import java.io.Serializable
 /**
  * 主键。
  */
-open class PrimaryKeyEntry : Serializable {
+open class PrimaryKeyEntry(primaryKeyName: String) : Serializable {
 
-    var name: String
+    var name: String = primaryKeyName
         private set
-    var value: String
-        private set
-
-    constructor(primaryKeyName: String, primaryKeyValue: Number) {
-        name = primaryKeyName
-        value = primaryKeyValue.toString()
-    }
-
-    constructor(primaryKeyName: String, primaryKeyValue: String) {
-        name = primaryKeyName
-        value = primaryKeyValue
-    }
 }

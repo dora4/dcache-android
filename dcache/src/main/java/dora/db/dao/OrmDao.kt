@@ -266,7 +266,9 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     override fun delete(bean: T): Boolean {
         val primaryKey: PrimaryKeyEntry = bean.primaryKey
         val name: String = primaryKey.name
-        val value: String = primaryKey.value
+        val field = beanClass.getField(name)
+        field.isAccessible = true
+        val value = field.get(bean)?.toString()
         return deleteInternal(WhereBuilder.create(Condition("$name=?", arrayOf(value))), database)
     }
 
@@ -335,17 +337,11 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     override fun update(bean: T): Boolean {
         val primaryKey: PrimaryKeyEntry = bean.primaryKey
         val name: String = primaryKey.name
-        val value: String = primaryKey.value
+        val field = beanClass.getField(name)
+        field.isAccessible = true
+        val value = field.get(bean)?.toString()
         return updateInternal(WhereBuilder.create(Condition("$name=?", arrayOf(value))),
                 bean, database)
-    }
-
-    @Deprecated(
-        "防止错误调用污染数据，请使用update(builder: WhereBuilder, newBean: T)替代",
-        level = DeprecationLevel.WARNING
-    )
-    override fun updateAll(newBean: T): Boolean {
-        return updateAllInternal(newBean, database)
     }
 
     private fun updateAllInternal(newBean: T, db: SQLiteDatabase): Boolean {

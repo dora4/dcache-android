@@ -55,16 +55,6 @@ interface Dao<T : OrmTable> {
     fun update(bean: T): Boolean
 
     /**
-     * 更新所有数据。过时，很少将数据更新成相同的，除非是重置操作。
-     */
-    @Deprecated(
-        message =
-        "防止错误调用污染数据，请使用update(builder: WhereBuilder, newBean: T)替代",
-        level = DeprecationLevel.WARNING
-    )
-    fun updateAll(newBean: T): Boolean
-
-    /**
      * 查询所有数据。
      */
     fun selectAll(): List<T>

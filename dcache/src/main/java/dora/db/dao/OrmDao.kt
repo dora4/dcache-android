@@ -264,7 +264,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     override fun delete(bean: T): Boolean {
-        val field = bean.javaClass.getField(getPrimaryKeyFieldName(bean))
+        val field = bean.javaClass.getDeclaredField(getPrimaryKeyFieldName(bean))
         field.isAccessible = true
         val name = TableManager.getColumnName(field)
         val value = field.get(bean)?.toString()
@@ -316,7 +316,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     private fun insertOrUpdateInternal(bean: T): Boolean {
-        val field = bean.javaClass.getField(getPrimaryKeyFieldName(bean))
+        val field = bean.javaClass.getDeclaredField(getPrimaryKeyFieldName(bean))
         field.isAccessible = true
         val name = TableManager.getColumnName(field)
         val value = field.get(bean)
@@ -337,7 +337,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     override fun update(bean: T): Boolean {
-        val field = bean.javaClass.getField(getPrimaryKeyFieldName(bean))
+        val field = bean.javaClass.getDeclaredField(getPrimaryKeyFieldName(bean))
         field.isAccessible = true
         val name = TableManager.getColumnName(field)
         val value = field.get(bean)?.toString()

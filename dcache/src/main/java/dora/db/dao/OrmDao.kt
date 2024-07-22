@@ -71,7 +71,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     private fun isOrmTableField(field: Field) : Boolean {
-        return field.name.equals("primaryKey") || field.name.equals("isUpgradeRecreated") || field.name.equals("migrations")
+        return field.name.equals("isUpgradeRecreated") || field.name.equals("migrations")
     }
 
     private fun convertBooleanToInt(boolean: Boolean) : Int {
@@ -264,10 +264,9 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     override fun delete(bean: T): Boolean {
-        val primaryKey: PrimaryKeyEntry = bean.primaryKey
-        val name: String = primaryKey.name
-        val field = beanClass.getField(name)
+        val field = beanClass.getField(getPrimaryKeyFieldName(bean))
         field.isAccessible = true
+        val name = TableManager.getColumnName(field)
         val value = field.get(bean)?.toString()
         return deleteInternal(WhereBuilder.create(Condition("$name=?", arrayOf(value))), database)
     }
@@ -317,12 +316,11 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     private fun insertOrUpdateInternal(bean: T): Boolean {
-        val primaryKey = bean.primaryKey
-        val name: String = primaryKey.name
-        val field = beanClass.getField(name)
+        val field = beanClass.getField(getPrimaryKeyFieldName(bean))
         field.isAccessible = true
+        val name = TableManager.getColumnName(field)
         val value = field.get(bean)
-        val result = selectOne(WhereBuilder.create().addWhereEqualTo(primaryKey.name, value))
+        val result = selectOne(WhereBuilder.create().addWhereEqualTo(name, value))
         return if (result != null) {
             update(bean)
         } else {
@@ -339,10 +337,9 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     override fun update(bean: T): Boolean {
-        val primaryKey: PrimaryKeyEntry = bean.primaryKey
-        val name: String = primaryKey.name
-        val field = beanClass.getField(name)
+        val field = beanClass.getField(getPrimaryKeyFieldName(bean))
         field.isAccessible = true
+        val name = TableManager.getColumnName(field)
         val value = field.get(bean)?.toString()
         return updateInternal(WhereBuilder.create(Condition("$name=?", arrayOf(value))),
                 bean, database)
@@ -569,6 +566,25 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
         return if (clazz.isPrimitive) {
             if (clazz == Boolean::class.javaPrimitiveType) false else 0
         } else null
+    }
+
+    private fun getPrimaryKeyFieldName(bean: T): String {
+        val fields = beanClass.declaredFields
+        for (field in fields) {
+            field.isAccessible = true
+            if (isOrmTableField(field)) {
+                continue
+            }
+            val id: Id? = field.getAnnotation(Id::class.java)
+            if (id != null) {
+                return field.name
+            }
+            val primaryKey: PrimaryKey? = field.getAnnotation(PrimaryKey::class.java)
+            if (primaryKey != null) {
+                return field.name
+            }
+        }
+        return ""
     }
 
     @Throws(IllegalAccessException::class, ClassNotFoundException::class)

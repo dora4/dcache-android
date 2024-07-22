@@ -38,7 +38,7 @@ dependencies {
     api("io.reactivex.rxjava2:rxandroid:2.1.1")
 
     api("org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.0.0")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
     api("com.tencent:mmkv:1.2.16")
@@ -53,7 +53,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.github.dora4"
                 artifactId = "dcache-android"
-                version = "2.3.16"
+                version = "2.3.17"
             }
         }
     }

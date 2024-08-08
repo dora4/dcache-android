@@ -33,7 +33,7 @@ api "com.github.dora4:dcache-android:$stable_version"
 
 ### 使用文档（ 使用示例 https://github.com/dora4/DoraCacheSample ）
 
-#### 一、dcache的orm注解
+#### 一、dcache的orm详解
 
 1. **配置初始化**
 

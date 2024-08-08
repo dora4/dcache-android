@@ -410,7 +410,7 @@ api "com.github.dora4:dcache-android:$stable_version"
    repository.fetchListData()
    ```
 
-如果为常规模式（非集合模式），则应该调用fetchData。
+   如果为常规模式（非集合模式），则应该调用fetchData。
 
 5. **内存缓存数据处理**
 

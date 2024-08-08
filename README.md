@@ -363,7 +363,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
              // 伪代码，你自己的网络请求，省略若干行...
              var success = true
              if (success) {
-             		// 成功的回调里面要释放锁
+                 // 成功的回调里面要释放锁
                  it.releaseLock(user)
              } else {
                  // 失败的回调里面也要释放锁
@@ -371,7 +371,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
              }      
              Log.e("这行代码不会被执行，释放了锁后，request函数的代码执行就结束了，无论后面还有没有代码")
          }
-       	// 打印这些数据
+         // 打印这些数据
          Toast.makeText(this, "$user1--$user2--$user3", Toast.LENGTH_SHORT).show()
      }
      ```
@@ -437,8 +437,8 @@ implementation "com.github.dora4:dcache-android:$stable_version"
        val pager = repository.obtainPager()
        // 设置分页数据结果的回调
        pager.setPageCallback(object : PageCallback<User> {
-       		override fun onResult(models: List<User>) {
-             	// 每次接受访问者的访问都会回调这里
+           override fun onResult(models: List<User>) {
+               // 每次接受访问者的访问都会回调这里
            }
        })
        // 使用默认的分页访问者访问数据

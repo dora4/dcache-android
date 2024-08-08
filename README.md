@@ -149,7 +149,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
        ```
 
        如可以通过调用addWhereEqualTo()添加“key=value”的条件。其他类似方法还有addWhereNotEqualTo()、addWhereGreaterThan()、addWhereLessThan()、and()、or()、not()、parenthesesLeft()和parenthesesRight()等。
-       > 解释
+       > 相关方法
        > 
        > addWhereGreaterThan：大于
        >

@@ -136,7 +136,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
        selection：where子句，不带where，可以带”？“占位符
 
-       selectionArgs：”？“占位符的所有值
+selectionArgs：”？“占位符的所有值
 
      - WhereBuilder
 
@@ -152,17 +152,17 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
        addWhereGreaterThan：大于
 
-       addWhereLessThan：小于
+addWhereLessThan：小于
 
-       and：与
+and：与
 
-       or：或
+or：或
 
-       not：非
+not：非
 
-       parenthesesLeft：左括号
+parenthesesLeft：左括号
 
-       parenthesesRight：有括号
+parenthesesRight：有括号
 
      - QueryBuilder
 

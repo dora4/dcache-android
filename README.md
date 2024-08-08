@@ -313,7 +313,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
       override fun onFailure(code: Int, msg: String?) {
       }
    
-      override fun onSuccess(data: Account) {
+      override fun onSuccess(data: User) {
       }
   })
   

@@ -369,7 +369,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
                  // 失败的回调里面也要释放锁
                  it.releaseLock(null)
              }      
-             Log.e("这行代码不会被执行，释放了锁后，request函数的代码执行就结束了，无论后面还有没有代码")
+             Log.e("这行代码不会被执行，释放了锁后，request函数的代码执行就结束了，无论后面是否还有代码")
          }
          // 打印这些数据
          Toast.makeText(this, "$user1--$user2--$user3", Toast.LENGTH_SHORT).show()
@@ -501,4 +501,4 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 2.2.0版本新增对StateFlow的支持，数据载体LiveData和StateFlow自由选择。
 视频教程：https://www.youtube.com/watch?v=SP_btJHXqN8
 
-Tip：BIP39助记词安全保存推荐使用[【隐私保险箱】](https://dorachat.oss-cn-hongkong.aliyuncs.com/Dora_Box_1.11.apk)🎉
+Tip：BIP39助记词安全保存推荐使用[【隐私保险箱】](https://dorachat.oss-cn-hongkong.aliyuncs.com/Dora_Box_2.0.apk)🎉

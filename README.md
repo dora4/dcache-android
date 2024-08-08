@@ -314,7 +314,7 @@ api "com.github.dora4:dcache-android:$stable_version"
   // 可以很方便的进行数据的合并处理
   net {
       val user1 = api {
-      		RetrofitManager.getService(UserService::class.java).getUser()
+  RetrofitManager.getService(UserService::class.java).getUser()
       }
       val user2 = result {
           RetrofitManager.getService(UserService::class.java).getUser()

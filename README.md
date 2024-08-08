@@ -178,10 +178,10 @@ implementation "com.github.dora4:dcache-android:$stable_version"
    - 查询记录条数
 
      ```kotlin
-     val num = DaoFactory.getDao(User::class.java).count(queryBuilder)
-     val num = DaoFactory.getDao(User::class.java).count(whereBuilder)
-     val num = DaoFactory.getDao(User::class.java).count(condition)
-     val num = DaoFactory.getDao(User::class.java).countAll()
+     val num1 = DaoFactory.getDao(User::class.java).count(queryBuilder)
+     val num2 = DaoFactory.getDao(User::class.java).count(whereBuilder)
+     val num3 = DaoFactory.getDao(User::class.java).count(condition)
+     val num4 = DaoFactory.getDao(User::class.java).countAll()
      ```
 
      使用count系列方法查询记录条数。

@@ -138,7 +138,7 @@ api "com.github.dora4:dcache-android:$stable_version"
 
        selectionArgs：”？“占位符的所有值
 
-     - WhereBuilder（掌握）
+     - WhereBuilder
 
        where子句的构建类，通过WhereBuilder.create()创建实例
 
@@ -164,7 +164,7 @@ api "com.github.dora4:dcache-android:$stable_version"
 
        parenthesesRight：有括号
 
-     - QueryBuilder（掌握）
+     - QueryBuilder
 
        支持where、orderBy、limit、groupBy等
 
@@ -281,7 +281,7 @@ api "com.github.dora4:dcache-android:$stable_version"
                      .mappingBaseUrl(TestTwoService.class, "http://api.example2.com");
          ```
 
- - 拦截器配置
+ - 拦截器配置（了解）
 
    - FormatLogInterceptor
 
@@ -414,7 +414,7 @@ api "com.github.dora4:dcache-android:$stable_version"
 
 5. **内存缓存数据处理**
 
-   - 过滤
+   - 过滤（了解）
 
      - DataFetcher
 
@@ -424,7 +424,7 @@ api "com.github.dora4:dcache-android:$stable_version"
 
        抓取集合模式数据的实现类。
 
-   - 分页
+   - 分页（了解）
 
      - DataPager
 

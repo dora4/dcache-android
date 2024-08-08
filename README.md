@@ -414,7 +414,7 @@ api "com.github.dora4:dcache-android:$stable_version"
 
 5. **内存缓存数据处理**
 
-   - 过滤（了解）
+   - 数据抓取（了解）
 
      - DataFetcher
 

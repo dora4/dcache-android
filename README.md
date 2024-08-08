@@ -303,7 +303,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
   ```kotlin
   // 方式一：异步（并行）请求，直接调用即可
   RetrofitManager.getService(UserService::class.java).getUser().enqueue(object : DoraCallback<User>() {
-  		override fun onFailure(code: Int, msg: String?) {
+      override fun onFailure(code: Int, msg: String?) {
       }
    
       override fun onSuccess(data: Account) {
@@ -319,7 +319,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
       val user2 = result {
           RetrofitManager.getService(UserService::class.java).getUser()
       }
-    	// 在这里合并多个接口的数据...
+      // 在这里合并多个接口的数据...
   }
   ```
 

@@ -208,7 +208,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
         ```kotlin
         Transaction.execute(User::class.java) {
-          	// 以下三个user要同时删除，否则整个事务操作失败
+            // 以下三个user要同时删除，否则整个事务操作失败
             it.delete(WhereBuilder.create().addWhereEqualTo("user_id", "10000001"))
             it.delete(WhereBuilder.create().addWhereEqualTo("user_id", "10000002"))
             it.delete(WhereBuilder.create().addWhereEqualTo("user_id", "10000003"))

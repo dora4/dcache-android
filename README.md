@@ -28,7 +28,7 @@ SQL、Retrofit、Kotlin协程等
 maven { url 'https://jitpack.io' }
 // 稳定版本1.8.6，最新版本请使用Jitpack成功编译（带有绿色版本标识）的版本
 def stable_version = '1.8.6'
-api "com.github.dora4:dcache-android:$stable_version"
+implementation "com.github.dora4:dcache-android:$stable_version"
 ```
 
 ### 使用文档（ 使用示例 https://github.com/dora4/DoraCacheSample ）

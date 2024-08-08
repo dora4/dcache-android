@@ -169,7 +169,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
        >  
        > parenthesesLeft：左括号
        >
-       > parenthesesRight：有括号
+       > parenthesesRight：右括号
 
      - QueryBuilder
 

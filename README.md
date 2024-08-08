@@ -337,10 +337,10 @@ api "com.github.dora4:dcache-android:$stable_version"
 
      ```kotlin
      val user = try { 
-       							api { RetrofitManager.getService(UserService::class.java).getUser() }
-                 } catch (e: DoraHttpException) {
-                     Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show()
-                 }
+        api { RetrofitManager.getService(UserService::class.java).getUser() }
+     } catch (e: DoraHttpException) {
+        Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show()
+     }
      ```
 
      result：RetrofitManager请求执行失败，直接返回null，不会抛出异常。
@@ -354,10 +354,10 @@ api "com.github.dora4:dcache-android:$stable_version"
      ```kotlin
      net {
      		val user1 = try { 
-       							api { RetrofitManager.getService(UserService::class.java).getUser() }
-                 } catch (e: DoraHttpException) {
-                     Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show()
-                 }
+             api { RetrofitManager.getService(UserService::class.java).getUser() }
+         } catch (e: DoraHttpException) {
+             Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show()
+         }
          val user2 = result { RetrofitManager.getService(UserService::class.java).getUser() }
          val user3 = request {
              // 伪代码，你自己的网络请求，省略若干行...
@@ -396,13 +396,13 @@ api "com.github.dora4:dcache-android:$stable_version"
    // 单处刷新数据
    val repository = UserRepository(this, User::class.java)
    repository.fetchListData().observe(this, Observer<List<User>> {
-   		// 使用数据刷新UI
+       // 使用数据刷新UI
    })
    
    // 多处刷新数据
    val repository = UserRepository(this, User::class.java)
    repository.getListLiveData().observe(this, Observer<List<User>> {
-   		// 使用数据刷新UI
+       // 使用数据刷新UI
    })
    // 第一处刷新数据
    repository.fetchListData()

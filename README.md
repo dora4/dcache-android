@@ -47,7 +47,7 @@ api "com.github.dora4:dcache-android:$stable_version"
 
    在自定义的Application类的入口加入一行配置，database为数据库名，version从1开始每次递增1，tables用来配置需要初始化的表，dcache中所有的表需要实现OrmTable接口。
 
-2. **注解详解**
+2. **注解**
 
    - 表和列相关
 

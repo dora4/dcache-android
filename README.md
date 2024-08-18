@@ -276,8 +276,6 @@ implementation "com.github.dora4:dcache-android:$stable_version"
          }
          ```
 
-         也可以通过扩展JRetrofitManager来进行url和服务的注册。
-
        - Java配置
 
          ```java

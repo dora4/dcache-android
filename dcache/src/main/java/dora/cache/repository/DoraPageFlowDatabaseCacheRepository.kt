@@ -2,18 +2,37 @@ package dora.cache.repository
 
 import android.content.Context
 import android.util.Log
-import androidx.lifecycle.LifecycleOwner
 import dora.cache.data.fetcher.OnLoadStateListener
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import dora.db.table.OrmTable
-import kotlinx.coroutines.flow.count
+import dora.http.DoraListCallback
+import io.reactivex.Observable
 
 abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Context)
     : DoraFlowDatabaseCacheRepository<T>(context) {
 
     private var pageNo: Int = 0
     private var pageSize: Int = 10
+    private var totalSize: Int = 0
+
+    open fun onLoadFromNetwork(totalSize: Int, callback: DoraListCallback<T>, listener: OnLoadStateListener?) {
+        this.totalSize = totalSize
+        onLoadFromNetwork(callback, listener)
+    }
+
+    open fun onLoadFromNetworkObservable(totalSize: Int, listener: OnLoadStateListener?): Observable<T> {
+        this.totalSize = totalSize
+        return onLoadFromNetworkObservable(listener)
+    }
+
+    final override fun onLoadFromNetwork(callback: DoraListCallback<T>, listener: OnLoadStateListener?) {
+        super.onLoadFromNetwork(callback, listener)
+    }
+
+    final override fun onLoadFromNetworkObservableList(listener: OnLoadStateListener?): Observable<MutableList<T>> {
+        return super.onLoadFromNetworkObservableList(listener)
+    }
 
     fun getPageNo(): Int {
         return pageNo
@@ -23,7 +42,14 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
         return pageSize
     }
 
-    fun isLastPage(totalSize: Int) : Boolean {
+    /**
+     * 能否加载下一页。
+     */
+    private fun canLoadMore() : Boolean {
+        return !isLastPage()
+    }
+
+    fun isLastPage() : Boolean {
         val lastPage = if (totalSize % pageSize == 0) totalSize / pageSize - 1 else totalSize / pageSize
         return lastPage == pageNo
     }
@@ -69,8 +95,10 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
      * 上拉加载回调，可结合[setPageSize]使用。
      */
     fun onLoadMore(listener: OnLoadStateListener) {
-        pageNo++
-        fetchListData(listener = listener)
+        if (canLoadMore()) {
+            pageNo++
+            fetchListData(listener = listener)
+        }
     }
 
     /**
@@ -78,12 +106,14 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
      */
     @JvmOverloads
     fun onLoadMore(block: ((Boolean) -> Unit)? = null) {
-        pageNo++
-        fetchListData(listener = object : OnLoadStateListener {
-            override fun onLoad(state: Int) {
-                block?.invoke(state == OnLoadStateListener.SUCCESS)
-            }
-        })
+        if (canLoadMore()) {
+            pageNo++
+            fetchListData(listener = object : OnLoadStateListener {
+                override fun onLoad(state: Int) {
+                    block?.invoke(state == OnLoadStateListener.SUCCESS)
+                }
+            })
+        }
     }
 
     open fun setPageSize(pageSize: Int): DoraPageFlowDatabaseCacheRepository<M, T> {

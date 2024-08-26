@@ -73,7 +73,6 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
     fun addData(data: T, listener: OnSyncListener<T>?) {
         if (isListMode) {
             addData(arrayListOf(data), listener)
-            listener?.onSyncData(true, arrayListOf(data))
         }
     }
 

@@ -56,7 +56,6 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
     fun addData(data: T, listener: OnSyncListener<T>?) {
         if (isListMode) {
             addData(arrayListOf(data), listener)
-            listener?.onSyncData(true, arrayListOf(data))
         }
     }
 
@@ -114,7 +113,6 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
 
     override fun createDataFetcher(): DataFetcher<T> {
         return object : DataFetcher<T>() {
-
 
             override fun fetchData(description: String?, listener: OnLoadStateListener?): LiveData<T?> {
                 selectData(object : DataSource {

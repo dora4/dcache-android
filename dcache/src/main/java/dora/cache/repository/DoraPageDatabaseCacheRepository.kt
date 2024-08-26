@@ -7,9 +7,12 @@ import dora.cache.data.fetcher.OnLoadStateListener
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import dora.db.table.OrmTable
+import dora.http.DoraCallback
 import dora.http.DoraListCallback
+import dora.http.DoraPageListCallback
 import io.reactivex.Observable
 
+@ListRepository
 abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     : DoraDatabaseCacheRepository<T>(context) {
 
@@ -17,22 +20,29 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     private var pageSize: Int = 10
     private var totalSize: Int = 0
 
-    open fun onLoadFromNetwork(totalSize: Int, callback: DoraListCallback<T>, listener: OnLoadStateListener?) {
-        this.totalSize = totalSize
+    open fun onLoadFromNetwork(callback: DoraPageListCallback<T>, listener: OnLoadStateListener?) {
+        this.totalSize = callback.totalSize()
         onLoadFromNetwork(callback, listener)
     }
 
-    open fun onLoadFromNetworkObservable(totalSize: Int, listener: OnLoadStateListener?): Observable<T> {
-        this.totalSize = totalSize
-        return onLoadFromNetworkObservable(listener)
+    final override fun onLoadFromNetwork(callback: DoraCallback<T>, listener: OnLoadStateListener?) {
+        super.onLoadFromNetwork(callback, listener)
+    }
+
+    final override fun onLoadFromNetworkObservable(listener: OnLoadStateListener?): Observable<T> {
+        return super.onLoadFromNetworkObservable(listener)
+    }
+
+    final override fun onInterceptData(type: DataSource.Type, model: T) {
+        super.onInterceptData(type, model)
+    }
+
+    final override fun onParseModelFailure(msg: String) {
+        super.onParseModelFailure(msg)
     }
 
     final override fun onLoadFromNetwork(callback: DoraListCallback<T>, listener: OnLoadStateListener?) {
         super.onLoadFromNetwork(callback, listener)
-    }
-
-    final override fun onLoadFromNetworkObservableList(listener: OnLoadStateListener?): Observable<MutableList<T>> {
-        return super.onLoadFromNetworkObservableList(listener)
     }
 
     fun getPageNo(): Int {

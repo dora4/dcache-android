@@ -10,8 +10,6 @@ dcache是一个开源的Android离线数据缓存框架，旨在提供一种简�
 
 总之，dcache是一个简单易用、可配置性强、支持扩展的Android离线数据缓存框架，非常适合用于各种Android应用程序中。
 
-For instructions on using dcache-android library into your existing applications, see https://github.com/dora4/DoraCacheSample .
-
 
 
 ### 开发前的准备
@@ -22,18 +20,18 @@ Android Studio、Gradle
 
 #### 需要具备的技能
 
-SQLite数据库和Android网络数据请求相关的基础知识
+SQL、Retrofit、Kotlin协程等
 
 #### Gradle依赖配置
 
 ```groovy
 maven { url 'https://jitpack.io' }
-// 稳定版本1.8.6，最新版本为Jitpack编译出来的绿色版本
-def latest_version = '1.8.6'
-api "com.github.dora4:dcache-android:$latest_version"
+// 稳定版本2.3.19，最新版本请使用Jitpack成功编译（带有绿色版本标识）的版本
+def stable_version = '2.3.19'
+implementation "com.github.dora4:dcache-android:$stable_version"
 ```
 
-### 使用文档
+### 使用文档（ 使用示例 https://github.com/dora4/DoraCacheSample ）
 
 #### 一、dcache的orm详解
 
@@ -42,358 +40,419 @@ api "com.github.dora4:dcache-android:$latest_version"
    ```kotlin
    Orm.init(this, OrmConfig.Builder()
                    .database("dcache_sample")
-                   .tables(Account::class.java)
+                   .tables(User::class.java)
                    .version(1)
                    .build())
    ```
 
    在自定义的Application类的入口加入一行配置，database为数据库名，version从1开始每次递增1，tables用来配置需要初始化的表，dcache中所有的表需要实现OrmTable接口。
 
-2. **注解详解**
+2. **注解**
 
-    - 表和列相关
+   - 表和列相关
 
-        - @Table
+     ​	并非必需配置。
 
-          此注解配置在OrmTable的实现类的类名之上，用来指定一个类映射到表的名称
+     - @Table
 
-        - @Column
+       此注解配置在OrmTable的实现类的类名之上，用来指定一个类映射到表的名称，不配置则使用默认映射规则。
 
-          此注解配置在OrmTable的实现类的成员属性之上，用来指定一个属性映射到字段的名称
+     - @Column
 
-        - @Ignore
+       此注解配置在OrmTable的实现类的成员属性之上，用来指定一个属性映射到字段的名称，不配置则使用默认映射规则。
 
-          此注解的优先级高于@Column，配置在OrmTable的实现类的成员属性之上，配置了此注解的成员属性，不会作为表的字段进行映射
+     - @Ignore
 
-    - 约束相关
+       此注解的优先级高于@Column，配置在OrmTable的实现类的成员属性之上，配置了此注解的成员属性，不会作为表的字段进行映射。
 
-        - @NotNull
+   - 约束相关
 
-          此注解配置在OrmTable的实现类的成员属性之上，用来指定这个字段为非空字段
+     ​	配置主键用的@PrimaryKey和@Id必须使用其中一个，其他并非必需配置。
 
-        - @PrimaryKey
+     - @NotNull
 
-          此注解配置在OrmTable的实现类的成员属性之上，用来指定这个字段为表的主键
+       此注解配置在OrmTable的实现类的成员属性之上，用来指定这个字段为非空字段。
 
-        - @Id
+     - @PrimaryKey
 
-          此注解配置在OrmTable的实现类的成员属性之上，作用类似于@PrimaryKey，并
+       此注解配置在OrmTable的实现类的成员属性之上，用来指定这个字段为表的主键。
 
-          在它的基础上指定了该字段名为”_id“，相当于@PrimaryKey+@Column("\_id")
+     - @Id
 
-        - @Unique
+       此注解配置在OrmTable的实现类的成员属性之上，作用类似于@PrimaryKey，并
 
-          此注解配置在OrmTable的实现类的成员属性之上，表示这个字段的值在这张表中从不重复
+       在它的基础上指定了该字段名为”_id“，相当于@PrimaryKey+@Column("\_id")。
 
-        - @Default
+     - @Unique
 
-          此注解配置在OrmTable的实现类的成员属性之上，通过它可以给字段指定默认值
+       此注解配置在OrmTable的实现类的成员属性之上，表示这个字段的值在这张表中从不重复。
+
+     - @Default
+
+       此注解配置在OrmTable的实现类的成员属性之上，通过它可以给字段指定默认值。
 
 3. **CRUD操作**
 
-    - 插入数据
+   我们使用OrmDao对象来操作一张表的增删改查操作，通过DaoFactory.getDao()获取OrmDao对象，通常我们会将OrmDao保存为成员变量以复用。
 
-      ```kotlin
-      DaoFactory.getDao(Account::class.java).insert(Account(generateAccKey(),
-                          "D"+generateAccKey(), "P"+generateAccKey()))
-      ```
+   - 插入数据
 
-      insert不仅可以被用来插入单条数据，也可以插入一个List数据
+     ```kotlin
+     DaoFactory.getDao(User::class.java).insert(user)
+     ```
 
-    - 删除数据
+     注意，insert不仅可以被用来插入单条数据，也可以插入一个List数据。
 
-      ```kotlin
-      val selectOne = DaoFactory.getDao(Account::class.java)
-                          .selectOne(QueryBuilder.create().orderBy(OrmTable.INDEX_ID))
-                  if (selectOne != null) {
-                      DaoFactory.getDao(Account::class.java).delete(selectOne)
-                  }
-      ```
+   - 删除数据
 
-    - 更新数据
+     ```kotlin
+     DaoFactory.getDao(User::class.java).delete(user)
+     ```
 
-      ```kotlin
-      DaoFactory.getDao(Account::class.java).update(Account("这个是key",
-                          "D"+generateAccKey(), "P"+generateAccKey()))
-      ```
+   - 更新数据
 
-    - 查询数据
+     ```kotlin
+     DaoFactory.getDao(User::class.java).update(user)
+     ```
 
-        - Condition
+   - 查询数据
 
-          selection：where子句，不带where，可以带”？“占位符
+     ```kotlin
+     // 查询单条数据
+     DaoFactory.getDao(User::class.java).selectOne(queryBuilder)
+     DaoFactory.getDao(User::class.java).selectOne(whereBuilder)
+     DaoFactory.getDao(User::class.java).selectOne(condition)
+     // 查询多条数据
+     DaoFactory.getDao(User::class.java).select(queryBuilder)
+     DaoFactory.getDao(User::class.java).select(whereBuilder)
+     DaoFactory.getDao(User::class.java).select(condition)
+     // 查询整张表数据
+     DaoFactory.getDao(User::class.java).selectAll()
+     ```
 
-          selectionArgs：”？“占位符的所有值
+     - Condition（了解）
 
-        - WhereBuilder
+       它是一个通用查询条件的统称，整合外部ORM框架可能才会用到它。
 
-          where子句的构建类，通过WhereBuilder.create ()创建实例
+       selection：where子句，不带where，可以带”？“占位符
 
-          ```java
-          public WhereBuilder addWhereEqualTo(String column, Object value) {
-                  return append(null, column + EQUAL_HOLDER, value);
-              }
-          ```
+       selectionArgs：”？“占位符的所有值
 
-          可以通过调用addWhereEqualTo添加key=value条件。
+     - WhereBuilder
 
-        - QueryBuilder
+       where子句的构建类，通过WhereBuilder.create()创建实例
 
-          支持where、orderBy、limit、groupBy等
+       ```java
+       public WhereBuilder addWhereEqualTo(String column, Object value) {
+           return append(null, column + EQUAL_HOLDER, value);
+       }
+       ```
 
-    - 查询记录数
+       如可以通过调用addWhereEqualTo()添加“key=value”的条件。其他类似方法还有addWhereNotEqualTo()、addWhereGreaterThan()、addWhereLessThan()、and()、or()、not()、parenthesesLeft()和parenthesesRight()等。
+       > <b>相关方法</b>
+       >
+       > addWhereNotEqualTo：不等于
+       > 
+       > addWhereGreaterThan：大于
+       >
+       > addWhereLessThan：小于
+       >
+       > addWhereGreaterThanOrEqualTo：不小于
+       >
+       > addWhereLessThanOrEqualTo：不大于
+       >
+       > and：与
+       >
+       > or：或
+       >
+       > not：非
+       >  
+       > parenthesesLeft：左括号
+       >
+       > parenthesesRight：右括号
 
-      ```kotlin
-      val count = DaoFactory.getDao(Account::class.java).count()
-      ```
+     - QueryBuilder
 
-      通过count查询符合查询条件的记录条数。
+       支持where、orderBy、limit、groupBy等
+
+   - 查询记录条数
+
+     ```kotlin
+     val num1 = DaoFactory.getDao(User::class.java).count(queryBuilder)
+     val num2 = DaoFactory.getDao(User::class.java).count(whereBuilder)
+     val num3 = DaoFactory.getDao(User::class.java).count(condition)
+     val num4 = DaoFactory.getDao(User::class.java).countAll()
+     ```
+
+     使用count系列方法查询记录条数。
 
 4. **其他注意事项**
 
-    - 复杂数据类型字段映射
+   - 复杂数据类型字段映射
 
-      ```java
-      @Convert(converter = StringListConverter.class, columnType = String.class)
-      @Column("acc_child_values")
-      private List<String> accChildValues;
-      ```
+     ```java
+     @Convert(converter = StringListConverter.class, columnType = String.class)
+     @Column("complex_object")
+     private List<String> object;
+     ```
 
-      使用@Convert注解可以保存复杂的数据类型，例如ArrayList，一般将复杂数据类型转成格式化后的字符串类型保存到数据库，读取数据的时候进行自动解码操作。converter类型转换器可以自行定义，columnType为你保存到数据库的实际数据类型。
+     使用@Convert注解可以保存复杂的数据类型，例如ArrayList。一般将复杂数据类型转成格式化后的String类型保存到数据库，读取数据的时候使用转换器自动进行解码操作。converter转换器可以自定义，columnType为你保存到数据库的实际数据类型。
 
-    - 表结构升级
+   - 表结构升级
 
-      ```java
-        @Override
-        public boolean isUpgradeRecreated() {
-            return false;
+     ```java
+     @Override
+     public boolean isUpgradeRecreated() {
+         return false;
+     }
+     ```
+
+     只需要在配置中将数据库版本号+1，即可自动进行表结构的升级。在OrmTable的实现类重写isUpgradeRecreated()来确定表升级后是否保留之前的旧数据。如果return true（不建议），则在表升级时将旧数据清空。建议通过框架提供的OrmMigration来转移旧数据到新的字段，这样的话，你需要在OrmTable的实现类中重写与数据迁移相关的方法。
+
+   - 事务操作
+
+     1. 单表事务
+
+        ```kotlin
+        Transaction.execute(User::class.java) {
+            // 以下三个user要同时删除，否则整个事务操作失败
+            it.delete(WhereBuilder.create().addWhereEqualTo("user_id", "10000001"))
+            it.delete(WhereBuilder.create().addWhereEqualTo("user_id", "10000002"))
+            it.delete(WhereBuilder.create().addWhereEqualTo("user_id", "10000003"))
         }
-      ```
+        ```
 
-      只需要在配置中将数据库版本提升1，即可自动进行表结构的升级。在OrmTable的实现类重写isUpgradeRecreated()来确定表升级后是否要清空之前保存的数据，如果return true，则在表升级后将数据清空。
+        使用Transaction.execute()可以在代码块中执行事务操作，指定何种泛型就是何种类型的OrmDao，如这里it指代的是OrmDao&lt;User&gt;。
 
-    - 事务操作
+     2. 多表事务
 
-      ```kotlin
-      Transaction.execute(Account::class.java) {
-          val selectOne = it.selectOne(QueryBuilder.create().orderBy(OrmTable.INDEX_ID))
-          if (selectOne != null) {
-              it.delete(selectOne)
-          }
-      }
-      ```
+        ```kotlin
+        // 扫描手机歌曲
+        if (musics.size > 0) {
+            // 歌曲都没有就没有必要查询歌曲信息了
+            Transaction.execute {
+                // 查询并保存艺术家信息
+                val artists = queryArtist(context)
+                artistDao.insert(artists)
+              	// 查询并保存专辑信息
+                val albums = queryAlbum(context)
+                albumDao.insert(albums)
+              	// 查询并保存歌曲文件夹信息
+                val folders = queryFolder(context)
+                folderDao.insert(folders)
+            }
+        }
+        ```
 
-      使用Transaction.execute()可以在代码块中执行事务操作，it指代的是OrmDao&lt;Account&gt;。
+        
 
 #### 二、网络数据的读取和解析
 
 1. **配置和使用**
 
-    - 按模块对接口进行分类
+   - 按模块对接口进行分类
 
-      所有api接口必须实现ApiService，才可以通过RetrofitManager进行管理，业务模块分类后，将同一类url加入到相同的Service中，有助于职责的清晰划分。
+     使用Retrofit对接口进行动态代理，在Retrofit的使用基础上，所有Restful API接口的包装类必须实现ApiService接口，这样才能使用RetrofitManager类进行管理。业务模块分类后，将同一类Restful API接口加入到相同的ApiService实现类中，遵循单一职责的原则。
 
-    - 基本配置
+   - 基本配置
 
-        - URL和OkHttpClient的配置
+     - URL和OkHttpClient的配置
 
-            - Kotlin配置
+       - Kotlin配置
 
-              你可以通过调用RetrofitManager的init方法进行网络请求的相关配置。
+         你可以通过调用RetrofitManager的init方法进行配置的初始化。
 
-              ```kotlin
-                  RetrofitManager.init {
-                      okhttp {
-                          // add返回值是boolean，所以调用了networkInterceptors还需要返回this
-                          networkInterceptors().add(FormatLogInterceptor())
-                          this
-                      }
-                      mappingBaseUrl(TestService::class.java, "http://api.k780.com")
-                      mappingBaseUrl(AccountService::class.java, "http://github.com/dora4")
-                  }
-              ```
+         ```kotlin
+         // Kotlin配置示例
+         RetrofitManager.init {
+             okhttp {
+                 // 这里由于add()方法的返回值是boolean，所以最终还需要返回this
+                 networkInterceptors().add(FormatLogInterceptor())
+                 this
+             }
+             // 可以映射多个Base URL地址
+             mappingBaseUrl(TestOneService::class.java, "http://api.example1.com")
+             mappingBaseUrl(TestTwoService::class.java, "http://api.example2.com")
+         }
+         ```
 
-              也可以通过扩展JRetrofitManager来进行url和服务的注册。
+       - Java配置
 
-            - Java配置
+         ```java
+         // Java配置示例
+         RetrofitManager.getConfig()
+                     .setClient(okhttpClient)
+                     .mappingBaseUrl(TestOneService.class, "http://api.example1.com")
+                     .mappingBaseUrl(TestTwoService.class, "http://api.example2.com");
+         ```
 
-              ```java
-              // 配置url
-              RetrofitManager.getConfig()
-                                    .setClient(okhttpClient)
-                                    .rxJava(true)
-                          .mappingBaseUrl(TestService.class, "http://api.k780.com")
-                          .mappingBaseUrl(AccountService.class, "http://github.com/dora4");
-              ```
+ - 拦截器配置（了解）
 
- - 拦截器配置
+   - FormatLogInterceptor
 
-   - Token拦截器
+     dora.http.log.FormatLogInterceptor它是一个格式化输出日志的拦截器，你可以添加它将服务端响应的数据以日志形式格式化后输出到logcat中。
 
-     你可以直接给RetrofitManager的client添加一个token拦截器来拦截token。
+- RetrofitManager
 
-   - 格式化输出响应数据到日志
+  通过RetrofitManager来管理所有ApiService，一个接口只有继承了ApiService接口，才能被RetrofitManager管理。
 
-     你可以添加dora.http.log.FormatLogInterceptor来将响应数据以日志形式格式化输出。
-
-- API服务相关
-
-  我们通过RetrofitManager来管理服务，API服务即继承了ApiService接口的Retrofit的API接口。只有一个接口继承了ApiService接口，才能被RetrofitManager管理。
-
-  | RetrofitManager的方法 | 描述                                                         |
-  | --------------------- | ------------------------------------------------------------ |
-  | checkService          | 检测一个API服务是否可用，如果不可用，则通过mappingBaseUrl()进行注册 |
-  | getService            | 获取API服务对象                                              |
-  | removeService         | 移除API服务对象                                              |
-  | mappingBaseUrl        | 给API服务绑定base url                                        |
+  | API            | 描述                                                         |
+  | -------------- | ------------------------------------------------------------ |
+  | checkService   | 检测一个API服务是否可用。如果不可用，则没有在初始化配置时调用mappingBaseUrl()进行Base URL的映射 |
+  | getService     | 获取API服务对象                                              |
+  | removeService  | 移除API服务对象                                              |
+  | mappingBaseUrl | 给API服务绑定Base URL                                        |
 
 - 开始使用
 
   ```kotlin
-          // 方式一：并行请求，直接调用即可
-          RetrofitManager.getService(AccountService::class.java).getAccount()
-                  .enqueue(object : DoraCallback<Account>() {
+  // 方式一：异步（并行）请求，直接调用即可
+  RetrofitManager.getService(UserService::class.java).getUser().enqueue(object : DoraCallback<User>() {
+      override fun onFailure(code: Int, msg: String?) {
+      }
    
-                      override fun onFailure(code: Int, msg: String?) {
-                      }
-   
-                      override fun onSuccess(data: Account) {
-                      }
-                  })
-          // 方式二：串行请求，在net作用域内的api请求，可以很方便的进行数据的合并处理，推荐使用
-          net {
-              val account1 = api {
-                  RetrofitManager.getService(AccountService::class.java).getAccount()
-              }
-              val account2 = result {
-                  RetrofitManager.getService(AccountService::class.java).getAccount()
-              }
-          }
+      override fun onSuccess(data: User) {
+      }
+  })
+  
+  // 方式二（推荐使用）：同步（串行）请求，在net作用域内使用api、result以及request等高阶函数包装的Restful API请求，
+  // 可以很方便的进行数据的合并处理
+  net {
+      val user1 = api {
+          RetrofitManager.getService(UserService::class.java).getUser()
+      }
+      val user2 = result {
+          RetrofitManager.getService(UserService::class.java).getUser()
+      }
+      // 在这里合并多个接口的数据...
+  }
   ```
 
 2. **其它注意事项**
 
-    - DoraCallback和DoraListCallback这两个回调接口扩展自retrofit2.Callback，DoraListCallback可以方便用于集合数据的回调。
+   - DoraCallback和DoraListCallback这两个回调接口扩展自retrofit2.Callback，DoraListCallback为List类型的数据量身打造。
 
-    - net作用域下request、api和result的区别
+   - net作用域request、api和result的区别
 
-      首先这三个方法都需要在net作用域下执行，net作用域下的请求是串行执行的。
+     首先这三个方法都需要在net作用域内使用，net作用域的请求是串行执行的，且都需要使用DoraHttp中提供的这些高阶函数包裹。
 
-      request：用来自己执行网络请求，比如自己使用okhttp进行请求。
+     request：使用外部框架执行网络请求，比如自己使用okhttp进行请求，注意使用它要使用releaseLock()方法释放锁。
 
-      api：使用RetrofitManager请求，如果执行失败，会抛出异常，你需要捕获DoraHttpException来查看异常信息。
+     api：RetrofitManager请求执行失败，会抛出异常，你需要捕获DoraHttpException来查看异常信息。
 
-      ```kotlin
-      val testRequest = try {
-                      api {
-                          RetrofitManager
-                                  .getService(TestService::class.java).testRequest()
-                      }
-                  } catch (e: DoraHttpException) {
-                      Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show()
-                  }
-      ```
+     ```kotlin
+     val user = try { 
+        api { RetrofitManager.getService(UserService::class.java).getUser() }
+     } catch (e: DoraHttpException) {
+        Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show()
+     }
+     ```
 
-      result：使用DoraRetrofitManager请求，如果执行失败，直接返回null，不会抛出异常。
+     result：RetrofitManager请求执行失败，直接返回null，不会抛出异常。
 
-      ```kotlin
-      val testRequest3 = result {
-                      RetrofitManager
-                              .getService(TestService::class.java).testRequest()
-                  }
-      ```
+     ```kotlin
+     val user = result { RetrofitManager.getService(UserService::class.java).getUser() }
+     ```
 
-      我们来看看整体的代码。
+     我们来看看整体的代码。
 
-      ```kotlin
-      net {
-      		val testRequest = try {
-          		api {
-              		RetrofitManager.getService(TestService::class.java).testRequest()
-              }
-          } catch (e: DoraHttpException) {
-              Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show()
-          }
-          val testRequest2 = api {
-              RetrofitManager.getService(TestService::class.java).testRequest()
-          }
-          val testRequest3 = result {
-              RetrofitManager.getService(TestService::class.java).testRequest()
-          }
-          request {
-              // 你自己的网络请求
-              var isSuccess = true
-              if (isSuccess) {
-              		// 成功的回调里面要释放锁
-                  it.releaseLock()
-              } else {
-                  // 失败的回调里面也要释放锁
-                  it.releaseLock()
-              }      
-              // 释放了锁后，request函数的代码执行就结束了，无论后面还有没有代码
-              Log.e("这行代码不会被执行，你也可以释放锁来跳出循环，直接结束函数调用")
-          }
-          Toast.makeText(this, "$testRequest--$testRequest2--$testRequest3", Toast.LENGTH_SHORT).show()
-      }
-      ```
+     ```kotlin
+     net {
+         val user1 = try { 
+             api { RetrofitManager.getService(UserService::class.java).getUser() }
+         } catch (e: DoraHttpException) {
+             Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show()
+         }
+         val user2 = result { RetrofitManager.getService(UserService::class.java).getUser() }
+         val user3 = request {
+             // 伪代码，你自己的网络请求，省略若干行...
+             var success = true
+             if (success) {
+                 // 成功的回调里面要释放锁
+                 it.releaseLock(user)
+             } else {
+                 // 失败的回调里面也要释放锁
+                 it.releaseLock(null)
+             }      
+             Log.e("这行代码不会被执行，释放了锁后，request函数的代码执行就结束了，无论后面是否还有代码")
+         }
+         // 打印这些数据
+         Toast.makeText(this, "$user1--$user2--$user3", Toast.LENGTH_SHORT).show()
+     }
+     ```
 
 #### 三、repository的使用
 
 1. **数据缓存的设计思维**
 
-   通常所说的数据缓存包括数据库缓存和内存缓存两种。内存缓存是指以内存保存的数据优先，而数据库缓存指以数据保存的数据优先。内存缓存的整体逻辑是，在app冷启动的时候，从数据库加载数据到内存，然后全局共享数据，网络请求返回新的数据后，会同时更新内存中缓存的数据和数据库缓存的数据，以内存保存的数据为准，数据库保存的数据只用在下一次app冷启动的预加载。而数据库缓存的整体逻辑是，在有网络连接的情况下请求数据将数据显示在界面上，并缓存到数据库，在断网的情况下，则从数据库中取离线数据。
+   通常所说的数据缓存包括数据库缓存和内存缓存两种。内存缓存是指以内存保存的数据优先，而数据库缓存指以数据保存的数据优先。内存缓存的整体逻辑是，在app冷启动（无后台进程启动）的时候，从数据库加载数据到内存，然后全局共享数据，网络请求返回新的数据后，会同时更新内存中缓存的数据和数据库缓存的数据，以内存保存的数据为准，数据库保存的数据只用在下一次app冷启动的预加载。而数据库缓存的整体逻辑是，在有网络连接的情况下请求数据将数据显示在界面上，并缓存到数据库，在无网络连接的情况下，则从数据库中取离线数据。框架中的repository实现的是前者。
 
-2. **集合数据模式和非集合数据模式**
+2. **数据模式**
 
-   通过修改isListMode的值来改变数据模式，一个repository要么处于集合数据模式，要么处于非集合数据模式，默认为集合数据模式。
+   数据模式集合模式和非集合模式两种，默认为集合数据模式。一个repository要么处于集合数据模式，要么处于非集合数据模式。且一经指定，不会修改。同一种类型的数据，无论使用集合还是非集合模式，都可以创建多个repository。一个repository只与某个Restful API接口绑定，不与数据类型绑定。
 
-3. **@Repository和BaseRepository**
+3. **@Repository、@ListRepository和BaseRepository**
 
-   isListMode，默认为true，如果修改为false，则表示这个Repository被用来缓存非集合数据。而BaseRepository为所有数据缓存逻辑的基类，数据缓存流程控制在其子类实现。在使用前，你需要重写Repository的获取网络数据的方法<u>onLoadFromNetwork</u>，才能通过fetchData或fetchListData获取到数据。
+   早期版本通过@Repository的isListMode的值来指定数据模式，最新版本则通过@Repository和@ListRepository注解本身来区分数据模式。BaseRepository为所有数据缓存逻辑的基类，数据缓存流程控制在其子类实现。在使用前，你需要重写repository的获取网络数据的onLoadFromNetwork()方法，才能通过fetchData或fetchListData获取到数据。<u>注意只需要重写对应的一个onLoadFromNetwork()方法。</u>
 
 4. **使用示例**
 
    ```kotlin
-       val repository = AccountRepository(this, Account::class.java)
-       repository.fetchListData().observe(this,
-           Observer<List<Account>> {
-   		})
+   // 单处刷新数据
+   val repository = UserRepository(this, User::class.java)
+   repository.fetchListData().observe(this, Observer<List<User>> {
+       // 使用数据刷新UI
+   })
+   
+   // 多处刷新数据
+   val repository = UserRepository(this, User::class.java)
+   repository.getListLiveData().observe(this, Observer<List<User>> {
+       // 使用数据刷新UI
+   })
+   // 第一处刷新数据
+   repository.fetchListData()
+   // 第二处刷新数据
+   repository.fetchListData()
    ```
-   
-如果设置了isListMode为false，则应该调用fetchData。
-   
-5. **本地缓存数据处理**
 
-    - 过滤
-        - DataFetcher
+   如果为常规模式（非集合模式），则应该调用fetchData。
 
-          fetch非集合类型数据的实现类。
+5. **内存缓存数据处理**
 
-        - ListDataFetcher
+   - 数据抓取（了解）
 
-          fetch集合类型数据的实现类。
-    - 分页
-        - DataPager
+     - DataFetcher
 
-          在将数据加载到界面前，用它来对数据进行分页。
+       抓取常规模式数据的实现类。
 
-        - 基于访问者模式的数据读取
+     - ListDataFetcher
 
-          ```kotlin
-                  // 从Repository中获取分页器，仅限集合数据模式
-                  val pager = repository.obtainPager()
-                  // 设置分页数据结果的回调
-                  pager.setPageCallback(object : PageCallback<Account> {
-                      override fun onResult(models: List<Account>) {
-                      }
-                  })
-                  // 使用默认的分页访问者访问数据
-                  pager.accept(DefaultPageDataVisitor<Account>())
-          ```
+       抓取集合模式数据的实现类。
 
-6. **整合ORM框架**
+   - 分页（了解）
 
-   通常情况下，在一个已经成型的项目，更换orm框架抛开开发成本先不说，风险也是很大的。所以这里提供了一种无缝衔接主流orm框架的接口CacheHolder和ListCacheHolder。顾名思义，ListCacheHolder用于集合数据模式下的Repository。默认Repository采用的orm框架是内置的dora-db，如果你使用dora-db，你就无须考虑整合orm框架的问题。如果你用的是市面上主流的orm框架，比如greendao、ormlite或是realm，甚至是room，你就需要自己更换CacheHolder了。以下提供和dora-db整合的源代码，你可以参考它进行整合。
+     - DataPager
+
+       将数据设置到UI之前，用它处理数据分页。
+
+     - 基于访问者设计模式的数据读取
+
+       ```kotlin
+       // 从repository中获取分页器，仅限集合数据模式
+       val pager = repository.obtainPager()
+       // 设置分页数据结果的回调
+       pager.setPageCallback(object : PageCallback<User> {
+           override fun onResult(models: List<User>) {
+               // 每次接受访问者的访问都会回调这里
+           }
+       })
+       // 使用默认的分页访问者访问数据
+       pager.accept(DefaultPageDataVisitor<User>())
+       ```
+
+6. **整合其他主流ORM框架**
+
+   通常情况下，在一个已经成型的项目中，更换orm框架抛开开发成本不说，风险也是很大的。所以这里提供了一种无缝衔接主流orm框架的接口CacheHolder和ListCacheHolder。顾名思义，ListCacheHolder用于集合数据模式下的repository。repository默认采用的orm框架是内置的dora-db（dora.db包），如果你使用它，则无需考虑整合orm框架的问题。如果你使用的是其他orm框架，比如room、greendao或是ormlite，你就需要自己更换CacheHolder了。以下为整合相关源代码，你可以参考它进行整合。
 
    ```kotlin
    @RepositoryType(BaseRepository.CacheStrategy.DATABASE_CACHE)
@@ -413,7 +472,7 @@ api "com.github.dora4:dcache-android:$latest_version"
    ```kotlin
    class DoraListCacheHolder<M, T : OrmTable>(var clazz: Class<out OrmTable>) : ListCacheHolder<M>() {
    
-       lateinit var dao: OrmDao<T>
+       private lateinit var dao: OrmDao<T>
    
        override fun init() {
            dao = DaoFactory.getDao(clazz) as OrmDao<T>
@@ -433,15 +492,18 @@ api "com.github.dora4:dcache-android:$latest_version"
    }
    ```
 
-你也可以使用官方提供的dcache扩展包来更换数据库orm框架。
+   另外，你也可以使用官方提供的dcache扩展包来更换数据库orm框架，如有改进意见，或有整合好的扩展包，欢迎你的投稿！
 
-```groovy
-implementation 'com.github.dora4:dcache-room-support:1.4'
-implementation 'com.github.dora4:dcache-greendao-support:1.1'
-```
+   ```groovy
+   implementation 'com.github.dora4:dcache-room-support:1.4'
+   implementation 'com.github.dora4:dcache-greendao-support:1.1'
+   ```
+
+
+
 **附：StateFlow学习资料**
 
 2.2.0版本新增对StateFlow的支持，数据载体LiveData和StateFlow自由选择。
 视频教程：https://www.youtube.com/watch?v=SP_btJHXqN8
 
-Tip：BIP39助记词安全保存推荐使用[【隐私保险箱】](https://dorachat.oss-cn-hongkong.aliyuncs.com/Dora_Box_1.11.apk)🎉
+Tip：BIP39助记词安全保存推荐使用[【隐私保险箱】](https://dorachat.oss-cn-hongkong.aliyuncs.com/Dora_Box_2.0.apk)🎉

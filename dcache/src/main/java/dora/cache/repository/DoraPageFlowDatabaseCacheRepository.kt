@@ -8,7 +8,7 @@ import dora.db.builder.QueryBuilder
 import dora.db.table.OrmTable
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
-import dora.http.DoraPageListCallback
+import dora.cache.DoraPageListCallback
 import io.reactivex.Observable
 
 @ListRepository

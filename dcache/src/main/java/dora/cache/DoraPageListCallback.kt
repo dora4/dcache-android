@@ -9,7 +9,15 @@ import retrofit2.Response
  */
 abstract class DoraPageListCallback<M> : DoraListCallback<M>() {
 
-    open fun onSuccess(totalSize: Int, models: MutableList<M>) {}
+    private var totalSize: Int = 0
+
+    fun getTotalSize() : Int {
+        return totalSize
+    }
+
+    open fun onSuccess(totalSize: Int, models: MutableList<M>) {
+        this.totalSize = totalSize
+    }
 
     override fun onResponse(call: Call<MutableList<M>>, response: Response<MutableList<M>>) {
         if (response.isSuccessful) {

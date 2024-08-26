@@ -21,7 +21,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     private var totalSize: Int = 0
 
     open fun onLoadFromNetwork(callback: DoraPageListCallback<T>, listener: OnLoadStateListener?) {
-        this.totalSize = callback.totalSize()
+        this.totalSize = callback.getTotalSize()
         onLoadFromNetwork(callback, listener)
     }
 
@@ -51,6 +51,10 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
 
     fun getPageSize(): Int {
         return pageSize
+    }
+
+    fun getTotalSize() : Int {
+        return totalSize
     }
 
     /**

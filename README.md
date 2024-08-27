@@ -506,4 +506,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 2.2.0版本新增对StateFlow的支持，数据载体LiveData和StateFlow自由选择。
 视频教程：https://www.youtube.com/watch?v=SP_btJHXqN8
 
-Tip：BIP39助记词安全保存推荐使用[【隐私保险箱】](https://dorachat.oss-cn-hongkong.aliyuncs.com/Dora_Box_2.0.apk)🎉
+**最佳实践**
+
+Dora Chat（ https://dorachat.com ）
+Dora Music（[朵拉音乐](https://github.com/dora4/DoraMusic)）

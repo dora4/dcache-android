@@ -5,7 +5,8 @@ import retrofit2.Call
 import retrofit2.Response
 
 /**
- * REST API返回列表数据的回调。
+ * 用于[dora.cache.repository.DoraPageDatabaseCacheRepository]和
+ * [dora.cache.repository.DoraFlowDatabaseCacheRepository]，REST API返回列表数据的回调。
  */
 abstract class DoraPageListCallback<M> : DoraListCallback<M>() {
 

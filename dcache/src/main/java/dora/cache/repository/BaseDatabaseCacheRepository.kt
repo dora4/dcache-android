@@ -201,7 +201,7 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
         }
     }
 
-    private fun onLoadFromCache(liveData: MutableLiveData<T?>) : Boolean {
+    protected fun onLoadFromCache(liveData: MutableLiveData<T?>) : Boolean {
         if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
         val model = (cacheHolder as DoraDatabaseCacheHolder<T>).queryCache(query())
         model?.let {
@@ -212,7 +212,7 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
         return false
     }
 
-    private fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<T>>) : Boolean {
+    protected fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<T>>) : Boolean {
         if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
         val models = (listCacheHolder as DoraListDatabaseCacheHolder<T>).queryCache(query())
         models?.let {
@@ -249,7 +249,7 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
         return Observable.empty()
     }
 
-    private fun rxOnLoadFromNetwork(liveData: MutableLiveData<T?>, listener: OnLoadStateListener? = null) {
+    protected fun rxOnLoadFromNetwork(liveData: MutableLiveData<T?>, listener: OnLoadStateListener? = null) {
         RxTransformer.doApiObserver(onLoadFromNetworkObservable(listener), object : Observer<T> {
             override fun onSubscribe(d: Disposable) {
             }
@@ -267,7 +267,7 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
         })
     }
 
-    private fun rxOnLoadFromNetworkForList(liveData: MutableLiveData<MutableList<T>>, listener: OnLoadStateListener? = null) {
+    protected fun rxOnLoadFromNetworkForList(liveData: MutableLiveData<MutableList<T>>, listener: OnLoadStateListener? = null) {
         RxTransformer.doApiObserver(onLoadFromNetworkObservableList(listener), object : Observer<MutableList<T>> {
             override fun onSubscribe(d: Disposable) {
             }

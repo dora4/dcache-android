@@ -3,6 +3,7 @@ package dora.cache.repository
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
 import dora.cache.data.fetcher.OnLoadStateListener
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
@@ -10,6 +11,9 @@ import dora.db.table.OrmTable
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import dora.cache.DoraPageListCallback
+import dora.cache.data.fetcher.ListDataFetcher
+import dora.cache.data.page.DataPager
+import dora.cache.data.page.IDataPager
 import io.reactivex.Observable
 
 @ListRepository
@@ -22,7 +26,53 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
 
     open fun onLoadFromNetwork(callback: DoraPageListCallback<T>, listener: OnLoadStateListener?) {
         this.totalSize = callback.getTotalSize()
-        onLoadFromNetwork(callback, listener)
+    }
+
+    override fun createListDataFetcher(): ListDataFetcher<T> {
+        return object : ListDataFetcher<T>() {
+
+            override fun fetchListData(description: String?, listener: OnLoadStateListener?): LiveData<MutableList<T>> {
+                selectData(object : DataSource {
+                    override fun loadFromCache(type: DataSource.CacheType): Boolean {
+                        if (type === DataSource.CacheType.DATABASE) {
+                            return onLoadFromCacheList(liveData)
+                        }
+                        liveData.postValue(arrayListOf())
+                        return false
+                    }
+
+                    override fun loadFromNetwork() {
+                        try {
+                            rxOnLoadFromNetworkForList(liveData, listener)
+                            onLoadFromNetwork(listCallback(), listener)
+                        } catch (ignore: Exception) {
+                            listener?.onLoad(OnLoadStateListener.FAILURE)
+                        }
+                    }
+                })
+                return liveData
+            }
+
+            override fun listCallback(): DoraPageListCallback<T> {
+                return object : DoraPageListCallback<T>() {
+                    override fun onSuccess(models: MutableList<T>) {
+                        parseModels(models, liveData)
+                    }
+
+                    override fun onFailure(msg: String) {
+                        onParseModelsFailure(msg)
+                    }
+                }
+            }
+
+            override fun obtainPager(): IDataPager<T> {
+                return DataPager(liveData.value ?: arrayListOf())
+            }
+
+            override fun clearListData() {
+                liveData.postValue(arrayListOf())
+            }
+        }
     }
 
     final override fun onLoadFromNetwork(callback: DoraCallback<T>, listener: OnLoadStateListener?) {

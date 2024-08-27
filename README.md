@@ -509,4 +509,4 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 **最佳实践**
 
 Dora Chat（ https://dorachat.com ）
-Dora Music（[https://dorachat.com](https://github.com/dora4/DoraMusic)）
+Dora Music（[朵拉音乐](https://github.com/dora4/DoraMusic)）

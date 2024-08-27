@@ -56,7 +56,9 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
 
             override fun listCallback(): DoraPageListCallback<T> {
                 return object : DoraPageListCallback<T>() {
-                    override fun onSuccess(models: MutableList<T>) {
+
+                    override fun onSuccess(totalSize: Int, models: MutableList<T>) {
+                        super.onSuccess(totalSize, models)
                         parseModels(models, flowData)
                     }
 

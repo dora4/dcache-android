@@ -20,6 +20,9 @@ abstract class DoraPageListCallback<M> : DoraListCallback<M>() {
         this.totalSize = totalSize
     }
 
+    final override fun onSuccess(models: MutableList<M>) {
+    }
+
     override fun onResponse(call: Call<MutableList<M>>, response: Response<MutableList<M>>) {
         if (response.isSuccessful) {
             val body = response.body()

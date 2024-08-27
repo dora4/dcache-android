@@ -55,7 +55,8 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
 
             override fun listCallback(): DoraPageListCallback<T> {
                 return object : DoraPageListCallback<T>() {
-                    override fun onSuccess(models: MutableList<T>) {
+                    override fun onSuccess(totalSize: Int, models: MutableList<T>) {
+                        super.onSuccess(totalSize, models)
                         parseModels(models, liveData)
                     }
 

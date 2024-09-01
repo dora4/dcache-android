@@ -12,7 +12,9 @@ import dora.cache.DoraPageListCallback
 import dora.cache.data.fetcher.ListFlowDataFetcher
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
+import dora.cache.holder.DoraListDatabaseCacheHolder
 import dora.cache.holder.ListDatabaseCacheHolder
+import dora.db.builder.WhereBuilder
 import io.reactivex.Observable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -228,6 +230,9 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
 
     override fun onLoadFromCacheList(flowData: MutableStateFlow<MutableList<T>>) : Boolean {
         if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        // 去掉query语句的部分条件，只保留where语句
+        totalSize = (listCacheHolder as DoraListDatabaseCacheHolder<T>)
+            .queryCacheSize(WhereBuilder.create(query()).toCondition()).toInt()
         if (isLastPage()) {
             listener?.onLoad(OnLoadStateListener.FAILURE)
             return false

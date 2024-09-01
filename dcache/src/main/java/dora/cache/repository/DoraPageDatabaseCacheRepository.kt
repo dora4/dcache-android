@@ -16,6 +16,8 @@ import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
 import dora.cache.holder.DoraListDatabaseCacheHolder
+import dora.db.builder.WhereBuilder
+import dora.db.dao.DaoFactory
 import io.reactivex.Observable
 import java.lang.IllegalArgumentException
 
@@ -224,6 +226,9 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
 
     override fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<T>>) : Boolean {
         if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        // 去掉query语句的部分条件，只保留where语句
+        totalSize = (listCacheHolder as DoraListDatabaseCacheHolder<T>)
+            .queryCacheSize(WhereBuilder.create(query()).toCondition()).toInt()
         if (isLastPage()) {
             listener?.onLoad(OnLoadStateListener.FAILURE)
             return false

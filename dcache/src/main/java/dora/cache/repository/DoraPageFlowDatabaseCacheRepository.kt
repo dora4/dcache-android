@@ -29,7 +29,7 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
     private var pageNo: Int = 0
 
     /**
-     * 每页的大小，使用过程中保持一致，除初始化外不建议修改，如果修改，则也需要在[query]中添加过滤条件。
+     * 每页的大小，使用过程中保持一致，除初始化外不建议修改，如果修改，则也需要在[parseModels]中添加过滤条件。
      */
     private var pageSize: Int = 10
 
@@ -231,7 +231,6 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
     override fun query(): Condition {
         val start = pageNo * pageSize
         return QueryBuilder.create()
-            .where(WhereBuilder.create().addWhereEqualTo(getPaginationKey(), pageNo))
             .limit(start, pageSize)
             .toCondition()
     }
@@ -289,7 +288,10 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
             }
             onInterceptData(DataSource.Type.NETWORK, it)
             if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
-            (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
+            // 追加分页的条件
+            val whereBuilder = WhereBuilder.create(query()).andWhereEqualTo(getPaginationKey(), pageNo)
+            val condition = QueryBuilder.create(query()).where(whereBuilder).toCondition()
+            (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(condition)
             (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(it)
             if (it.size > 0) {
                 listener?.onLoad(OnLoadStateListener.SUCCESS)

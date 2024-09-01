@@ -331,7 +331,11 @@ class WhereBuilder {
      * 构建where的sql语句，自动添加语句首的where。
      */
     fun build(): String {
-        return WHERE + selection
+        return if (selection != "") {
+            WHERE + selection
+        } else {
+            ""
+        }
     }
 
     fun where(condition: Condition): WhereBuilder {

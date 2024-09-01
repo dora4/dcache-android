@@ -17,7 +17,7 @@ class DoraDatabaseCacheHolder<T : OrmTable>(val clazz: Class<out OrmTable>) : Da
     }
 
     override fun queryCache(condition: Condition): T? {
-        return dao.selectOne(WhereBuilder.create(condition)) as T?
+        return dao.selectOne(QueryBuilder.create(condition)) as T?
     }
 
     override fun removeOldCache(condition: Condition) {

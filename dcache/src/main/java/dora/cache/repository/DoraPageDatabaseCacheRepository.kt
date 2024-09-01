@@ -15,10 +15,8 @@ import dora.cache.DoraPageListCallback
 import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
-import dora.cache.holder.DoraListDatabaseCacheHolder
 import dora.cache.holder.ListDatabaseCacheHolder
 import dora.db.builder.WhereBuilder
-import dora.db.dao.DaoFactory
 import io.reactivex.Observable
 import java.lang.IllegalArgumentException
 
@@ -26,8 +24,19 @@ import java.lang.IllegalArgumentException
 abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     : DoraDatabaseCacheRepository<T>(context) {
 
+    /**
+     * 第几页。
+     */
     private var pageNo: Int = 0
+
+    /**
+     * 每页的大小，使用过程中保持一致，除初始化外不建议修改，如果修改，则也需要在[query]中添加过滤条件。
+     */
     private var pageSize: Int = 10
+
+    /**
+     * 数据总条数。
+     */
     private var totalSize: Int = 0
 
     open fun onLoadFromNetwork(callback: DoraPageListCallback<T>, listener: OnLoadStateListener?) {
@@ -208,9 +217,17 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
         return this
     }
 
+    /**
+     * 使用分页缓存的[OrmTable]实现类，必须指定[pageNo]对应的属性。
+     */
+    open fun getPaginationKey() : String {
+        return OrmTable.PAGINATION_KEY
+    }
+
     override fun query(): Condition {
         val start = pageNo * pageSize
         return QueryBuilder.create()
+                .where(WhereBuilder.create().addWhereEqualTo(getPaginationKey(), pageNo))
                 .limit(start, pageSize)
                 .toCondition()
     }

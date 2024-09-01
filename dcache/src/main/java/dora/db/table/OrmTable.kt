@@ -21,5 +21,6 @@ interface OrmTable {
     companion object {
 
         const val INDEX_ID = "_id"
+        const val PAGINATION_KEY = "page_no"
     }
 }

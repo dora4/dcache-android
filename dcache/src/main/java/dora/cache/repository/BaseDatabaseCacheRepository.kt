@@ -31,6 +31,13 @@ abstract class BaseDatabaseCacheRepository<T : OrmTable>
 constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>(context) {
 
     /**
+     * 是否开启追加模式，仅list模式有效。
+     */
+    protected open fun disallowForceUpdate() : Boolean {
+        return false
+    }
+
+    /**
      * 保证成员属性不为空，而成功调用数据库查询方法，提高查询可靠性。比如用来校验属性，a != null && b != null
      * && c != null。
      *
@@ -72,13 +79,6 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
                 listener?.onSyncData(data.size == 1, data)
             }
         }
-    }
-
-    /**
-     * 是否开启追加模式，仅list模式有效。
-     */
-    protected open fun disallowForceUpdate() : Boolean {
-        return false
     }
 
     /**

@@ -131,6 +131,16 @@ class QueryBuilder private constructor() {
         fun create(): QueryBuilder {
             return QueryBuilder()
         }
+
+        fun create(condition: Condition): QueryBuilder {
+            val builder = create()
+            builder.whereBuilder = WhereBuilder.create(condition)
+            builder.limit = condition.limit
+            builder.order = condition.orderBy
+            builder.group = condition.groupBy
+            builder.having = condition.having
+            return builder
+        }
     }
 
     init {

@@ -129,6 +129,11 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
         return lastPage == pageNo
     }
 
+    fun isOutOfPageRange() : Boolean {
+        val lastPage = if (totalSize % pageSize == 0) totalSize / pageSize - 1 else totalSize / pageSize
+        return pageNo < 0 || lastPage < pageNo
+    }
+
     suspend fun observeData(adapter: AdapterDelegate<T>) {
         getListFlowData().collect {
             if (pageNo == 0) {
@@ -232,7 +237,7 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
         if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
         totalSize = (listCacheHolder as DoraListDatabaseCacheHolder<T>)
             .queryCacheSize(query()).toInt()
-        if (isLastPage()) {
+        if (isOutOfPageRange()) {
             listener?.onLoad(OnLoadStateListener.FAILURE)
             return false
         }

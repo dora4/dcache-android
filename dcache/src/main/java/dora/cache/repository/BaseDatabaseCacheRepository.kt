@@ -207,8 +207,10 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
         model?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             liveData.postValue(it)
+            listener?.onLoad(OnLoadStateListener.SUCCESS)
             return true
         }
+        listener?.onLoad(OnLoadStateListener.FAILURE)
         return false
     }
 
@@ -218,8 +220,10 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
         models?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             liveData.postValue(it)
+            listener?.onLoad(OnLoadStateListener.SUCCESS)
             return true
         }
+        listener?.onLoad(OnLoadStateListener.FAILURE)
         return false
     }
 

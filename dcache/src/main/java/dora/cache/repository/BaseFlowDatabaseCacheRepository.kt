@@ -200,8 +200,10 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
         model?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             flowData.value = it
+            listener?.onLoad(OnLoadStateListener.SUCCESS)
             return true
         }
+        listener?.onLoad(OnLoadStateListener.FAILURE)
         return false
     }
 
@@ -211,8 +213,10 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
         models?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             flowData.value = it
+            listener?.onLoad(OnLoadStateListener.SUCCESS)
             return true
         }
+        listener?.onLoad(OnLoadStateListener.FAILURE)
         return false
     }
 

@@ -235,8 +235,10 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
         models?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             flowData.value = it
+            listener?.onLoad(OnLoadStateListener.SUCCESS)
             return true
         }
+        listener?.onLoad(OnLoadStateListener.FAILURE)
         return false
     }
 

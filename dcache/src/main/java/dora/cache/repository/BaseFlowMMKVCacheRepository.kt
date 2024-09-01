@@ -132,8 +132,10 @@ constructor(context: Context) : BaseFlowRepository<M, MMKVCacheHolderFactory<M>>
         model?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             flowData.value = it
+            listener?.onLoad(OnLoadStateListener.SUCCESS)
             return true
         }
+        listener?.onLoad(OnLoadStateListener.FAILURE)
         return false
     }
 
@@ -142,8 +144,10 @@ constructor(context: Context) : BaseFlowRepository<M, MMKVCacheHolderFactory<M>>
         models?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             liveData.value = it
+            listener?.onLoad(OnLoadStateListener.SUCCESS)
             return true
         }
+        listener?.onLoad(OnLoadStateListener.FAILURE)
         return false
     }
 

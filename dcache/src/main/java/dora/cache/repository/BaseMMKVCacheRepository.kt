@@ -133,8 +133,10 @@ constructor(context: Context) : BaseRepository<M, MMKVCacheHolderFactory<M>>(con
         model?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             liveData.postValue(it)
+            listener?.onLoad(OnLoadStateListener.SUCCESS)
             return true
         }
+        listener?.onLoad(OnLoadStateListener.FAILURE)
         return false
     }
 
@@ -143,8 +145,10 @@ constructor(context: Context) : BaseRepository<M, MMKVCacheHolderFactory<M>>(con
         models?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             liveData.postValue(it)
+            listener?.onLoad(OnLoadStateListener.SUCCESS)
             return true
         }
+        listener?.onLoad(OnLoadStateListener.FAILURE)
         return false
     }
 

@@ -231,8 +231,10 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
         models?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             liveData.postValue(it)
+            listener?.onLoad(OnLoadStateListener.SUCCESS)
             return true
         }
+        listener?.onLoad(OnLoadStateListener.FAILURE)
         return false
     }
 

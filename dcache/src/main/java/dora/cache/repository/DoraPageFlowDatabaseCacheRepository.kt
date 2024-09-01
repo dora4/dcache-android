@@ -2,7 +2,6 @@ package dora.cache.repository
 
 import android.content.Context
 import android.util.Log
-import androidx.lifecycle.LiveData
 import dora.cache.data.fetcher.OnLoadStateListener
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
@@ -10,12 +9,14 @@ import dora.db.table.OrmTable
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import dora.cache.DoraPageListCallback
-import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.fetcher.ListFlowDataFetcher
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
+import dora.cache.holder.ListDatabaseCacheHolder
 import io.reactivex.Observable
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import java.lang.IllegalArgumentException
 
 @ListRepository
 abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Context)
@@ -223,5 +224,46 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
                 isLoaded
             }
         } else isLoaded
+    }
+
+    override fun onLoadFromCacheList(flowData: MutableStateFlow<MutableList<T>>) : Boolean {
+        if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        if (isLastPage()) {
+            return false
+        }
+        val models = (listCacheHolder as ListDatabaseCacheHolder<T>).queryCache(query())
+        models?.let {
+            onInterceptData(DataSource.Type.CACHE, it)
+            flowData.value = it
+            return true
+        }
+        return false
+    }
+
+    override fun parseModels(models: MutableList<T>?,
+                                   flowData: MutableStateFlow<MutableList<T>>) {
+        models?.let {
+            if (isLogPrint) {
+                for (model in it) {
+                    Log.d(TAG, "【$description】${model.toString()}")
+                }
+            }
+            onInterceptData(DataSource.Type.NETWORK, it)
+            if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
+            (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(it)
+            if (it.size > 0) {
+                listener?.onLoad(OnLoadStateListener.SUCCESS)
+            } else {
+                listener?.onLoad(OnLoadStateListener.FAILURE)
+            }
+            if (disallowForceUpdate()) {
+                val oldValue = flowData.value
+                oldValue.addAll(it)
+                flowData.value = oldValue
+            } else {
+                flowData.value = it
+            }
+        }
     }
 }

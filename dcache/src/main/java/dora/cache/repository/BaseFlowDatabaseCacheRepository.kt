@@ -194,7 +194,7 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
         }
     }
 
-    protected fun onLoadFromCache(flowData: MutableStateFlow<T?>) : Boolean {
+    protected open fun onLoadFromCache(flowData: MutableStateFlow<T?>) : Boolean {
         if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
         val model = (cacheHolder as DatabaseCacheHolder<T>).queryCache(query())
         model?.let {
@@ -205,7 +205,7 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
         return false
     }
 
-    protected fun onLoadFromCacheList(flowData: MutableStateFlow<MutableList<T>>) : Boolean {
+    protected open fun onLoadFromCacheList(flowData: MutableStateFlow<MutableList<T>>) : Boolean {
         if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
         val models = (listCacheHolder as ListDatabaseCacheHolder<T>).queryCache(query())
         models?.let {

@@ -201,7 +201,7 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
         }
     }
 
-    protected fun onLoadFromCache(liveData: MutableLiveData<T?>) : Boolean {
+    protected open fun onLoadFromCache(liveData: MutableLiveData<T?>) : Boolean {
         if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
         val model = (cacheHolder as DoraDatabaseCacheHolder<T>).queryCache(query())
         model?.let {
@@ -212,7 +212,7 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
         return false
     }
 
-    protected fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<T>>) : Boolean {
+    protected open fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<T>>) : Boolean {
         if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
         val models = (listCacheHolder as DoraListDatabaseCacheHolder<T>).queryCache(query())
         models?.let {

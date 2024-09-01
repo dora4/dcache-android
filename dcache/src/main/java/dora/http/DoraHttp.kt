@@ -120,26 +120,6 @@ object DoraHttp {
     }
 
     /**
-     * 在net作用域下使用，请求失败自动捕获异常，出块则自动释放锁，和request不同的是，无需手动释放。
-     */
-    suspend fun <T> debug(apiMethod: ()-> Call<T>, block: (DoraHttpException) -> Unit) = suspendCoroutine<T> {
-        try {
-            val data = apiMethod()
-            data.enqueue(object : DoraCallback<T>() {
-                override fun onSuccess(model: T) {
-                    it.resume(model)
-                }
-
-                override fun onFailure(msg: String) {
-                    it.resumeWith(Result.failure(DoraHttpException(data.request(), msg)))
-                }
-            })
-        } catch (e: DoraHttpException) {
-            block(e)
-        }
-    }
-
-    /**
      * 在net作用域下使用，请求失败抛出异常，出块则自动释放锁，和request不同的是，无需手动释放。
      */
     suspend fun <T> api(apiMethod: ()-> Call<T>) = suspendCoroutine<T> {
@@ -153,32 +133,6 @@ object DoraHttp {
                 it.resumeWith(Result.failure(DoraHttpException(data.request(), msg)))
             }
         })
-    }
-
-    /**
-     * RxJava的写法，在net作用域下使用，请求失败自动捕获异常，出块则自动释放锁，和request不同的是，无需手动释放。
-     */
-    suspend fun <T : Any> rxDebug(apiMethod: ()-> Observable<T>, block: (DoraHttpException) -> Unit) = suspendCoroutine<T> {
-        try {
-            val data = apiMethod()
-            RxTransformer.doApiObserver(data, object : Observer<T> {
-                override fun onSubscribe(d: Disposable) {
-                }
-
-                override fun onNext(t: T) {
-                    it.resume(t)
-                }
-
-                override fun onError(e: Throwable) {
-                    it.resumeWith(Result.failure(DoraHttpException(e.toString())))
-                }
-
-                override fun onComplete() {
-                }
-            })
-        } catch (e: DoraHttpException) {
-            block(e)
-        }
     }
 
     /**

@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import dora.cache.data.fetcher.OnLoadStateListener
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
@@ -14,7 +15,9 @@ import dora.cache.DoraPageListCallback
 import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
+import dora.cache.holder.DoraListDatabaseCacheHolder
 import io.reactivex.Observable
+import java.lang.IllegalArgumentException
 
 @ListRepository
 abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
@@ -217,5 +220,46 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                 isLoaded
             }
         } else isLoaded
+    }
+
+    override fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<T>>) : Boolean {
+        if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        if (isLastPage()) {
+            return false
+        }
+        val models = (listCacheHolder as DoraListDatabaseCacheHolder<T>).queryCache(query())
+        models?.let {
+            onInterceptData(DataSource.Type.CACHE, it)
+            liveData.postValue(it)
+            return true
+        }
+        return false
+    }
+
+    override fun parseModels(models: MutableList<T>?,
+                                   liveData: MutableLiveData<MutableList<T>>) {
+        models?.let {
+            if (isLogPrint) {
+                for (model in it) {
+                    Log.d(TAG, "【$description】$model")
+                }
+            }
+            onInterceptData(DataSource.Type.NETWORK, it)
+            if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            (listCacheHolder as DoraListDatabaseCacheHolder<T>).removeOldCache(query())
+            (listCacheHolder as DoraListDatabaseCacheHolder<T>).addNewCache(it)
+            if (it.size > 0) {
+                listener?.onLoad(OnLoadStateListener.SUCCESS)
+            } else {
+                listener?.onLoad(OnLoadStateListener.FAILURE)
+            }
+            if (disallowForceUpdate()) {
+                val oldValue = liveData.value
+                oldValue?.addAll(it)
+                liveData.value = oldValue
+            } else {
+                liveData.postValue(it)
+            }
+        }
     }
 }

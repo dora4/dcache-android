@@ -16,6 +16,7 @@ import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
 import dora.cache.holder.DoraListDatabaseCacheHolder
+import dora.cache.holder.ListDatabaseCacheHolder
 import dora.db.builder.WhereBuilder
 import dora.db.dao.DaoFactory
 import io.reactivex.Observable
@@ -235,13 +236,13 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
 
     override fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<T>>) : Boolean {
         if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
-        totalSize = (listCacheHolder as DoraListDatabaseCacheHolder<T>)
+        totalSize = (listCacheHolder as ListDatabaseCacheHolder<T>)
             .queryCacheSize(query()).toInt()
         if (isOutOfPageRange()) {
             listener?.onLoad(OnLoadStateListener.FAILURE)
             return false
         }
-        val models = (listCacheHolder as DoraListDatabaseCacheHolder<T>).queryCache(query())
+        val models = (listCacheHolder as ListDatabaseCacheHolder<T>).queryCache(query())
         models?.let {
             if (it.size > 0) {
                 onInterceptData(DataSource.Type.CACHE, it)
@@ -267,8 +268,8 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
             }
             onInterceptData(DataSource.Type.NETWORK, it)
             if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
-            (listCacheHolder as DoraListDatabaseCacheHolder<T>).removeOldCache(query())
-            (listCacheHolder as DoraListDatabaseCacheHolder<T>).addNewCache(it)
+            (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
+            (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(it)
             if (it.size > 0) {
                 listener?.onLoad(OnLoadStateListener.SUCCESS)
             } else {

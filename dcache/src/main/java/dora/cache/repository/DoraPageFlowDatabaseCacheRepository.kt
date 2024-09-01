@@ -239,7 +239,7 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
 
     override fun onLoadFromCacheList(flowData: MutableStateFlow<MutableList<T>>) : Boolean {
         if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
-        totalSize = (listCacheHolder as DoraListDatabaseCacheHolder<T>)
+        totalSize = (listCacheHolder as ListDatabaseCacheHolder<T>)
             .queryCacheSize(query()).toInt()
         if (isOutOfPageRange()) {
             listener?.onLoad(OnLoadStateListener.FAILURE)

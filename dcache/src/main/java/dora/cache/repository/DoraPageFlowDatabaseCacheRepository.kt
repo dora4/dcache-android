@@ -178,6 +178,8 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
         if (canLoadMore()) {
             pageNo++
             fetchListData(listener = listener)
+        } else {
+            listener.onLoad(OnLoadStateListener.FAILURE)
         }
     }
 
@@ -193,6 +195,8 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
                     block?.invoke(state == OnLoadStateListener.SUCCESS)
                 }
             })
+        } else {
+            block?.invoke(false)
         }
     }
 

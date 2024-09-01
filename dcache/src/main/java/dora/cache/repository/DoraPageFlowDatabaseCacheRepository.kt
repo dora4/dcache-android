@@ -229,14 +229,20 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
     override fun onLoadFromCacheList(flowData: MutableStateFlow<MutableList<T>>) : Boolean {
         if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
         if (isLastPage()) {
+            listener?.onLoad(OnLoadStateListener.FAILURE)
             return false
         }
         val models = (listCacheHolder as ListDatabaseCacheHolder<T>).queryCache(query())
         models?.let {
-            onInterceptData(DataSource.Type.CACHE, it)
-            flowData.value = it
-            listener?.onLoad(OnLoadStateListener.SUCCESS)
-            return true
+            if (it.size > 0) {
+                onInterceptData(DataSource.Type.CACHE, it)
+                flowData.value = it
+                listener?.onLoad(OnLoadStateListener.SUCCESS)
+                return true
+            } else {
+                listener?.onLoad(OnLoadStateListener.FAILURE)
+                return false
+            }
         }
         listener?.onLoad(OnLoadStateListener.FAILURE)
         return false

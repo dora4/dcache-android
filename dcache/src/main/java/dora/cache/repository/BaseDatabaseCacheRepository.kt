@@ -11,8 +11,6 @@ import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
 import dora.cache.factory.DatabaseCacheHolderFactory
 import dora.cache.holder.DatabaseCacheHolder
-import dora.cache.holder.DoraDatabaseCacheHolder
-import dora.cache.holder.DoraListDatabaseCacheHolder
 import dora.cache.holder.ListDatabaseCacheHolder
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder

@@ -200,98 +200,98 @@ class WhereBuilder {
      * 添加sql语句片段，如and a = 0。
      */
     fun andWhereEqualTo(column: String, value: Any): WhereBuilder {
-        return append(AND, column + EQUAL_HOLDER, arrayOf(value.toString()))
+        return append(if (selection == "") null else AND, column + EQUAL_HOLDER, arrayOf(value.toString()))
     }
 
     /**
      * 添加sql语句片段，如and a != 0。
      */
     fun andWhereNotEqualTo(column: String, value: Any): WhereBuilder {
-        return append(AND, column + NOT_EQUAL_HOLDER, arrayOf(value.toString()))
+        return append(if (selection == "") null else AND, column + NOT_EQUAL_HOLDER, arrayOf(value.toString()))
     }
 
     /**
      * 添加sql语句片段，如and a > 0。
      */
     fun andWhereGreaterThan(column: String, value: Number): WhereBuilder {
-        return append(AND, column + GREATER_THAN_HOLDER, arrayOf(value.toString()))
+        return append(if (selection == "") null else AND, column + GREATER_THAN_HOLDER, arrayOf(value.toString()))
     }
 
     /**
      * 添加sql语句片段，如and a >= 0。
      */
     fun andWhereGreaterThanOrEqualTo(column: String, value: Number): WhereBuilder {
-        return append(AND, column + GREATER_THAN_OR_EQUAL_TO_HOLDER, arrayOf(value.toString()))
+        return append(if (selection == "") null else AND, column + GREATER_THAN_OR_EQUAL_TO_HOLDER, arrayOf(value.toString()))
     }
 
     /**
      * 添加sql语句片段，如and a < 10。
      */
     fun andWhereLessThan(column: String, value: Number): WhereBuilder {
-        return append(AND, column + LESS_THAN_HOLDER, arrayOf(value.toString()))
+        return append(if (selection == "") null else AND, column + LESS_THAN_HOLDER, arrayOf(value.toString()))
     }
 
     /**
      * 添加sql语句片段，如and a <= 10。
      */
     fun andWhereLessThanOrEqualTo(column: String, value: Number): WhereBuilder {
-        return append(AND, column + LESS_THAN_OR_EQUAL_TO_HOLDER, arrayOf(value.toString()))
+        return append(if (selection == "") null else AND, column + LESS_THAN_OR_EQUAL_TO_HOLDER, arrayOf(value.toString()))
     }
 
     /**
      * 添加sql语句片段，如and a in(?,?,...)。
      */
     fun andWhereIn(column: String, values: Array<Any>): WhereBuilder {
-        return appendWhereIn(AND, column, values)
+        return appendWhereIn(if (selection == "") null else AND, column, values)
     }
 
     /**
      * 添加sql语句片段，如or a = 0。
      */
     fun orWhereEqualTo(column: String, value: Any): WhereBuilder {
-        return append(OR, column + EQUAL_HOLDER, arrayOf(value.toString()))
+        return append(if (selection == "") null else OR, column + EQUAL_HOLDER, arrayOf(value.toString()))
     }
 
     /**
      * 添加sql语句片段，如or a != 0。
      */
     fun orWhereNotEqualTo(column: String, value: Any): WhereBuilder {
-        return append(OR, column + NOT_EQUAL_HOLDER, arrayOf(value.toString()))
+        return append(if (selection == "") null else OR, column + NOT_EQUAL_HOLDER, arrayOf(value.toString()))
     }
 
     /**
      * 添加sql语句片段，如or a > 0。
      */
     fun orWhereGreaterThan(column: String, value: Number): WhereBuilder {
-        return append(OR, column + GREATER_THAN_HOLDER, arrayOf(value.toString()))
+        return append(if (selection == "") null else OR, column + GREATER_THAN_HOLDER, arrayOf(value.toString()))
     }
 
     /**
      * 添加sql语句片段，如or a >= 0。
      */
     fun orWhereGreaterThanOrEqualTo(column: String, value: Number): WhereBuilder {
-        return append(OR, column + GREATER_THAN_OR_EQUAL_TO_HOLDER, arrayOf(value.toString()))
+        return append(if (selection == "") null else OR, column + GREATER_THAN_OR_EQUAL_TO_HOLDER, arrayOf(value.toString()))
     }
 
     /**
      * 添加sql语句片段，如or a < 10。
      */
     fun orWhereLessThan(column: String, value: Number): WhereBuilder {
-        return append(OR, column + LESS_THAN_HOLDER, arrayOf(value.toString()))
+        return append(if (selection == "") null else OR, column + LESS_THAN_HOLDER, arrayOf(value.toString()))
     }
 
     /**
      * 添加sql语句片段，如or a <= 10。
      */
     fun orWhereLessThanOrEqualTo(column: String, value: Number): WhereBuilder {
-        return append(OR, column + LESS_THAN_OR_EQUAL_TO_HOLDER, arrayOf(value.toString()))
+        return append(if (selection == "") null else OR, column + LESS_THAN_OR_EQUAL_TO_HOLDER, arrayOf(value.toString()))
     }
 
     /**
      * 添加sql语句片段，如or a in(?,?,...)。
      */
     fun orWhereIn(column: String, values: Array<Any>): WhereBuilder {
-        return appendWhereIn(OR, column, values)
+        return appendWhereIn(if (selection == "") null else OR, column, values)
     }
 
     private fun append(connect: String?, whereClause: String, whereArgs: Array<Any>): WhereBuilder {

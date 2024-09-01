@@ -2,6 +2,7 @@ package dora.cache.holder
 
 import dora.db.table.OrmTable
 import dora.db.builder.Condition
+import dora.db.builder.QueryBuilder
 import dora.db.builder.WhereBuilder
 import dora.db.dao.DaoFactory
 import dora.db.dao.OrmDao
@@ -16,7 +17,7 @@ class DoraDatabaseCacheHolder<T : OrmTable>(val clazz: Class<out OrmTable>) : Da
     }
 
     override fun queryCache(condition: Condition): T? {
-        return dao.selectOne(WhereBuilder.create(condition)) as T?
+        return dao.selectOne(QueryBuilder.create(condition)) as T?
     }
 
     override fun removeOldCache(condition: Condition) {

@@ -5,7 +5,7 @@ import dora.http.DoraCallback
 
 /**
  * 将实现[dora.cache.data.adapter.PageResult]的REST API接口返回的model数据适配成框架需要的
- * [dora.cache.DoraPageListCallback]对象，用于[dora.cache.repository.DoraPageDatabaseCacheRepository]
+ * [dora.http.DoraCallback]对象，用于[dora.cache.repository.DoraPageDatabaseCacheRepository]
  * 或[dora.cache.repository.DoraPageFlowDatabaseCacheRepository]的onLoadFromNetwork()中。
  *
  * @see ResultAdapter

@@ -1,5 +1,3 @@
-# dcache-android![Release](https://jitpack.io/v/dora4/dcache-android.svg)
-
 dcache是一个开源的Android离线数据缓存框架，旨在提供一种简单而高效的方式来缓存网络请求的结果和其他数据，以便在手机没有网络的时候使用历史缓存数据。它可以用于缓存各种类型的数据，包括字符串、JSON、图片、音频和视频等。以下是dcache的主要特点：
 
 简单易用：dcache提供了简单易用的API，使得缓存数据变得非常容易。您只需几行代码即可将数据缓存到本地，而不需要处理复杂的缓存逻辑。
@@ -9,8 +7,6 @@ dcache是一个开源的Android离线数据缓存框架，旨在提供一种简�
 支持扩展：dcache可以轻松地与其他库和框架集成，例如OkHttp、Retrofit等。如果您需要更高级的功能，例如缓存加密和压缩等，您也可以轻松地扩展dcache以满足自己的需求。
 
 总之，dcache是一个简单易用、可配置性强、支持扩展的Android离线数据缓存框架，非常适合用于各种Android应用程序中。
-
-
 
 ### 开发前的准备
 
@@ -31,7 +27,7 @@ def stable_version = '2.4.13'
 implementation "com.github.dora4:dcache-android:$stable_version"
 ```
 
-### 使用文档（ 使用示例 https://github.com/dora4/DoraCacheSample ）
+### 使用文档（ 使用示例 <https://github.com/dora4/DoraCacheSample> ）
 
 #### 一、dcache的orm详解
 
@@ -49,45 +45,45 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
 2. **注解**
 
-   - 表和列相关
+   * 表和列相关
 
-     ​	并非必需配置。
+     	并非必需配置。
 
-     - @Table
+     * @Table
 
        此注解配置在OrmTable的实现类的类名之上，用来指定一个类映射到表的名称，不配置则使用默认映射规则。
 
-     - @Column
+     * @Column
 
        此注解配置在OrmTable的实现类的成员属性之上，用来指定一个属性映射到字段的名称，不配置则使用默认映射规则。
 
-     - @Ignore
+     * @Ignore
 
        此注解的优先级高于@Column，配置在OrmTable的实现类的成员属性之上，配置了此注解的成员属性，不会作为表的字段进行映射。
 
-   - 约束相关
+   * 约束相关
 
-     ​	配置主键用的@PrimaryKey和@Id必须使用其中一个，其他并非必需配置。
+     	配置主键用的@PrimaryKey和@Id必须使用其中一个，其他并非必需配置。
 
-     - @NotNull
+     * @NotNull
 
        此注解配置在OrmTable的实现类的成员属性之上，用来指定这个字段为非空字段。
 
-     - @PrimaryKey
+     * @PrimaryKey
 
        此注解配置在OrmTable的实现类的成员属性之上，用来指定这个字段为表的主键。
 
-     - @Id
+     * @Id
 
        此注解配置在OrmTable的实现类的成员属性之上，作用类似于@PrimaryKey，并
 
-       在它的基础上指定了该字段名为”_id“，相当于@PrimaryKey+@Column("\_id")。
+       在它的基础上指定了该字段名为”\_id“，相当于@PrimaryKey+\@Column("\_id")。
 
-     - @Unique
+     * @Unique
 
        此注解配置在OrmTable的实现类的成员属性之上，表示这个字段的值在这张表中从不重复。
 
-     - @Default
+     * @Default
 
        此注解配置在OrmTable的实现类的成员属性之上，通过它可以给字段指定默认值。
 
@@ -95,7 +91,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
    我们使用OrmDao对象来操作一张表的增删改查操作，通过DaoFactory.getDao()获取OrmDao对象，通常我们会将OrmDao保存为成员变量以复用。
 
-   - 插入数据
+   * 插入数据
 
      ```kotlin
      DaoFactory.getDao(User::class.java).insert(user)
@@ -103,19 +99,19 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
      注意，insert不仅可以被用来插入单条数据，也可以插入一个List数据。
 
-   - 删除数据
+   * 删除数据
 
      ```kotlin
      DaoFactory.getDao(User::class.java).delete(user)
      ```
 
-   - 更新数据
+   * 更新数据
 
      ```kotlin
      DaoFactory.getDao(User::class.java).update(user)
      ```
 
-   - 查询数据
+   * 查询数据
 
      ```kotlin
      // 查询单条数据
@@ -130,7 +126,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
      DaoFactory.getDao(User::class.java).selectAll()
      ```
 
-     - Condition（了解）
+     * Condition（了解）
 
        它是一个通用查询条件的统称，整合外部ORM框架可能才会用到它。
 
@@ -138,7 +134,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
        selectionArgs：”？“占位符的所有值
 
-     - WhereBuilder
+     * WhereBuilder
 
        where子句的构建类，通过WhereBuilder.create()创建实例
 
@@ -149,10 +145,11 @@ implementation "com.github.dora4:dcache-android:$stable_version"
        ```
 
        如可以通过调用addWhereEqualTo()添加“key=value”的条件。其他类似方法还有addWhereNotEqualTo()、addWhereGreaterThan()、addWhereLessThan()、and()、or()、not()、parenthesesLeft()和parenthesesRight()等。
+
        > <b>相关方法</b>
        >
        > addWhereNotEqualTo：不等于
-       > 
+       >
        > addWhereGreaterThan：大于
        >
        > addWhereLessThan：小于
@@ -166,16 +163,16 @@ implementation "com.github.dora4:dcache-android:$stable_version"
        > or：或
        >
        > not：非
-       >  
+       >
        > parenthesesLeft：左括号
        >
        > parenthesesRight：右括号
 
-     - QueryBuilder
+     * QueryBuilder
 
        支持where、orderBy、limit、groupBy等
 
-   - 查询记录条数
+   * 查询记录条数
 
      ```kotlin
      val num1 = DaoFactory.getDao(User::class.java).count(queryBuilder)
@@ -188,7 +185,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
 4. **其他注意事项**
 
-   - 复杂数据类型字段映射
+   * 复杂数据类型字段映射
 
      ```java
      @Convert(converter = StringListConverter.class, columnType = String.class)
@@ -198,7 +195,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
      使用@Convert注解可以保存复杂的数据类型，例如ArrayList。一般将复杂数据类型转成格式化后的String类型保存到数据库，读取数据的时候使用转换器自动进行解码操作。converter转换器可以自定义，columnType为你保存到数据库的实际数据类型。
 
-   - 表结构升级
+   * 表结构升级
 
      ```java
      @Override
@@ -209,7 +206,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
      只需要在配置中将数据库版本号+1，即可自动进行表结构的升级。在OrmTable的实现类重写isUpgradeRecreated()来确定表升级后是否保留之前的旧数据。如果return true（不建议），则在表升级时将旧数据清空。建议通过框架提供的OrmMigration来转移旧数据到新的字段，这样的话，你需要在OrmTable的实现类中重写与数据迁移相关的方法。
 
-   - 事务操作
+   * 事务操作
 
      1. 单表事务
 
@@ -222,7 +219,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
         }
         ```
 
-        使用Transaction.execute()可以在代码块中执行事务操作，指定何种泛型就是何种类型的OrmDao，如这里it指代的是OrmDao&lt;User&gt;。
+        使用Transaction.execute()可以在代码块中执行事务操作，指定何种泛型就是何种类型的OrmDao，如这里it指代的是OrmDao\<User>。
 
      2. 多表事务
 
@@ -234,31 +231,29 @@ implementation "com.github.dora4:dcache-android:$stable_version"
                 // 查询并保存艺术家信息
                 val artists = queryArtist(context)
                 artistDao.insert(artists)
-              	// 查询并保存专辑信息
+                // 查询并保存专辑信息
                 val albums = queryAlbum(context)
                 albumDao.insert(albums)
-              	// 查询并保存歌曲文件夹信息
+                // 查询并保存歌曲文件夹信息
                 val folders = queryFolder(context)
                 folderDao.insert(folders)
             }
         }
         ```
 
-        
-
 #### 二、网络数据的读取和解析
 
 1. **配置和使用**
 
-   - 按模块对接口进行分类
+   * 按模块对接口进行分类
 
      使用Retrofit对接口进行动态代理，在Retrofit的使用基础上，所有Restful API接口的包装类必须实现ApiService接口，这样才能使用RetrofitManager类进行管理。业务模块分类后，将同一类Restful API接口加入到相同的ApiService实现类中，遵循单一职责的原则。
 
-   - 基本配置
+   * 基本配置
 
-     - URL和OkHttpClient的配置
+     * URL和OkHttpClient的配置
 
-       - Kotlin配置
+       * Kotlin配置
 
          你可以通过调用RetrofitManager的init方法进行配置的初始化。
 
@@ -276,7 +271,9 @@ implementation "com.github.dora4:dcache-android:$stable_version"
          }
          ```
 
-       - Java配置
+         也可以通过扩展RetrofitManager来进行url和服务的注册。
+
+       * Java配置
 
          ```java
          // Java配置示例
@@ -286,13 +283,13 @@ implementation "com.github.dora4:dcache-android:$stable_version"
                      .mappingBaseUrl(TestTwoService.class, "http://api.example2.com");
          ```
 
- - 拦截器配置（了解）
+* 拦截器配置（了解）
 
-   - FormatLogInterceptor
+  * FormatLogInterceptor
 
-     dora.http.log.FormatLogInterceptor它是一个格式化输出日志的拦截器，你可以添加它将服务端响应的数据以日志形式格式化后输出到logcat中。
+    dora.http.log.FormatLogInterceptor它是一个格式化输出日志的拦截器，你可以添加它将服务端响应的数据以日志形式格式化后输出到logcat中。
 
-- RetrofitManager
+* RetrofitManager
 
   通过RetrofitManager来管理所有ApiService，一个接口只有继承了ApiService接口，才能被RetrofitManager管理。
 
@@ -303,7 +300,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
   | removeService  | 移除API服务对象                                              |
   | mappingBaseUrl | 给API服务绑定Base URL                                        |
 
-- 开始使用
+* 开始使用
 
   ```kotlin
   // 方式一：异步（并行）请求，直接调用即可
@@ -330,9 +327,9 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
 2. **其它注意事项**
 
-   - DoraCallback和DoraListCallback这两个回调接口扩展自retrofit2.Callback，DoraListCallback为List类型的数据量身打造。
+   * DoraCallback和DoraListCallback这两个回调接口扩展自retrofit2.Callback，DoraListCallback为List类型的数据量身打造。
 
-   - net作用域request、api和result的区别
+   * net作用域request、api和result的区别
 
      首先这三个方法都需要在net作用域内使用，net作用域的请求是串行执行的，且都需要使用DoraHttp中提供的这些高阶函数包裹。
 
@@ -419,23 +416,23 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
 5. **内存缓存数据处理**
 
-   - 数据抓取（了解）
+   * 数据抓取（了解）
 
-     - DataFetcher
+     * DataFetcher
 
        抓取常规模式数据的实现类。
 
-     - ListDataFetcher
+     * ListDataFetcher
 
        抓取集合模式数据的实现类。
 
-   - 分页（了解）
+   * 分页（了解）
 
-     - DataPager
+     * DataPager
 
        将数据设置到UI之前，用它处理数据分页。
 
-     - 基于访问者设计模式的数据读取
+     * 基于访问者设计模式的数据读取
 
        ```kotlin
        // 从repository中获取分页器，仅限集合数据模式
@@ -498,6 +495,114 @@ implementation "com.github.dora4:dcache-android:$stable_version"
    implementation 'com.github.dora4:dcache-room-support:1.4'
    implementation 'com.github.dora4:dcache-greendao-support:1.1'
    ```
+
+7. **分页缓存**
+
+   以展示banner图为例，后端返回给用户端的数据是一次性全部返回的，因为固定就那么几条数据。但是以系统管理员身份登录的时候，另外的界面则应该显示所有数据，包括开关是关闭不展示给用户端看的。这个时候应该把所有数据都缓存下来，如果离线了，能以两种身份读取离线缓存的数据。即可以一次性全部获取，也可以分页。
+
+   ```kotlin
+   package com.dorachat.dorachat.repository
+   
+   import android.content.Context
+   import android.os.Build
+   import androidx.annotation.RequiresApi
+   import com.dorachat.dorachat.common.AppConfig.Companion.PRODUCT_NAME
+   import com.dorachat.dorachat.http.ApiResult
+   import com.dorachat.dorachat.http.PageDTO
+   import com.dorachat.dorachat.http.service.HomeService
+   import com.dorachat.dorachat.model.BannerInfo
+   import com.dorachat.dorachat.model.request.home.ReqProductByPage
+   import dora.cache.DoraPageListCallback
+   import dora.cache.data.adapter.ListResultAdapter
+   import dora.cache.data.adapter.PageListResultAdapter
+   import dora.cache.data.fetcher.OnLoadStateListener
+   import dora.cache.factory.DatabaseCacheHolderFactory
+   import dora.cache.repository.DoraPageDatabaseCacheRepository
+   import dora.cache.repository.ListRepository
+   import dora.db.builder.Condition
+   import dora.db.builder.QueryBuilder
+   import dora.http.retrofit.RetrofitManager.getService
+   import retrofit2.Callback
+   import javax.inject.Inject
+   
+   @ListRepository
+   class BannerRepository @Inject constructor(context: Context) :
+       DoraPageDatabaseCacheRepository<BannerInfo>(context) {
+   
+       private var isAdmin: Boolean = false
+   
+       fun setAdmin(isAdmin: Boolean) : BannerRepository {
+           this.isAdmin = isAdmin
+           return this
+       }
+   
+       override fun query(): Condition {
+           return if (isAdmin) {
+               super.query()
+           } else {
+               // 不分页，返回全部数据
+               QueryBuilder.create().toCondition()
+           }
+       }
+   
+       override fun onLoadFromNetwork(
+           callback: DoraPageListCallback<BannerInfo>,
+         	// 成功不用回调成功，框架会自动帮你回调。但错误要回调错误，让界面层显示错误，比如在解析到某个字段时，读取到特定					// 的标识认定为失败，不过这种情况不常用。
+           listener: OnLoadStateListener?
+       ) {
+           if (isAdmin) {
+               val req = ReqProductByPage(PRODUCT_NAME, getPageSize(), getPageNo())
+               getService(HomeService::class.java).getBanners(req.toRequestBody()).enqueue(
+                   PageListResultAdapter<BannerInfo, ApiResult<BannerInfo>>(callback)
+                           as Callback<ApiResult<PageDTO<BannerInfo>>>
+               )
+           } else {
+               getService(HomeService::class.java).getBanners(PRODUCT_NAME).enqueue(
+                   ListResultAdapter<BannerInfo, ApiResult<BannerInfo>>(callback)
+                           as Callback<ApiResult<MutableList<BannerInfo>>>
+               )
+           }
+       }
+   
+       override fun createCacheHolderFactory(): DatabaseCacheHolderFactory<BannerInfo> {
+           return DatabaseCacheHolderFactory(BannerInfo::class.java)
+       }
+   }
+   ```
+
+我们再看一下调用处怎么调用它。
+
+```kotlin
+// UI层
+binding.slBannerInfoList.setOnSwipeListener(object : SwipeLayout.OnSwipeListener {
+
+    override fun onRefresh(swipeLayout: SwipeLayout) {
+    }
+
+    override fun onLoadMore(swipeLayout: SwipeLayout) {
+        bannerRepository.onLoadMore {
+            swipeLayout.loadMoreFinish(if (it) SwipeLayout.SUCCEED else SwipeLayout.FAIL)
+        }
+    }
+})
+// 数据层
+bannerRepository.observeData(this, object : DoraPageDatabaseCacheRepository.AdapterDelegate<BannerInfo> {
+
+    override fun addData(data: MutableList<BannerInfo>) {
+        adapter.addData(data)
+        binding.emptyLayout.showContent()
+    }
+
+    override fun setList(data: MutableList<BannerInfo>) {
+        adapter.setList(data)
+        binding.emptyLayout.showContent()
+    }
+})
+// 使用默认的每页大小，也就是每页10条数据，加载第一页
+bannerRepository.setAdmin(true).onRefresh()
+```
+
+另外对于数据总条数是不断变化的场景，比如聊天消息，我们通常采用对数据进行快照的方式，也就是指定数据截止的时间戳。在这个时间节点之前的数据，我们可以认为是固定的大小。这样接口就需要多传一个timestamp的参数了，对于缓存也是一样的，也需要考虑这个timestamp进行数据的过滤。
 
 
 

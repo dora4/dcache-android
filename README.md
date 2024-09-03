@@ -571,39 +571,39 @@ implementation "com.github.dora4:dcache-android:$stable_version"
    }
    ```
 
-我们再看一下调用处怎么调用它。
+      我们再看一下调用处怎么调用它。
 
-```kotlin
-// UI层
-binding.slBannerInfoList.setOnSwipeListener(object : SwipeLayout.OnSwipeListener {
+   ```kotlin
+   // UI层
+   binding.slBannerInfoList.setOnSwipeListener(object : SwipeLayout.OnSwipeListener {
+   
+       override fun onRefresh(swipeLayout: SwipeLayout) {
+       }
+   
+       override fun onLoadMore(swipeLayout: SwipeLayout) {
+           bannerRepository.onLoadMore {
+               swipeLayout.loadMoreFinish(if (it) SwipeLayout.SUCCEED else SwipeLayout.FAIL)
+           }
+       }
+   })
+   // 数据层
+   bannerRepository.observeData(this, object : DoraPageDatabaseCacheRepository.AdapterDelegate<BannerInfo> {
+   
+       override fun addData(data: MutableList<BannerInfo>) {
+           adapter.addData(data)
+           binding.emptyLayout.showContent()
+       }
+   
+       override fun setList(data: MutableList<BannerInfo>) {
+           adapter.setList(data)
+           binding.emptyLayout.showContent()
+       }
+   })
+   // 使用默认的每页大小，也就是每页10条数据，加载第一页
+   bannerRepository.setAdmin(true).onRefresh()
+   ```
 
-    override fun onRefresh(swipeLayout: SwipeLayout) {
-    }
-
-    override fun onLoadMore(swipeLayout: SwipeLayout) {
-        bannerRepository.onLoadMore {
-            swipeLayout.loadMoreFinish(if (it) SwipeLayout.SUCCEED else SwipeLayout.FAIL)
-        }
-    }
-})
-// 数据层
-bannerRepository.observeData(this, object : DoraPageDatabaseCacheRepository.AdapterDelegate<BannerInfo> {
-
-    override fun addData(data: MutableList<BannerInfo>) {
-        adapter.addData(data)
-        binding.emptyLayout.showContent()
-    }
-
-    override fun setList(data: MutableList<BannerInfo>) {
-        adapter.setList(data)
-        binding.emptyLayout.showContent()
-    }
-})
-// 使用默认的每页大小，也就是每页10条数据，加载第一页
-bannerRepository.setAdmin(true).onRefresh()
-```
-
-另外对于数据总条数是不断变化的场景，比如聊天消息，我们通常采用对数据进行快照的方式，也就是指定数据截止的时间戳。在这个时间节点之前的数据，我们可以认为是固定的大小。这样接口就需要多传一个timestamp的参数了，对于缓存也是一样的，也需要考虑这个timestamp进行数据的过滤。
+   另外对于数据总条数是不断变化的场景，比如聊天消息，我们通常采用对数据进行快照的方式，也就是指定数据截止的时间戳。在这个时间节点之前的数据，我们可以认为是固定的大小。这样接口就需要多传一个timestamp的参数了，对于缓存也是一样的，也需要考虑这个timestamp进行数据的过滤。
 
 
 

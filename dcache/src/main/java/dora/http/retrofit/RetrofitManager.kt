@@ -100,22 +100,28 @@ object RetrofitManager {
 
     class Config {
 
+        /**
+         * 发送请求的客户端。
+         */
         private var client = OkHttpClient()
 
         /**
-         * 低版本可能需要启用rxjava。
+         * 是否启用Observable请求，兼容rxjava低版本，高版本不启用也不存在问题。
          */
         private var useRxJava: Boolean = false
 
+        /**
+         * 是否启用Flow接口请求。
+         */
         private var useFlow: Boolean = false
 
         /**
-         * 信任所有证书。
+         * 是否信任所有https证书。
          */
         private var useHttps: Boolean = false
 
         /**
-         * builder保持public。
+         * builder保持public方便获取后直接修改内容。
          */
         val builder = OkHttpClient.Builder()
 
@@ -124,16 +130,25 @@ object RetrofitManager {
             return this
         }
 
+        /**
+         * 启用Observable请求，兼容rxjava低版本，高版本不启用也不存在问题。
+         */
         fun rxJava(useRxJava: Boolean) : Config {
             this.useRxJava = useRxJava
             return this
         }
 
+        /**
+         * 启用Flow接口请求。
+         */
         fun flow(useFlow: Boolean) : Config {
             this.useFlow = useFlow
             return this
         }
 
+        /**
+         * 信任所有https证书。
+         */
         fun https(useHttps: Boolean) : Config {
             this.useHttps = useHttps
             return this

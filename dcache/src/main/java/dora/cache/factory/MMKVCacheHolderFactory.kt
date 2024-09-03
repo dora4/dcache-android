@@ -13,7 +13,8 @@ class MMKVCacheHolderFactory<M> : CacheHolderFactory<M> {
     }
 
     override fun createListCacheHolder(): CacheHolder<MutableList<M>> {
-        return DoraListMMKVCacheHolder((object : TypeToken<MutableList<M>>(){}.rawType) as Class<MutableList<M>>)
+        return DoraListMMKVCacheHolder((object : TypeToken<MutableList<M>>(){}.rawType)
+                as Class<MutableList<M>>)
     }
 
     private fun getGenericType(obj: Any): Class<*> {

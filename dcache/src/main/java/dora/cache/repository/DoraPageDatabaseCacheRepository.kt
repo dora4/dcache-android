@@ -43,54 +43,6 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
         this.totalSize = callback.getTotalSize()
     }
 
-    override fun createListDataFetcher(): ListDataFetcher<T> {
-        return object : ListDataFetcher<T>() {
-
-            override fun fetchListData(description: String?, listener: OnLoadStateListener?): LiveData<MutableList<T>> {
-                selectData(object : DataSource {
-                    override fun loadFromCache(type: DataSource.CacheType): Boolean {
-                        if (type === DataSource.CacheType.DATABASE) {
-                            return onLoadFromCacheList(liveData)
-                        }
-                        liveData.postValue(arrayListOf())
-                        return false
-                    }
-
-                    override fun loadFromNetwork() {
-                        try {
-                            rxOnLoadFromNetworkForList(liveData, listener)
-                            onLoadFromNetwork(listCallback(), listener)
-                        } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadStateListener.FAILURE)
-                        }
-                    }
-                })
-                return liveData
-            }
-
-            override fun listCallback(): DoraPageListCallback<T> {
-                return object : DoraPageListCallback<T>() {
-                    override fun onSuccess(totalSize: Int, models: MutableList<T>) {
-                        super.onSuccess(totalSize, models)
-                        parseModels(models, liveData)
-                    }
-
-                    override fun onFailure(msg: String) {
-                        onParseModelsFailure(msg)
-                    }
-                }
-            }
-
-            override fun obtainPager(): IDataPager<T> {
-                return DataPager(liveData.value ?: arrayListOf())
-            }
-
-            override fun clearListData() {
-                liveData.postValue(arrayListOf())
-            }
-        }
-    }
-
     final override fun onLoadFromNetwork(callback: DoraCallback<T>, listener: OnLoadStateListener?) {
         super.onLoadFromNetwork(callback, listener)
     }
@@ -99,16 +51,20 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
         return super.onLoadFromNetworkObservable(listener)
     }
 
+    final override fun onLoadFromNetwork(callback: DoraListCallback<T>, listener: OnLoadStateListener?) {
+        super.onLoadFromNetwork(callback, listener)
+    }
+
+    final override fun onLoadFromNetworkObservableList(listener: OnLoadStateListener?): Observable<MutableList<T>> {
+        return super.onLoadFromNetworkObservableList(listener)
+    }
+
     final override fun onInterceptData(type: DataSource.Type, model: T) {
         super.onInterceptData(type, model)
     }
 
     final override fun onParseModelFailure(msg: String) {
         super.onParseModelFailure(msg)
-    }
-
-    final override fun onLoadFromNetwork(callback: DoraListCallback<T>, listener: OnLoadStateListener?) {
-        super.onLoadFromNetwork(callback, listener)
     }
 
     fun getPageNo(): Int {
@@ -251,7 +207,8 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     }
 
     override fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<T>>) : Boolean {
-        if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        if (!checkParamsValid()) throw IllegalArgumentException(
+            "Please check parameters, checkParamsValid returned false.")
         totalSize = (listCacheHolder as ListDatabaseCacheHolder<T>)
             .queryCacheSize(query()).toInt()
         if (isOutOfPageRange()) {
@@ -283,7 +240,8 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                 }
             }
             onInterceptData(DataSource.Type.NETWORK, it)
-            if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            if (!checkParamsValid()) throw IllegalArgumentException(
+                "Please check parameters, checkParamsValid returned false.")
             // 追加分页的条件
             val whereBuilder = WhereBuilder.create(query()).andWhereEqualTo(getPaginationKey(), pageNo)
             val condition = QueryBuilder.create(query()).where(whereBuilder).toCondition()
@@ -300,6 +258,54 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                 liveData.value = oldValue
             } else {
                 liveData.postValue(it)
+            }
+        }
+    }
+
+    override fun createListDataFetcher(): ListDataFetcher<T> {
+        return object : ListDataFetcher<T>() {
+
+            override fun fetchListData(description: String?, listener: OnLoadStateListener?): LiveData<MutableList<T>> {
+                selectData(object : DataSource {
+                    override fun loadFromCache(type: DataSource.CacheType): Boolean {
+                        if (type === DataSource.CacheType.DATABASE) {
+                            return onLoadFromCacheList(liveData)
+                        }
+                        liveData.postValue(arrayListOf())
+                        return false
+                    }
+
+                    override fun loadFromNetwork() {
+                        try {
+                            rxOnLoadFromNetworkForList(liveData, listener)
+                            onLoadFromNetwork(listCallback(), listener)
+                        } catch (ignore: Exception) {
+                            listener?.onLoad(OnLoadStateListener.FAILURE)
+                        }
+                    }
+                })
+                return liveData
+            }
+
+            override fun listCallback(): DoraPageListCallback<T> {
+                return object : DoraPageListCallback<T>() {
+                    override fun onSuccess(totalSize: Int, models: MutableList<T>) {
+                        super.onSuccess(totalSize, models)
+                        parseModels(models, liveData)
+                    }
+
+                    override fun onFailure(msg: String) {
+                        onParseModelsFailure(msg)
+                    }
+                }
+            }
+
+            override fun obtainPager(): IDataPager<T> {
+                return DataPager(liveData.value ?: arrayListOf())
+            }
+
+            override fun clearListData() {
+                liveData.postValue(arrayListOf())
             }
         }
     }

@@ -10,7 +10,8 @@ import dora.db.dao.OrmDao
 /**
  * 内置的ListCacheHolder，默认实现。
  */
-class DoraListDatabaseCacheHolder<T : OrmTable>(var clazz: Class<out OrmTable>) : ListDatabaseCacheHolder<T>() {
+class DoraListDatabaseCacheHolder<T : OrmTable>(var clazz: Class<out OrmTable>)
+    : ListDatabaseCacheHolder<T>() {
 
     private lateinit var dao: OrmDao<T>
 
@@ -32,6 +33,8 @@ class DoraListDatabaseCacheHolder<T : OrmTable>(var clazz: Class<out OrmTable>) 
     }
 
     override fun queryCacheSize(condition: Condition): Long {
+        // 注意这里没有用QueryBuilder，因为只是对缓存数据的数量进行评估，并不会牵扯到limit过滤、order by排序等
+        // 操作，仅用于分页缓存
         return dao.count(WhereBuilder.create(condition))
     }
 }

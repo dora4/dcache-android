@@ -86,14 +86,6 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
 
     protected abstract fun createListCacheHolder(clazz: Class<M>): DatabaseCacheHolder<MutableList<M>>
 
-    /**
-     * 保证成员属性不为空，而成功调用数据库查询方法，提高查询可靠性。比如用来校验属性，a != null && b != null
-     * && c != null。
-     *
-     * @see BaseDatabaseCacheRepository.query
-     */
-    protected open fun checkValuesNotNull() : Boolean { return true }
-
     override fun callback(): DoraCallback<M> {
         return object : DoraCallback<M>() {
             override fun onSuccess(model: M) {

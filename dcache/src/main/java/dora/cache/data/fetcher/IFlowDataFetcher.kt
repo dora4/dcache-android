@@ -21,7 +21,8 @@ interface IFlowDataFetcher<M> {
     /**
      * 开始抓取数据。
      */
-    fun fetchData(description: String? = "", listener: OnLoadStateListener? = OnLoadStateListenerImpl()): StateFlow<M?>
+    fun fetchData(description: String? = "", listener: OnLoadStateListener? =
+        OnLoadStateListenerImpl()): StateFlow<M?>
 
     /**
      * 获取flow data。

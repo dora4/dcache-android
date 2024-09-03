@@ -8,9 +8,9 @@ package dora.cache.repository
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Repository(
 
-        /**
-         * 是否打印调试日志，如设置为true，则[dora.cache.repository.BaseRepository]的fetchData()中的
-         * description参数将被打印出来。
-         */
-        val isLogPrint: Boolean = false
+    /**
+     * 是否打印调试日志，如设置为true，则[dora.cache.repository.BaseRepository]的fetchData()中的
+     * description参数将被打印出来。
+     */
+    val isLogPrint: Boolean = false
 )

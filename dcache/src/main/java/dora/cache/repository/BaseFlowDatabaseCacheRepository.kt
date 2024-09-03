@@ -31,13 +31,6 @@ abstract class BaseFlowDatabaseCacheRepository<T : OrmTable>
 constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory<T>>(context) {
 
     /**
-     * 是否开启追加模式，仅list模式有效。
-     */
-    protected open fun disallowForceUpdate() : Boolean {
-        return false
-    }
-
-    /**
      * 根据查询条件进行初步的过滤从数据库加载的数据，过滤不完全则再调用onInterceptData。通常在断网情况下，指定
      * 离线数据的过滤条件。
      *
@@ -54,6 +47,24 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
         return QueryBuilder.create().toCondition()
     }
 
+    /**
+     * 保证成员属性不为空，而成功调用数据库查询方法，提高查询可靠性。比如用来校验属性，a != null && b != null
+     * && c != null。
+     *
+     * @see BaseDatabaseCacheRepository.query
+     */
+    @Deprecated(message = "Use checkParamsValid() instead.",
+        replaceWith = ReplaceWith("checkParamsValid"),
+        level = DeprecationLevel.ERROR)
+    protected open fun checkValuesNotNull() : Boolean { return true }
+
+    /**
+     * 校验请求参数合法性，不仅仅是null校验，对于kotlin而言，可用lateinit关键字帮你校验空。
+     *
+     * @see BaseDatabaseCacheRepository.query
+     * @since 2.4.14
+     */
+    protected open fun checkParamsValid() : Boolean { return true }
 
     /**
      * 手动添加数据，也需要同步数据给后端。
@@ -195,7 +206,8 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
     }
 
     protected open fun onLoadFromCache(flowData: MutableStateFlow<T?>) : Boolean {
-        if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        if (!checkParamsValid()) throw IllegalArgumentException(
+            "Please check parameters, checkParamsValid returned false.")
         val model = (cacheHolder as DatabaseCacheHolder<T>).queryCache(query())
         model?.let {
             onInterceptData(DataSource.Type.CACHE, it)
@@ -208,7 +220,8 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
     }
 
     protected open fun onLoadFromCacheList(flowData: MutableStateFlow<MutableList<T>>) : Boolean {
-        if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        if (!checkParamsValid()) throw IllegalArgumentException(
+            "Please check parameters, checkParamsValid returned false.")
         val models = (listCacheHolder as ListDatabaseCacheHolder<T>).queryCache(query())
         models?.let {
             onInterceptData(DataSource.Type.CACHE, it)
@@ -288,12 +301,20 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
                 Log.d(TAG, "【$description】$it")
             }
             onInterceptData(DataSource.Type.NETWORK, it)
-            if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            if (!checkParamsValid()) throw IllegalArgumentException(
+                "Please check parameters, checkParamsValid returned false.")
             (cacheHolder as DatabaseCacheHolder<T>).removeOldCache(query())
             (cacheHolder as DatabaseCacheHolder<T>).addNewCache(it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
             flowData.value = it
         }
+    }
+
+    /**
+     * 是否开启追加模式，仅list模式有效。
+     */
+    protected open fun disallowForceUpdate() : Boolean {
+        return false
     }
 
     protected open fun parseModels(models: MutableList<T>?,
@@ -305,7 +326,8 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
                 }
             }
             onInterceptData(DataSource.Type.NETWORK, it)
-            if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            if (!checkParamsValid()) throw IllegalArgumentException(
+                "Please check parameters, checkParamsValid returned false.")
             (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
             (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
@@ -328,7 +350,8 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
         }
         listener?.onLoad(OnLoadStateListener.FAILURE)
         if (isClearDataOnNetworkError) {
-            if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            if (!checkParamsValid()) throw IllegalArgumentException(
+                "Please check parameters, checkParamsValid returned false.")
             clearData()
             (cacheHolder as DatabaseCacheHolder<T>).removeOldCache(query())
         }
@@ -343,7 +366,8 @@ constructor(context: Context) : BaseFlowRepository<T, DatabaseCacheHolderFactory
         }
         listener?.onLoad(OnLoadStateListener.FAILURE)
         if (isClearDataOnNetworkError) {
-            if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            if (!checkParamsValid()) throw IllegalArgumentException(
+                "Please check parameters, checkParamsValid returned false.")
             clearListData()
             (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
         }

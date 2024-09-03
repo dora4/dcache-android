@@ -11,7 +11,8 @@ import dora.http.DoraCallback
  * @see ResultAdapter
  * @see ListResultAdapter
  */
-open class PageListResultAdapter<M, R : PageResult<M>>(val callback: DoraPageListCallback<M>) : DoraCallback<R>() {
+open class PageListResultAdapter<M, R : PageResult<M>>(val callback: DoraPageListCallback<M>)
+    : DoraCallback<R>() {
 
     /**
      * 适配[dora.cache.DoraPageListCallback]成功的回调。

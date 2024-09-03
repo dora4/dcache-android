@@ -81,8 +81,6 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
 
     protected abstract fun createListCacheHolder(clazz: Class<M>): DatabaseCacheHolder<MutableList<M>>
 
-
-
     override fun callback(): DoraCallback<M> {
         return object : DoraCallback<M>() {
             override fun onSuccess(model: M) {

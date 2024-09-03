@@ -1,6 +1,7 @@
 package dora.http.log
 
 import java.io.*
+import java.lang.UnsupportedOperationException
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -146,6 +147,6 @@ class ZipHelper private constructor() {
     }
 
     init {
-        throw IllegalStateException("you can't instantiate me!")
+        throw UnsupportedOperationException("you can't instantiate me!")
     }
 }

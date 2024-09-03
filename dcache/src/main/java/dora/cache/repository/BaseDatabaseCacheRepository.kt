@@ -31,10 +31,20 @@ abstract class BaseDatabaseCacheRepository<T : OrmTable>
 constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>(context) {
 
     /**
-     * 是否开启追加模式，仅list模式有效。
+     * 根据查询条件进行初步的过滤从数据库加载的数据，过滤不完全则再调用onInterceptData。通常在断网情况下，指定
+     * 离线数据的过滤条件。
+     *
+     * @return
      */
-    protected open fun disallowForceUpdate() : Boolean {
-        return false
+    @Deprecated(message = "Use query() instead.",
+        replaceWith = ReplaceWith("query"),
+        level = DeprecationLevel.ERROR)
+    protected open fun where(): Condition {
+        return WhereBuilder.create().toCondition()
+    }
+
+    protected open fun query(): Condition {
+        return QueryBuilder.create().toCondition()
     }
 
     /**
@@ -43,7 +53,18 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
      *
      * @see BaseDatabaseCacheRepository.query
      */
+    @Deprecated(message = "Use checkParamsValid() instead.",
+        replaceWith = ReplaceWith("checkParamsValid"),
+        level = DeprecationLevel.ERROR)
     protected open fun checkValuesNotNull() : Boolean { return true }
+
+    /**
+     * 校验请求参数合法性，不仅仅是null校验，对于kotlin而言，可用lateinit关键字帮你校验空。
+     *
+     * @see BaseDatabaseCacheRepository.query
+     * @since 2.4.14
+     */
+    protected open fun checkParamsValid() : Boolean { return true }
 
     /**
      * 手动添加数据，也需要同步数据给后端。
@@ -79,23 +100,6 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
                 listener?.onSyncData(data.size == 1, data)
             }
         }
-    }
-
-    /**
-     * 根据查询条件进行初步的过滤从数据库加载的数据，过滤不完全则再调用onInterceptData。通常在断网情况下，指定
-     * 离线数据的过滤条件。
-     *
-     * @return
-     */
-    @Deprecated(message = "Use query() instead.",
-            replaceWith = ReplaceWith("query"),
-            level = DeprecationLevel.ERROR)
-    protected open fun where(): Condition {
-        return WhereBuilder.create().toCondition()
-    }
-
-    protected open fun query(): Condition {
-        return QueryBuilder.create().toCondition()
     }
 
     override fun selectData(ds: DataSource): Boolean {
@@ -202,7 +206,8 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
     }
 
     protected open fun onLoadFromCache(liveData: MutableLiveData<T?>) : Boolean {
-        if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        if (!checkParamsValid()) throw IllegalArgumentException(
+            "Please check parameters, checkParamsValid returned false.")
         val model = (cacheHolder as DatabaseCacheHolder<T>).queryCache(query())
         model?.let {
             onInterceptData(DataSource.Type.CACHE, it)
@@ -215,7 +220,8 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
     }
 
     protected open fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<T>>) : Boolean {
-        if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+        if (!checkParamsValid()) throw IllegalArgumentException(
+            "Please check parameters, checkParamsValid returned false.")
         val models = (listCacheHolder as ListDatabaseCacheHolder<T>).queryCache(query())
         models?.let {
             onInterceptData(DataSource.Type.CACHE, it)
@@ -289,13 +295,21 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
         })
     }
 
+    /**
+     * 是否开启追加模式，仅list模式有效。
+     */
+    protected open fun disallowForceUpdate() : Boolean {
+        return false
+    }
+
     protected open fun parseModel(model: T, liveData: MutableLiveData<T?>) {
         model.let {
             if (isLogPrint) {
                 Log.d(TAG, "【$description】$it")
             }
             onInterceptData(DataSource.Type.NETWORK, it)
-            if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            if (!checkParamsValid()) throw IllegalArgumentException(
+                "Please check parameters, checkParamsValid returned false.")
             (cacheHolder as DatabaseCacheHolder<T>).removeOldCache(query())
             (cacheHolder as DatabaseCacheHolder<T>).addNewCache(it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
@@ -312,7 +326,8 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
                 }
             }
             onInterceptData(DataSource.Type.NETWORK, it)
-            if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            if (!checkParamsValid()) throw IllegalArgumentException(
+                "Please check parameters, checkParamsValid returned false.")
             (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
             (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
@@ -335,7 +350,8 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
         }
         listener?.onLoad(OnLoadStateListener.FAILURE)
         if (isClearDataOnNetworkError) {
-            if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            if (!checkParamsValid()) throw IllegalArgumentException(
+                "Please check parameters, checkParamsValid returned false.")
             clearData()
             (cacheHolder as DatabaseCacheHolder<T>).removeOldCache(query())
         }
@@ -350,7 +366,8 @@ constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>
         }
         listener?.onLoad(OnLoadStateListener.FAILURE)
         if (isClearDataOnNetworkError) {
-            if (!checkValuesNotNull()) throw IllegalArgumentException("Query parameter would be null, checkValuesNotNull return false.")
+            if (!checkParamsValid()) throw IllegalArgumentException(
+                "Please check parameters, checkParamsValid returned false.")
             clearListData()
             (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
         }

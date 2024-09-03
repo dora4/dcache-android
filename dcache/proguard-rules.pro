@@ -62,12 +62,6 @@
 -keep interface dora.db.table.OrmTable {
     public *;
 }
--keep class dora.db.table.PrimaryKeyEntry {
-    *;
-}
--keep class dora.db.table.PrimaryKeyId {
-    *;
-}
 -keep class dora.db.table.TableManager {
     *;
 }

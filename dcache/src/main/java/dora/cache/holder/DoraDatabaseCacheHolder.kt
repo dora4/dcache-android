@@ -29,6 +29,8 @@ class DoraDatabaseCacheHolder<T : OrmTable>(val clazz: Class<out OrmTable>) : Da
     }
 
     override fun queryCacheSize(condition: Condition): Long {
+        // 注意这里没有用QueryBuilder，因为只是对缓存数据的数量进行评估，并不会牵扯到limit过滤、order by排序等
+        // 操作，仅用于分页缓存
         return dao.count(WhereBuilder.create(condition))
     }
 }

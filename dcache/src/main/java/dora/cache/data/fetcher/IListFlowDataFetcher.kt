@@ -22,7 +22,8 @@ interface IListFlowDataFetcher<M> {
     /**
      * 开始抓取数据。
      */
-    fun fetchListData(description: String? = "", listener: OnLoadStateListener? = OnLoadStateListenerImpl()): StateFlow<MutableList<M>>
+    fun fetchListData(description: String? = "", listener: OnLoadStateListener? =
+        OnLoadStateListenerImpl()): StateFlow<MutableList<M>>
 
     /**
      * 获取livedata。

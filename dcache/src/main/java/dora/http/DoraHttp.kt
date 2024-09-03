@@ -1,6 +1,7 @@
 package dora.http
 
 import android.app.Activity
+import android.app.Dialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -39,6 +40,9 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.startCoroutine
 import kotlin.coroutines.suspendCoroutine
 
+/**
+ * 用于发起网络请求，以及包含一些网络请求常用的工具方法。
+ */
 object DoraHttp {
 
     fun netScope(activity: Activity, block: suspend () -> Unit) {
@@ -61,6 +65,12 @@ object DoraHttp {
 
     fun Fragment.net(block: suspend () -> Unit) {
         block.startCoroutine(ContextContinuation(DoraCoroutineContext(requireActivity())))
+    }
+
+    fun Dialog.net(block: suspend () -> Unit) {
+        if (ownerActivity != null) {
+            block.startCoroutine(ContextContinuation(DoraCoroutineContext(ownerActivity!!)))
+        }
     }
 
     fun <M, F : CacheHolderFactory<M>> BaseRepository<M, F>.net(block: suspend () -> Unit) {
@@ -306,6 +316,9 @@ object DoraHttp {
            successBlock, failureBlock, loadingBlock)
     }
 
+    /**
+     * Flow与生命周期绑定。
+     */
     inline fun <T> Flow<T>.observeWithLifecycle(
         activity: AppCompatActivity,
         activeState: Lifecycle.State = Lifecycle.State.STARTED,
@@ -317,6 +330,9 @@ object DoraHttp {
         return job
     }
 
+    /**
+     * Flow与生命周期绑定。
+     */
     inline fun <T> Flow<T>.observeWithLifecycle(
         fragment: Fragment,
         activeState: Lifecycle.State = Lifecycle.State.STARTED,
@@ -330,6 +346,9 @@ object DoraHttp {
         return job
     }
 
+    /**
+     * 便捷创建创建MultipartBody.Part对象。
+     */
     fun createFilePart(file: File, partName: String = "file", mimeType: String = "*/*") : MultipartBody.Part {
         val requestFile: RequestBody = file
             .asRequestBody(

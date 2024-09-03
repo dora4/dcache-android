@@ -548,7 +548,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
        override fun onLoadFromNetwork(
            callback: DoraPageListCallback<BannerInfo>,
          	// 成功不用回调成功，框架会自动帮你回调。但错误要回调错误，让界面层显示错误，比如在解析到某个字段时，读取到特定
-            // 的标识认定为失败，不过这种情况不常用。
+   // 的标识认定为失败，不过这种情况不常用。
            listener: OnLoadStateListener?
        ) {
            if (isAdmin) {

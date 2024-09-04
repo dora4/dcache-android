@@ -559,7 +559,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
                )
            } else {
                getService(HomeService::class.java).getBanners(PRODUCT_NAME).enqueue(
-                   ListResultAdapter<BannerInfo, ApiResult<BannerInfo>>(callback)
+                   PageListResultAdapter<BannerInfo, ApiResult<BannerInfo>>(callback)
                            as Callback<ApiResult<MutableList<BannerInfo>>>
                )
            }

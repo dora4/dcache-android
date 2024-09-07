@@ -207,13 +207,13 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
 #### Two.Reading and Parsing Network Data
 
-**Configuration and Usage**
+   1. **Configuration and Usage**
 
-1. - **Categorizing Interfaces by Module**
+       - **Categorizing Interfaces by Module**
 
      Use Retrofit to dynamically proxy interfaces. Based on Retrofit's usage, all Restful API wrapper classes must implement the `ApiService` interface so that they can be managed by the `RetrofitManager` class.
 
-   - **Basic Configuration**
+      - **Basic Configuration**
 
      - **URL and OkHttpClient Configuration**
 
@@ -245,13 +245,13 @@ implementation "com.github.dora4:dcache-android:$stable_version"
                      .mappingBaseUrl(TestTwoService.class, "http://api.example2.com");
          ```
 
-2. **Interceptor Configuration**
+- **Interceptor Configuration**
 
    - FormatLogInterceptor
 
    The dora.http.log.FormatLogInterceptor is an interceptor for formatted log output. You can add it to format the data returned by the server into a log format and output it to the logcat.
 
-3. **RetrofitManager**
+- **RetrofitManager**
 
    Use RetrofitManager to manage all ApiService instances. An interface must inherit from the ApiService interface to be managed by RetrofitManager.
 
@@ -262,7 +262,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
    | removeService  | Removes the API service object.                              |
    | mappingBaseUrl | Binds a Base URL to the API service.                         |
 
-4. **Getting Started**
+- **Getting Started**
 
    ```kotlin
    // Method 1: Asynchronous (parallel) request, call directly
@@ -288,7 +288,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
    }
    ```
 
-5. **Other Notes**
+2. **Other Notes**
 
    - DoraCallback and DoraListCallback: These callback interfaces extend from retrofit2.Callback, with DoraListCallback designed specifically for List type data.
 

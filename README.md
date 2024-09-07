@@ -422,7 +422,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
   }
   ```
 
-  ```
+  ```kotlin
   class DoraListCacheHolder<M, T : OrmTable>(var clazz: Class<out OrmTable>) : ListCacheHolder<M>() {
   		
     	private lateinit var dao: OrmDao<T>

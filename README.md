@@ -494,12 +494,12 @@ implementation "com.github.dora4:dcache-android:$stable_version"
       }
   
       override fun query(): Condition {
-          return if (isAdmin) {
-  	      super.query()
-          } else {
-	      // Return all data without paging
-  	      QueryBuilder.create().toCondition()
-  	  }
+  		return if (isAdmin) {
+  			super.query()
+          	} else {
+  			// Return all data without paging
+  			QueryBuilder.create().toCondition()
+  		}
       }
   
       override fun onLoadFromNetwork(
@@ -529,6 +529,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
   ```kotlin
   // UI Layer
   binding.slBannerInfoList.setOnSwipeListener(object : SwipeLayout.OnSwipeListener {
+
       override fun onRefresh(swipeLayout: SwipeLayout) {
       }
   

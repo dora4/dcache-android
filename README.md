@@ -413,11 +413,11 @@ implementation "com.github.dora4:dcache-android:$stable_version"
   abstract class DoraDatabaseCacheRepository<T: OrmTable>(context: Context)
       : BaseDatabaseCacheRepository<T>(context) {
   		override fun createCacheHolder(clazz: Class<T>): CacheHolder<T> {
-      		return DoraCacheHolder<T, T>(clazz)
+          return DoraCacheHolder<T, T>(clazz)
   		}
   
   		override fun createListCacheHolder(clazz: Class<T>): CacheHolder<List<T>> {
-      		return DoraListCacheHolder<T, T>(clazz)
+          return DoraListCacheHolder<T, T>(clazz)
   		}
   }
   ```
@@ -428,19 +428,19 @@ implementation "com.github.dora4:dcache-android:$stable_version"
     	private lateinit var dao: OrmDao<T>
   
   		override fun init() {
-      		dao = DaoFactory.getDao(clazz) as OrmDao<T>
+          dao = DaoFactory.getDao(clazz) as OrmDao<T>
   		}
   
   		override fun queryCache(condition: Condition): List<M> {
-      		return dao.query(condition) as List<M>
+          return dao.query(condition) as List<M>
   		}
   
   		override fun insertCache(models: List<M>) {
-      		dao.insert(models as List<T>)
+          dao.insert(models as List<T>)
   		}
   
   		override fun deleteCache(condition: Condition) {
-      		dao.deleteByCondition(condition)
+          dao.deleteByCondition(condition)
   		}
   }
   ```
@@ -457,74 +457,74 @@ implementation "com.github.dora4:dcache-android:$stable_version"
   For example, when displaying banner images, the backend returns all the data to the client at once since there are only a few records. However, when logged in as a system administrator, a different interface should show all data, including those with switches turned off that are not visible to the client. In this case, all data should be cached so that it can be accessed offline under both roles. This means the data can be retrieved either all at once or in a paged manner.
 
   ```kotlin
-  package com.dorachat.dorachat.repository
+package com.dorachat.dorachat.repository
   
-  import android.content.Context
-  import android.os.Build
-  import androidx.annotation.RequiresApi
-  import com.dorachat.dorachat.common.AppConfig.Companion.PRODUCT_NAME
-  import com.dorachat.dorachat.http.ApiResult
-  import com.dorachat.dorachat.http.PageDTO
-  import com.dorachat.dorachat.http.service.HomeService
-  import com.dorachat.dorachat.model.BannerInfo
-  import com.dorachat.dorachat.model.request.home.ReqProductByPage
-  import dora.cache.DoraPageListCallback
-  import dora.cache.data.adapter.ListResultAdapter
-  import dora.cache.data.adapter.PageListResultAdapter
-  import dora.cache.data.fetcher.OnLoadStateListener
-  import dora.cache.factory.DatabaseCacheHolderFactory
-  import dora.cache.repository.DoraPageDatabaseCacheRepository
-  import dora.cache.repository.ListRepository
-  import dora.db.builder.Condition
-  import dora.db.builder.QueryBuilder
-  import dora.http.retrofit.RetrofitManager.getService
-  import retrofit2.Callback
-  import javax.inject.Inject
+import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
+import com.dorachat.dorachat.common.AppConfig.Companion.PRODUCT_NAME
+import com.dorachat.dorachat.http.ApiResult
+import com.dorachat.dorachat.http.PageDTO
+import com.dorachat.dorachat.http.service.HomeService
+import com.dorachat.dorachat.model.BannerInfo
+import com.dorachat.dorachat.model.request.home.ReqProductByPage
+import dora.cache.DoraPageListCallback
+import dora.cache.data.adapter.ListResultAdapter
+import dora.cache.data.adapter.PageListResultAdapter
+import dora.cache.data.fetcher.OnLoadStateListener
+import dora.cache.factory.DatabaseCacheHolderFactory
+import dora.cache.repository.DoraPageDatabaseCacheRepository
+import dora.cache.repository.ListRepository
+import dora.db.builder.Condition
+import dora.db.builder.QueryBuilder
+import dora.http.retrofit.RetrofitManager.getService
+import retrofit2.Callback
+import javax.inject.Inject
   
-  @ListRepository
-  class BannerRepository @Inject constructor(context: Context) :
-      DoraPageDatabaseCacheRepository<BannerInfo>(context) {
+@ListRepository
+class BannerRepository @Inject constructor(context: Context) :
+    DoraPageDatabaseCacheRepository<BannerInfo>(context) {
   
-      private var isAdmin: Boolean = false
+    private var isAdmin: Boolean = false
   
-  		fun setAdmin(isAdmin: Boolean): BannerRepository {
-      		this.isAdmin = isAdmin
-      		return this
-  		}
+  	 fun setAdmin(isAdmin: Boolean): BannerRepository {
+    	  this.isAdmin = isAdmin
+        return this
+    }
   
-  		override fun query(): Condition {
-      		return if (isAdmin) {
-          		super.query()
-      		} else {
-          		// Return all data without paging
-          		QueryBuilder.create().toCondition()
-      		}
-  		}
+  	 override fun query(): Condition {
+        return if (isAdmin) {
+          	super.query()
+        } else {
+          	// Return all data without paging
+          	QueryBuilder.create().toCondition()
+        }
+  	 }
   
-  		override fun onLoadFromNetwork(
-      		callback: DoraPageListCallback<BannerInfo>,
-      		// No need to manually handle success; the framework will automatically handle it. 
-      		// However, errors must be handled to display them in the UI, such as a failure during parsing.
-      		listener: OnLoadStateListener?
-  		) {
-      		if (isAdmin) {
-          		val req = ReqProductByPage(PRODUCT_NAME, getPageSize(), getPageNo())
-          		getService(HomeService::class.java).getBanners(req.toRequestBody()).enqueue(
-              		PageListResultAdapter<BannerInfo, ApiResult<BannerInfo>>(callback)
-                      		as Callback<ApiResult<PageDTO<BannerInfo>>>
-          		)
-      		} else {
-          		getService(HomeService::class.java).getBanners(PRODUCT_NAME).enqueue(
-              		PageListResultAdapter<BannerInfo, ApiResult<BannerInfo>>(callback)
-                  		    as Callback<ApiResult<MutableList<BannerInfo>>>
-          		)
-      		}
-  		}
+  	 override fun onLoadFromNetwork(
+        callback: DoraPageListCallback<BannerInfo>,
+        // No need to manually handle success; the framework will automatically handle it. 
+        // However, errors must be handled to display them in the UI, such as a failure during parsing.
+        listener: OnLoadStateListener?
+  	 ) {
+        if (isAdmin) {
+          	val req = ReqProductByPage(PRODUCT_NAME, getPageSize(), getPageNo())
+          	getService(HomeService::class.java).getBanners(req.toRequestBody()).enqueue(
+              	PageListResultAdapter<BannerInfo, ApiResult<BannerInfo>>(callback)
+                      	as Callback<ApiResult<PageDTO<BannerInfo>>>
+          	)
+        } else {
+          	getService(HomeService::class.java).getBanners(PRODUCT_NAME).enqueue(
+              	PageListResultAdapter<BannerInfo, ApiResult<BannerInfo>>(callback)
+                  		   as Callback<ApiResult<MutableList<BannerInfo>>>
+          	)
+        }
+  	 }
   
-  		override fun createCacheHolderFactory(): DatabaseCacheHolderFactory<BannerInfo> {
-      		return DatabaseCacheHolderFactory(BannerInfo::class.java)
-  		}
-  }
+  	 override fun createCacheHolderFactory(): DatabaseCacheHolderFactory<BannerInfo> {
+        return DatabaseCacheHolderFactory(BannerInfo::class.java)
+	 }
+}
   ```
 
   Let's see how this repository is used in practice.
@@ -536,9 +536,9 @@ implementation "com.github.dora4:dcache-android:$stable_version"
   		}
   
   		override fun onLoadMore(swipeLayout: SwipeLayout) {
-      		bannerRepository.onLoadMore {
-          		swipeLayout.loadMoreFinish(if (it) SwipeLayout.SUCCEED else SwipeLayout.FAIL)
-      		}
+          bannerRepository.onLoadMore {
+              swipeLayout.loadMoreFinish(if (it) SwipeLayout.SUCCEED else SwipeLayout.FAIL)
+          }
   		}
   })
   // Data Layer
@@ -553,7 +553,6 @@ implementation "com.github.dora4:dcache-android:$stable_version"
           adapter.setList(data)
           binding.emptyLayout.showContent()
       }
-  
   })
   // Use the default page size of 10 items and load the first page
   bannerRepository.setAdmin(true).onRefresh()

@@ -209,84 +209,84 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
    1. **Configuration and Usage**
 
-       - **Categorizing Interfaces by Module**
+      - **Categorizing Interfaces by Module**
 
-     Use Retrofit to dynamically proxy interfaces. Based on Retrofit's usage, all Restful API wrapper classes must implement the `ApiService` interface so that they can be managed by the `RetrofitManager` class.
+         Use Retrofit to dynamically proxy interfaces. Based on Retrofit's usage, all Restful API wrapper classes must implement the `ApiService` interface so that they can be managed by the `RetrofitManager` class.
 
       - **Basic Configuration**
 
-     - **URL and OkHttpClient Configuration**
+        - **URL and OkHttpClient Configuration**
 
-       - **Kotlin Configuration**
+          - **Kotlin Configuration**
 
-         You can initialize the configuration by calling the `init` method of `RetrofitManager`.
+            You can initialize the configuration by calling the `init` method of `RetrofitManager`.
 
-         ```kotlin
-         // Kotlin configuration example
-         RetrofitManager.init {
-             okhttp {
-                 // Since the return value of the add() method is boolean, this still needs to return `this`
-                 networkInterceptors().add(FormatLogInterceptor())
-                 this
-             }
-             // Multiple Base URLs can be mapped
-             mappingBaseUrl(TestOneService::class.java, "http://api.example1.com")
-             mappingBaseUrl(TestTwoService::class.java, "http://api.example2.com")
-         }
-         ```
+            ```kotlin
+            // Kotlin configuration example
+            RetrofitManager.init {
+                okhttp {
+                    // Since the return value of the add() method is boolean, this still needs to return `this`
+                    networkInterceptors().add(FormatLogInterceptor())
+                    this
+                }
+                // Multiple Base URLs can be mapped
+                mappingBaseUrl(TestOneService::class.java, "http://api.example1.com")
+                mappingBaseUrl(TestTwoService::class.java, "http://api.example2.com")
+            }
+            ```
 
-       - **Java Configuration**
+          - **Java Configuration**
 
-         ```java
-         // Java configuration example
-         RetrofitManager.getConfig()
-                     .setClient(okhttpClient)
-                     .mappingBaseUrl(TestOneService.class, "http://api.example1.com")
-                     .mappingBaseUrl(TestTwoService.class, "http://api.example2.com");
-         ```
+            ```java
+            // Java configuration example
+            RetrofitManager.getConfig()
+                        .setClient(okhttpClient)
+                        .mappingBaseUrl(TestOneService.class, "http://api.example1.com")
+                        .mappingBaseUrl(TestTwoService.class, "http://api.example2.com");   
+            ```
 
-- **Interceptor Configuration**
+      - **Interceptor Configuration**
 
-   - FormatLogInterceptor
+        - **FormatLogInterceptor**
 
-   The dora.http.log.FormatLogInterceptor is an interceptor for formatted log output. You can add it to format the data returned by the server into a log format and output it to the logcat.
+          The dora.http.log.FormatLogInterceptor is an interceptor for formatted log output. You can add it to format the data returned by the server into a log format and output it to the logcat.
 
-- **RetrofitManager**
+        - **RetrofitManager**
 
-   Use RetrofitManager to manage all ApiService instances. An interface must inherit from the ApiService interface to be managed by RetrofitManager.
+          Use RetrofitManager to manage all ApiService instances. An interface must inherit from the ApiService interface to be managed by RetrofitManager.
 
-   | API            | Description                                                  |
-   | -------------- | ------------------------------------------------------------ |
-   | checkService   | Checks if an API service is available. If not, it indicates that `mappingBaseUrl()` was not called during the initialization to set the Base URL. |
-   | getService     | Retrieves the API service object.                            |
-   | removeService  | Removes the API service object.                              |
-   | mappingBaseUrl | Binds a Base URL to the API service.                         |
+          | API            | Description                                                  |
+          | -------------- | ------------------------------------------------------------ |
+          | checkService   | Checks if an API service is available. If not, it indicates that `mappingBaseUrl()` was not called during the initialization to set the Base URL. |
+          | getService     | Retrieves the API service object.                            |
+          | removeService  | Removes the API service object.                              |
+          | mappingBaseUrl | Binds a Base URL to the API service.                         |
 
-- **Getting Started**
+      - **Getting Started**
 
-   ```kotlin
-   // Method 1: Asynchronous (parallel) request, call directly
-   RetrofitManager.getService(UserService::class.java).getUser().enqueue(object : DoraCallback<User>() {
-       override fun onFailure(code: Int, msg: String?) {
-       }
-   
-       override fun onSuccess(data: User) {
-       }
-   
-   })
-   
-   // Method 2 (recommended): Synchronous (serial) request, use high-order functions such as api, result, and request within the net scope 
-   // to wrap the Restful API requests for easy data merging
-   net {
-       val user1 = api {
-           RetrofitManager.getService(UserService::class.java).getUser()
-       }
-       val user2 = result {
-           RetrofitManager.getService(UserService::class.java).getUser()
-       }
-       // Merge data from multiple interfaces here...
-   }
-   ```
+        ```kotlin
+        // Method 1: Asynchronous (parallel) request, call directly
+        RetrofitManager.getService(UserService::class.java).getUser().enqueue(object : DoraCallback<User>() {
+            override fun onFailure(code: Int, msg: String?) {
+            }
+        
+            override fun onSuccess(data: User) {
+            }
+        
+        })
+        
+        // Method 2 (recommended): Synchronous (serial) request, use high-order functions such as api, result, and request within the net scope 
+        // to wrap the Restful API requests for easy data merging
+        net {
+            val user1 = api {
+                RetrofitManager.getService(UserService::class.java).getUser()
+            }
+            val user2 = result {
+                RetrofitManager.getService(UserService::class.java).getUser()
+            }
+            // Merge data from multiple interfaces here...
+        }
+        ```
 
 2. **Other Notes**
 
@@ -308,40 +308,38 @@ implementation "com.github.dora4:dcache-android:$stable_version"
      }
      ```
 
-​			 result: If a request made by RetrofitManager fails, it directly returns null without throwing an exception.
+      result: If a request made by RetrofitManager fails, it directly returns null without throwing an exception.
 
-```kotlin
- val user = result { RetrofitManager.getService(UserService::class.java).getUser() }
-```
+     ```kotlin
+     val user = result { RetrofitManager.getService(UserService::class.java).getUser() }
+     ```
 
-​			Let's look at the overall code.
+     Let's look at the overall code.
 
-```kotlin
-net {
-    val user1 = try { 
-        api { RetrofitManager.getService(UserService::class.java).getUser() }
-    } catch (e: DoraHttpException) {
-        Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show()
-    }
-    val user2 = result { RetrofitManager.getService(UserService::class.java).getUser() }
-    val user3 = request {
-        // Pseudo-code, your own network request, omitted lines...
-        var success = true
-        if (success) {
-            // Remember to release the lock in the success callback
-            it.releaseLock(user)
-        } else {
-            // Remember to release the lock in the failure callback as well
-            it.releaseLock(null)
-        }      
-        Log.e("This line of code will not be executed, after releasing the lock, the code execution of the request function ends, regardless of whether there is more code afterward")
-    }
-    // Print these data
-    Toast.makeText(this, "$user1--$user2--$user3", Toast.LENGTH_SHORT).show()
-}
-```
-
-
+     ```kotlin
+     net {
+         val user1 = try { 
+             api { RetrofitManager.getService(UserService::class.java).getUser() }
+         } catch (e: DoraHttpException) {
+             Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show()
+         }
+         val user2 = result { RetrofitManager.getService(UserService::class.java).getUser() }
+         val user3 = request {
+             // Pseudo-code, your own network request, omitted lines...
+             var success = true
+             if (success) {
+                 // Remember to release the lock in the success callback
+                 it.releaseLock(user)
+             } else {
+                 // Remember to release the lock in the failure callback as well
+                 it.releaseLock(null)
+             }      
+             Log.e("This line of code will not be executed, after releasing the lock, the code execution of the request function ends, regardless of whether there is more code afterward")
+         }
+         // Print these data
+         Toast.makeText(this, "$user1--$user2--$user3", Toast.LENGTH_SHORT).show()
+     }
+     ```
 
 **Three.Using Repositories**
 

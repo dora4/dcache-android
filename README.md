@@ -489,32 +489,34 @@ implementation "com.github.dora4:dcache-android:$stable_version"
       private var isAdmin: Boolean = false
   
       fun setAdmin(isAdmin: Boolean): BannerRepository {
-  	  this.isAdmin = isAdmin
-  	  return this
+          this.isAdmin = isAdmin
+          return this
       }
   
       override fun query(): Condition {
-  		return if (isAdmin) {
-  			super.query()
-          	} else {
-  			// Return all data without paging
-  			QueryBuilder.create().toCondition()
-  		}
+          return if (isAdmin) {
+              super.query()
+          } else {
+              // Return all data without paging
+              QueryBuilder.create().toCondition()
+          }
       }
   
       override fun onLoadFromNetwork(
-  	  callback: DoraPageListCallback<BannerInfo>,
-  	  // No need to manually handle success; the framework will automatically handle it.
-  	  // However, errors must be handled to display them in the UI, such as a failure during parsing.
-  	  listener: OnLoadStateListener?
+          callback: DoraPageListCallback<BannerInfo>,
+          // No need to manually handle success; the framework will automatically handle it.
+          // However, errors must be handled to display them in the UI, such as a failure during parsing.
+          listener: OnLoadStateListener?
       ) {
           if (isAdmin) {
-  	      val req = ReqProductByPage(PRODUCT_NAME, getPageSize(), getPageNo())
-  	      getService(HomeService::class.java).getBanners(req.toRequestBody()).enqueue(
-  	      PageListResultAdapter<BannerInfo, ApiResult<BannerInfo>>(callback) as Callback<ApiResult<PageDTO<BannerInfo>>>)
+              val req = ReqProductByPage(PRODUCT_NAME, getPageSize(), getPageNo())
+              getService(HomeService::class.java).getBanners(req.toRequestBody()).enqueue(
+                  PageListResultAdapter<BannerInfo, ApiResult<BannerInfo>>(callback)
+                  as Callback<ApiResult<PageDTO<BannerInfo>>>)
           } else {
-  	      getService(HomeService::class.java).getBanners(PRODUCT_NAME).enqueue(
-  	      PageListResultAdapter<BannerInfo, ApiResult<BannerInfo>>(callback)as Callback<ApiResult<MutableList<BannerInfo>>>)
+              getService(HomeService::class.java).getBanners(PRODUCT_NAME).enqueue(
+                  PageListResultAdapter<BannerInfo, ApiResult<BannerInfo>>(callback)
+                  as Callback<ApiResult<MutableList<BannerInfo>>>)
           }
       }
   

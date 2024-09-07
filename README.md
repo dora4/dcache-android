@@ -102,7 +102,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
      DaoFactory.getDao(User::class.java).selectAll()
      ```
 
-     - ###### Condition (Understanding)
+     - **Condition (Understanding)**
 
        A general term for common query conditions, which may be used when integrating external ORM frameworks.
 
@@ -343,19 +343,19 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
 **Three.Using Repositories**
 
-- Design Philosophy of Data Caching
+- **Design Philosophy of Data Caching**
 
   Data caching typically includes two types: database caching and in-memory caching. In-memory caching prioritizes data stored in memory, whereas database caching prioritizes data stored in the database. The overall logic for in-memory caching is to load data from the database into memory during a cold startup (when there are no background processes), then share the data globally. When new data is returned by a network request, both the cached data in memory and the database are updated. The data in memory takes precedence, and the data saved in the database is used only for preloading on the next app cold start. For database caching, the logic is to request data and display it on the interface when there is a network connection, and cache it in the database. When there is no network connection, offline data is fetched from the database. The repository implementation in the framework follows the former approach.
 
-- Data Mode
+- **Data Mode**
 
   There are two data modes: collection mode and non-collection mode. The default is collection data mode. A repository is either in collection data mode or non-collection mode. Once specified, it will not change. Regardless of whether a collection or non-collection mode is used, multiple repositories can be created for the same type of data. A repository is only bound to a specific Restful API interface, not to a data type.
 
-- @Repository, @ListRepository, and BaseRepository
+- **@Repository, @ListRepository, and BaseRepository**
 
   In earlier versions, the data mode was specified by the value of isListMode in the @Repository annotation. In the latest version, the data mode is distinguished by the @Repository and @ListRepository annotations themselves. BaseRepository serves as the base class for all data caching logic, and data caching process control is implemented in its subclasses. Before use, you need to override the onLoadFromNetwork() method to fetch network data in the repository so that data can be fetched via fetchData or fetchListData. Note: Only the corresponding onLoadFromNetwork() method needs to be overridden.
 
-- Usage Example
+- **Usage Example**
 
   ```kotlin
   // Refresh data in a single place
@@ -377,7 +377,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
   If using the regular mode (non-collection mode), fetchData should be called.
 
-- Handling In-Memory Cached Data
+- **Handling In-Memory Cached Data**
 
   - Data Fetching (For Understanding)
 
@@ -404,7 +404,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
       pager.accept(DefaultPageDataVisitor<User>())
       ```
 
-- Integration with Other Mainstream ORM Frameworks
+- **Integration with Other Mainstream ORM Frameworks**
 
   Generally, replacing the ORM framework in an established project is risky and costly in terms of development. Therefore, an interface CacheHolder and ListCacheHolder is provided for seamless integration with mainstream ORM frameworks. ListCacheHolder is used for the repository in collection data mode. The default ORM framework used by the repository is the built-in dora-db (under the dora.db package). If you use it, there is no need to consider ORM framework integration. If you use other ORM frameworks like Room, GreenDAO, or OrmLite, you will need to replace CacheHolder yourself. The following is the related source code for integration, which you can refer to.
 
@@ -452,7 +452,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
   implementation 'com.github.dora4:dcache-greendao-support:1.1'
   ```
 
-- Paged Caching
+- **Paged Caching**
 
   For example, when displaying banner images, the backend returns all the data to the client at once since there are only a few records. However, when logged in as a system administrator, a different interface should show all data, including those with switches turned off that are not visible to the client. In this case, all data should be cached so that it can be accessed offline under both roles. This means the data can be retrieved either all at once or in a paged manner.
 
@@ -566,7 +566,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 ### Appendix: StateFlow Learning Resources
 
 Version 2.2.0 adds support for StateFlow, allowing you to freely choose between LiveData and StateFlow as data carriers.
-Video tutorial: StateFlow Tutorial
+Video tutorial: [StateFlow Tutorial](https://www.youtube.com/watch?v=SP_btJHXqN8)
 
 ### Best Practices
 

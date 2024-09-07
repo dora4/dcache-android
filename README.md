@@ -251,7 +251,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
           The dora.http.log.FormatLogInterceptor is an interceptor for formatted log output. You can add it to format the data returned by the server into a log format and output it to the logcat.
 
-        - **RetrofitManager**
+      - **RetrofitManager**
 
           Use RetrofitManager to manage all ApiService instances. An interface must inherit from the ApiService interface to be managed by RetrofitManager.
 

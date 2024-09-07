@@ -267,12 +267,12 @@ implementation "com.github.dora4:dcache-android:$stable_version"
         ```kotlin
         // Method 1: Asynchronous (parallel) request, call directly
         RetrofitManager.getService(UserService::class.java).getUser().enqueue(object : DoraCallback<User>() {
+        
             override fun onFailure(code: Int, msg: String?) {
             }
         
             override fun onSuccess(data: User) {
             }
-        
         })
         
         // Method 2 (recommended): Synchronous (serial) request, use high-order functions such as api, result, and request within the net scope 

@@ -23,40 +23,51 @@ import kotlinx.coroutines.flow.StateFlow
 import java.lang.reflect.ParameterizedType
 
 /**
- * 数据仓库，缓存和加载流程处理基类。一个[BaseFlowRepository]要么用于非集合数据，要么用于集合数据。如果要用于
- * 非集合数据，请在实现类配置[Repository]注解，如果为集合数据，请在实现类配置[ListRepository]注解。必须配置其中
+ * Data repository, cache and loading process processing base class. A [BaseFlowRepository] is used
+ * either for non-collection data or for collection data. If you want to use it for non-collection
+ * data, please configure the [Repository] annotation in the implementation class. If it is for
+ * collection data, please configure the [ListRepository] annotation in the implementation class.
+ * You must configure one of the annotations.
+ * 简体中文：数据仓库，缓存和加载流程处理基类。一个[BaseFlowRepository]要么用于非集合数据，要么用于集合数据。如果要
+ * 用于非集合数据，请在实现类配置[Repository]注解，如果为集合数据，请在实现类配置[ListRepository]注解。必须配置其中
  * 一个注解。
  */
-abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Context) : ViewModel(), IFlowDataFetcher<M>,
-    IListFlowDataFetcher<M> {
+abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Context) : ViewModel(),
+    IFlowDataFetcher<M>, IListFlowDataFetcher<M> {
 
     /**
-     * 非集合数据获取接口。
+     * Non-collection data retrieval interface.
+     * 简体中文：非集合数据获取接口。
      */
     protected lateinit var dataFetcher: IFlowDataFetcher<M>
 
     /**
-     * 集合数据获取接口。
+     * Collection data retrieval interface.
+     * 简体中文：集合数据获取接口。
      */
     protected lateinit var listDataFetcher: IListFlowDataFetcher<M>
 
     /**
-     * 抽象工厂。
+     * Abstract factory.
+     * 简体中文：抽象工厂。
      */
     protected lateinit var cacheHolderFactory: F
 
     /**
-     * 非集合数据缓存接口。
+     * Non-collection data cache interface.
+     * 简体中文：非集合数据缓存接口。
      */
     protected lateinit var cacheHolder: CacheHolder<M>
 
     /**
-     * 集合数据缓存接口。
+     * Collection data cache interface.
+     * 简体中文：集合数据缓存接口。
      */
     protected lateinit var listCacheHolder: CacheHolder<MutableList<M>>
 
     /**
-     * true代表用于集合数据，false用于非集合数据。
+     * True represents collection data, while false represents non-collection data.
+     * 简体中文：true代表用于集合数据，false用于非集合数据。
      */
     protected var isListMode = true
         protected set
@@ -68,7 +79,8 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
     protected var listener: OnLoadStateListener? = OnLoadStateListenerImpl()
 
     /**
-     * 是否在网络加载数据失败的时候清空数据。
+     * Should the data be cleared when the network fails to load?
+     * 简体中文：是否在网络加载数据失败的时候清空数据。
      *
      * @return
      */
@@ -125,57 +137,79 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
     }
 
     /**
-     * 非集合数据的API接口调用，Retrofit接口的方法返回retrofit.Call类型使用。
+     * API interface calls for non-collection data use Retrofit interface methods that return the
+     * retrofit.Call type.
+     * 简体中文：非集合数据的API接口调用，Retrofit接口的方法返回retrofit.Call类型使用。
      *
-     * @param callback 数据回调
-     * @param listener 如果你自行处理掉网络请求的异常，不要忘了回调失败的状态，以便于在fetchData的时候能收到状态的回调
+     * @param callback Data callback. 简体中文：数据回调
+     * @param listener If you handle network request exceptions on your own, don’t forget to
+     * callback the failure status so that you can receive the status callback when fetching data.
+     * 简体中文：如果你自行处理掉网络请求的异常，不要忘了回调失败的状态，以便于在fetchData的时候能收到状态的回调
      */
     protected abstract fun onLoadFromNetwork(callback: DoraCallback<M>, listener: OnLoadStateListener? = null)
 
     /**
-     * 集合数据的API接口调用，Retrofit接口的方法返回retrofit.Call类型使用。
+     * API interface calls for collection data use Retrofit interface methods that return the
+     * retrofit.Call type.
+     * 简体中文：集合数据的API接口调用，Retrofit接口的方法返回retrofit.Call类型使用。
      *
-     * @param callback 数据回调
-     * @param listener 如果你自行处理掉网络请求的异常，不要忘了回调失败的状态，以便于在fetchListData的时候能收到状态的回调
+     * @param callback Data callback. 简体中文：数据回调
+     * @param listener If you handle network request exceptions on your own, don’t forget to
+     * callback the failure status so that you can receive the status callback when fetching list
+     * data.简体中文：如果你自行处理掉网络请求的异常，不要忘了回调失败的状态，以便于在fetchListData的时候能收到状态的回调
      */
     protected abstract fun onLoadFromNetwork(callback: DoraListCallback<M>, listener: OnLoadStateListener? = null)
 
     /**
-     * 非集合数据的API接口调用，Retrofit接口的方法返回io.reactivex.Observable类型使用。
+     * API interface calls for non-collection data use Retrofit interface methods that return the
+     * io.reactivex.Observable type.
+     * 简体中文：非集合数据的API接口调用，Retrofit接口的方法返回io.reactivex.Observable类型使用。
      *
-     * @param listener 如果你自行处理掉网络请求的异常，不要忘了回调失败的状态，以便于在fetchData的时候能收到状态的回调
+     * @param listener
+     * If you handle network request exceptions on your own, don’t forget to callback the failure
+     * status so that you can receive the status callback when fetching list data. 简体中文：如果你自
+     * 行处理掉网络请求的异常，不要忘了回调失败的状态，以便于在fetchData的时候能收到状态的回调
      */
     protected abstract fun onLoadFromNetworkObservable(listener: OnLoadStateListener? = null) : Observable<M>
 
     /**
-     * 集合数据的API接口调用，Retrofit接口的方法返回io.reactivex.Observable类型使用。
+     * API interface calls for collection data use Retrofit interface methods that return the
+     * io.reactivex.Observable type.
+     * 简体中文：集合数据的API接口调用，Retrofit接口的方法返回io.reactivex.Observable类型使用。
      *
-     * @param listener 如果你自行处理掉网络请求的异常，不要忘了回调失败的状态，以便于在fetchListData的时候能收到状态的回调
+     * @param listener If you handle network request exceptions on your own, don’t forget to
+     * callback the failure status so that you can receive the status callback when fetching list
+     * data.简体中文：如果你自行处理掉网络请求的异常，不要忘了回调失败的状态，以便于在fetchListData的时候能收到状态
+     * 的回调
      */
     protected abstract fun onLoadFromNetworkObservableList(listener: OnLoadStateListener? = null) : Observable<MutableList<M>>
 
     /**
-     * 从仓库选择数据，处理数据来源的优先级。
+     * Select data from the repository and handle the priority of data sources.
+     * 简体中文：从仓库选择数据，处理数据来源的优先级。
      *
-     * @param ds 数据的来源
-     * @return 数据是否获取成功
+     * @param ds Source of the data. 简体中文：数据的来源
+     * @return Was the data retrieved successfully? 简体中文：数据是否获取成功
      */
     protected abstract fun selectData(ds: DataSource): Boolean
 
     /**
-     * 数据的来源。
+     * Source of the data.
+     * 简体中文：数据的来源。
      */
     interface DataSource {
 
         enum class Type {
 
             /**
-             * 数据来源于网络服务器。
+             * Data comes from the network server.
+             * 简体中文：数据来源于网络服务器。
              */
             NETWORK,
 
             /**
-             * 数据来源于缓存。
+             * Data comes from the cache.
+             * 简体中文：数据来源于缓存。
              */
             CACHE
         }
@@ -183,18 +217,21 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
         enum class CacheType {
 
             /**
-             * 内置SQLite数据库。
+             * Built-in SQLite database.
+             * 简体中文：内置SQLite数据库。
              */
             DATABASE,
 
             /**
-             * MMKV缓存。
+             * MMKV cache.
+             * 简体中文：MMKV缓存。
              */
             MMKV
         }
 
         /**
-         * 从缓存中加载数据。
+         * Load data from the cache.
+         * 简体中文：从缓存中加载数据。
          *
          * @param type
          * @return
@@ -202,18 +239,21 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
         fun loadFromCache(type: CacheType): Boolean
 
         /**
-         * 从服务器/网络加载数据。
+         * Load data from the server/network.
+         * 简体中文：从服务器/网络加载数据。
          */
         fun loadFromNetwork()
     }
 
     /**
-     * 抓取非集合数据，返回给stateflow，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过[.geFlowData()]
-     * 拿到。
+     * Fetch non-collection data and return it to LiveData for display in the UI. Once fetched
+     * successfully, it will remain in LiveData and can be accessed through [.getLiveData()].
+     * 简体中文：抓取非集合数据，返回给livedata，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过
+     * [.getLiveData()]拿到。
      */
     override fun fetchData(description: String?, listener: OnLoadStateListener?): StateFlow<M?> {
         if (description != null) {
-            // 不能让null覆盖了默认类名
+            // 简体中文：不能让null覆盖了默认类名
             this.description = description
         }
         this.listener = listener
@@ -221,12 +261,14 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
     }
 
     /**
-     * 抓取集合数据，返回给stateflow，以便于展示在UI上。抓取成功后会一直在stateflow中，可以通过[.getListFlowData()]
-     * 拿到。
+     * Fetch collection data and return it to LiveData for display in the UI. Once fetched
+     * successfully, it will remain in LiveData and can be accessed through [.getListLiveData()].
+     * 简体中文：抓取集合数据，返回给livedata，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过
+     * [.getListLiveData()]拿到。
      */
     override fun fetchListData(description: String?, listener: OnLoadStateListener?): StateFlow<MutableList<M>> {
         if (description != null) {
-            // 不能让null覆盖了默认类名
+            // 简体中文：不能让null覆盖了默认类名
             this.description = description
         }
         this.listener = listener
@@ -269,7 +311,9 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
     }
 
     /**
-     * 检测网络是否可用，非是否打开网络开关，而是是否能够收发数据包。
+     * Check if the network is available, not just whether the network switch is turned on, but
+     * whether it can send and receive data packets.
+     * 简体中文：检测网络是否可用，非是否打开网络开关，而是是否能够收发数据包。
      *
      * @return
      */
@@ -328,12 +372,16 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
     }
 
     /**
-     * 拦截网络请求和缓存加载出来的数据，并做一些修改，非集合模式使用。
+     * Intercept network requests and the loaded cached data, making some modifications, using
+     * non-collection mode.
+     * 简体中文：拦截网络请求和缓存加载出来的数据，并做一些修改，非集合模式使用。
      */
     protected open fun onInterceptData(type: DataSource.Type, model: M) {}
 
     /**
-     * 拦截网络请求和缓存加载出来的数据，并做一些修改，集合模式使用。
+     * Intercept network requests and the loaded cached data, making some modifications, using
+     * collection mode.
+     * 简体中文：拦截网络请求和缓存加载出来的数据，并做一些修改，集合模式使用。
      */
     protected open fun onInterceptData(type: DataSource.Type, models: MutableList<M>) {}
 }

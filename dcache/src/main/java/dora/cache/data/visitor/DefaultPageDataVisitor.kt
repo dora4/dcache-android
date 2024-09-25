@@ -1,7 +1,8 @@
 package dora.cache.data.visitor
 
 /**
- * 默认的数据分页器。
+ * The default data pagination.
+ * 简体中文：默认的数据分页器。
  */
 class DefaultPageDataVisitor<M> : BasePageDataVisitor<M>() {
 

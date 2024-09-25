@@ -3,17 +3,20 @@ package dora.cache.factory
 import dora.cache.holder.CacheHolder
 
 /**
- * 生产[CacheHolder]产品簇的抽象工厂接口。
+ * An abstract factory interface for producing a cluster of [CacheHolder] products.
+ * 简体中文：生产[CacheHolder]产品簇的抽象工厂接口。
  */
 interface CacheHolderFactory<M> {
 
     /**
-     * 创建一个非集合模式的[CacheHolder]。
+     * Create a non-collection mode [CacheHolder].
+     * 简体中文：创建一个非集合模式的[CacheHolder]。
      */
     fun createCacheHolder() : CacheHolder<M>
 
     /**
-     * 创建一个集合模式的[CacheHolder]。
+     * Create a collection mode [CacheHolder].
+     * 简体中文：创建一个集合模式的[CacheHolder]。
      */
     fun createListCacheHolder() : CacheHolder<MutableList<M>>
 }

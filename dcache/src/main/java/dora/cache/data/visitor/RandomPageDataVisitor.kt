@@ -3,7 +3,8 @@ package dora.cache.data.visitor
 import kotlin.random.Random
 
 /**
- * 从样本数据中随机读取数据的数据分页器，不保证去重。
+ * A data pagination that randomly reads data from sample data, without guaranteeing deduplication.
+ * 简体中文：从样本数据中随机读取数据的数据分页器，不保证去重。
  */
 class RandomPageDataVisitor<M> : BasePageDataVisitor<M>() {
 

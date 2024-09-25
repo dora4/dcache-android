@@ -3,27 +3,32 @@ package dora.cache.holder
 import dora.db.builder.Condition
 
 /**
- * 控制缓存和加载数据的流程。
+ * Control the flow of caching and loading data.
+ * 简体中文：控制缓存和加载数据的流程。
  */
 interface DatabaseCacheHolder<M> : CacheHolder<M> {
 
     /**
-     * 从数据库中加载数据到内存。
+     * Load data from the database into memory.
+     * 简体中文：从数据库中加载数据到内存。
      */
     fun queryCache(condition: Condition) : M?
 
     /**
-     * 查询缓存记录数量。
+     * Query the number of cached records.
+     * 简体中文：查询缓存记录数量。
      */
     fun queryCacheSize(condition: Condition) : Long
 
     /**
-     * 移除旧的数据库缓存。
+     * Remove old database cache.
+     * 简体中文：移除旧的数据库缓存。
      */
     fun removeOldCache(condition: Condition)
 
     /**
-     * 将最新的数据缓存到数据库。
+     * Cache the latest data into the database.
+     * 简体中文：将最新的数据缓存到数据库。
      */
     fun addNewCache(model: M)
 }

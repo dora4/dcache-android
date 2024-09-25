@@ -3,14 +3,11 @@ pluginManagement {
         gradlePluginPortal()
         google()
         mavenCentral()
-        maven {
-            setUrl("https://maven.aliyun.com/repository/jcenter")
-        }
     }
     resolutionStrategy {
         eachPlugin {
             if (requested.id.namespace == "com.android.tools.build") {
-                useModule("com.android.tools.build:gradle:4.1.2")
+                useModule("com.android.tools.build:gradle:7.3.1")
             }
             if (requested.id.namespace == "org.jetbrains.kotlin") {
                 val kotlin_version = "1.8.10"
@@ -31,9 +28,6 @@ dependencyResolutionManagement {
         google()
         maven {
             setUrl("https://jitpack.io")
-        }
-        maven {
-            setUrl("https://maven.aliyun.com/repository/jcenter")
         }
     }
 }

@@ -4,8 +4,13 @@ import com.google.gson.Gson
 import com.tencent.mmkv.MMKV
 
 /**
- * 使用前kotlin请先调用MMKVConfig.initConfig{}或java调用MMKVConfig.getBuilder()进行初始化。简单的数据如全局的配
- * 置的缓存可以使用MMKV，而无需使用Repository，MMKV保存的数据不会涉及到数据的过滤，同一类的数据也不应该有多个。
+ * Before using Kotlin, please initialize by calling MMKVConfig.initConfig{} or use
+ * MMKVConfig.getBuilder() in Java. Simple data, such as global configuration caches, can utilize
+ * MMKV without the need for a Repository. The data stored in MMKV does not involve data filtering,
+ * and there should not be multiple entries of the same type of data.
+ * 简体中文：使用前kotlin请先调用MMKVConfig.initConfig{}或java调用MMKVConfig.getBuilder()进行初始化。简单的
+ * 数据如全局的配置的缓存可以使用MMKV，而无需使用Repository，MMKV保存的数据不会涉及到数据的过滤，同一类的数据也不应
+ * 该有多个。
  */
 object MMKVUtils {
 

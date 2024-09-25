@@ -19,9 +19,6 @@ import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 
-/**
- * 使用内置SQLite数据库进行缓存的仓库。
- */
 abstract class BaseMMKVCacheRepository<M>
 constructor(context: Context) : BaseRepository<M, MMKVCacheHolderFactory<M>>(context) {
 
@@ -152,28 +149,16 @@ constructor(context: Context) : BaseRepository<M, MMKVCacheHolderFactory<M>>(con
         return false
     }
 
-    /**
-     * 非集合数据模式需要重写它，callback和observable二选一。
-     */
     override fun onLoadFromNetwork(callback: DoraCallback<M>, listener: OnLoadStateListener?) {
     }
 
-    /**
-     * 集合数据模式需要重写它，callback和observable二选一。
-     */
     override fun onLoadFromNetwork(callback: DoraListCallback<M>, listener: OnLoadStateListener?) {
     }
 
-    /**
-     * 非集合数据模式需要重写它，callback和observable二选一。
-     */
     override fun onLoadFromNetworkObservable(listener: OnLoadStateListener?) : Observable<M> {
         return Observable.empty()
     }
 
-    /**
-     * 集合数据模式需要重写它，callback和observable二选一。
-     */
     override fun onLoadFromNetworkObservableList(listener: OnLoadStateListener?) : Observable<MutableList<M>> {
         return Observable.empty()
     }

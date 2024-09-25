@@ -18,23 +18,23 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
 
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.3")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.3")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.3")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.6")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
 
     api("com.squareup.okhttp3:okhttp:4.12.0")
     api("com.squareup.retrofit2:converter-gson:2.8.1")
     api("com.squareup.retrofit2:retrofit:2.11.0")
     api("com.squareup.retrofit2:adapter-rxjava2:2.8.1")
-    api("io.reactivex.rxjava2:rxjava:2.2.6")
+    api("io.reactivex.rxjava2:rxjava:2.2.12")
     api("io.reactivex.rxjava2:rxandroid:2.1.1")
 
     api("org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.0.0")
@@ -53,7 +53,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.github.dora4"
                 artifactId = "dcache-android"
-                version = "2.4.14"
+                version = "2.5.0"
             }
         }
     }

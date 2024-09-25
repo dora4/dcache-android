@@ -5,33 +5,40 @@ import dora.http.DoraListCallback
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- * 从[kotlinx.coroutines.flow.StateFlow]数据载体中直接读取内存数据的集合数据抓取器。
+ * A data fetcher that directly reads in-memory data from the [kotlinx.coroutines.flow.StateFlow]
+ * data carrier.
+ * 简体中文：从[kotlinx.coroutines.flow.StateFlow]数据载体中直接读取内存数据的数据抓取器。
  */
 interface IListFlowDataFetcher<M> {
 
     /**
-     * 清空flow data的数据。
+     * Clear the data in Flow data.
+     * 简体中文：清空flow data的数据。
      */
     fun clearListData()
 
     /**
-     * 抓取数据的回调。
+     * Callback for data fetching.
+     * 简体中文：抓取数据的回调。
      */
     fun listCallback(): DoraListCallback<M>
 
     /**
-     * 开始抓取数据。
+     * Start fetching data.
+     * 简体中文：开始抓取数据。
      */
     fun fetchListData(description: String? = "", listener: OnLoadStateListener? =
         OnLoadStateListenerImpl()): StateFlow<MutableList<M>>
 
     /**
-     * 获取livedata。
+     * Get Flow data.
+     * 简体中文：获取flow data。
      */
     fun getListFlowData() : StateFlow<MutableList<M>>
 
     /**
-     * 获取flow data的分页器。
+     * Get the pagination for Flow data.
+     * 简体中文：获取flow data的分页器。
      */
     fun obtainPager(): IDataPager<M>
 }

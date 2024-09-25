@@ -25,17 +25,22 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     : DoraDatabaseCacheRepository<T>(context) {
 
     /**
-     * 第几页。
+     * The current page number.
+     * 简体中文：第几页。
      */
     private var pageNo: Int = 0
 
     /**
-     * 每页的大小，使用过程中保持一致，除初始化外不建议修改，如果修改，则也需要在[parseModels]中添加过滤条件。
+     * The size of each page should remain consistent during use. Modifying it is not recommended
+     * except during initialization; if modified, filtering conditions should also be added in
+     * [parseModels].
+     * 简体中文：每页的大小，使用过程中保持一致，除初始化外不建议修改，如果修改，则也需要在[parseModels]中添加过滤条件。
      */
     private var pageSize: Int = 10
 
     /**
-     * 数据总条数。
+     * Total number of data entries.
+     * 简体中文：数据总条数。
      */
     private var totalSize: Int = 0
 
@@ -80,7 +85,8 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     }
 
     /**
-     * 能否加载下一页。
+     * Can the next page be loaded?
+     * 简体中文：能否加载下一页。
      */
     private fun canLoadMore() : Boolean {
         return !isLastPage()
@@ -113,7 +119,8 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     }
 
     /**
-     * 下拉刷新回调，可结合[setPageSize]使用。
+     * Pull-to-refresh callback, which can be used in conjunction with [setPageSize].
+     * 简体中文：下拉刷新回调，可结合[setPageSize]使用。
      */
     fun onRefresh(listener: OnLoadStateListener) {
         pageNo = 0
@@ -121,7 +128,8 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     }
 
     /**
-     * 下拉刷新高阶函数，可结合[setPageSize]使用。
+     * Pull-to-refresh higher-order function, which can be used in conjunction with [setPageSize].
+     * 简体中文：下拉刷新高阶函数，可结合[setPageSize]使用。
      */
     @JvmOverloads
     fun onRefresh(block: ((Boolean) -> Unit)? = null) {
@@ -134,7 +142,8 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     }
 
     /**
-     * 上拉加载回调，可结合[setPageSize]使用。
+     * Pull-to-load callback, which can be used in conjunction with [setPageSize].
+     * 简体中文：上拉加载回调，可结合[setPageSize]使用。
      */
     fun onLoadMore(listener: OnLoadStateListener) {
         if (canLoadMore()) {
@@ -146,7 +155,8 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     }
 
     /**
-     * 上拉加载高阶函数，可结合[setPageSize]使用。
+     * Pull-to-load higher-order function, which can be used in conjunction with [setPageSize].
+     * 简体中文：上拉加载高阶函数，可结合[setPageSize]使用。
      */
     @JvmOverloads
     fun onLoadMore(block: ((Boolean) -> Unit)? = null) {
@@ -174,7 +184,9 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     }
 
     /**
-     * 使用分页缓存的[OrmTable]实现类，必须指定[pageNo]对应的属性。
+     * Using the [OrmTable] implementation class with pagination cache, the property corresponding
+     * to [pageNo] must be specified.
+     * 简体中文：使用分页缓存的[OrmTable]实现类，必须指定[pageNo]对应的属性。
      */
     open fun getPaginationKey() : String {
         return OrmTable.PAGINATION_KEY
@@ -188,7 +200,8 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     }
 
     /**
-     * 没网的情况下直接加载缓存数据。
+     * Load cached data directly in the absence of an internet connection.
+     * 简体中文：没网的情况下直接加载缓存数据。
      */
     override fun selectData(ds: DataSource): Boolean {
         var isLoaded = false
@@ -242,7 +255,8 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
             onInterceptData(DataSource.Type.NETWORK, it)
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")
-            // 追加分页的条件
+            // Append pagination conditions.
+            // 简体中文：追加分页的条件
             val whereBuilder = WhereBuilder.create(query()).andWhereEqualTo(getPaginationKey(), pageNo)
             val condition = QueryBuilder.create(query()).where(whereBuilder).toCondition()
             (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(condition)

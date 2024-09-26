@@ -1,7 +1,8 @@
 package dora.db.constraint
 
 /**
- * 检查约束。
+ * Check constraint.
+ * 简体中文：检查约束。
  */
 @Target(AnnotationTarget.FIELD)
 @Retention(AnnotationRetention.RUNTIME)

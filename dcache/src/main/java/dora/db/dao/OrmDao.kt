@@ -198,14 +198,17 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
                 } else {
                     values.put(columnName, field.getDouble(bean))
                 }
-            } else {    // object
+            } else {
+                // is a object
+                // 简体中文：是一个对象
                 if (convert != null) {
                     val value = field[bean]
                     val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
                     val propertyConverter: PropertyConverter<Any, String> = Proxy.newProxyInstance(converter.classLoader,
                             converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, String>
                     value?.let {
-                        // object进行toString()后再保存
+                        // Save after calling toString() on the object.
+                        // 简体中文：object进行toString()后再保存
                         values.put(columnName, propertyConverter.convertToDatabaseValue(it.toString()))
                     }
                 } else {
@@ -295,11 +298,8 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
             result.forEach {
                 val clazz: Class<T> = it.javaClass
                 for (field in clazz.declaredFields) {
-                    // 将字段设置为可访问
                     field.isAccessible = true
-                    // 获取原始对象的字段值
                     val value = field[it]
-                    // 设置新对象的字段值
                     field[newBean] = value
                 }
                 val ok = update(newBean)
@@ -444,21 +444,21 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
         return selectOneInternal(builder)
     }
 
-    @Deprecated("请使用count()替代", level = DeprecationLevel.ERROR,
+    @Deprecated("Please use count() instead.", level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("count()")
     )
     override fun selectCount(): Long {
         return count()
     }
 
-    @Deprecated("请使用count(builder: WhereBuilder)替代", level = DeprecationLevel.ERROR,
+    @Deprecated("Please use count(builder: WhereBuilder) instead.", level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("count(builder)")
     )
     override fun selectCount(builder: WhereBuilder): Long {
         return count(builder)
     }
 
-    @Deprecated("请使用count(builder: QueryBuilder)替代", level = DeprecationLevel.ERROR,
+    @Deprecated("Please use count(builder: QueryBuilder) instead.", level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("count(builder)")
     )
     override fun selectCount(builder: QueryBuilder): Long {
@@ -756,20 +756,28 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
     }
 
     /**
-     * 在事务中执行，也可以使用Transaction类。
+     * Use it to perform operations in a transaction, similar to multi-table transactions of
+     * [dora.db.Transaction].
+     * 简体中文：用它在事务中执行操作，同[dora.db.Transaction]的多表事务。
+     *
+     * @see dora.db.Transaction
      */
     fun runInTransaction(block:() -> T) {
         try {
-            // 开始事务
+            // Begin the transaction.
+            // 简体中文：开始事务
             database.beginTransaction()
-            // 执行事务操作
+            // Execute the transaction operation.
+            // 简体中文：执行事务操作
             block()
-            // 所有操作都没有问题，成功执行完成，设置成功的标志位，否则回滚所有操作
+            // Set the flag indicating that all operations were executed successfully.
+            // 简体中文：设置所有操作执行成功的标志位
             database.setTransactionSuccessful()
         } catch (e: SQLiteException) {
             e.printStackTrace()
         } finally {
-            // 结束事务
+            // End the transaction.
+            // 简体中文：结束事务
             database.endTransaction()
         }
     }

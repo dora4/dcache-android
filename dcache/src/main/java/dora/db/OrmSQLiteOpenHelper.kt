@@ -5,12 +5,18 @@ import android.database.DatabaseErrorHandler
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import dora.db.exception.OrmMigrationException
+import dora.db.migration.OrmMigration
 import dora.db.table.OrmTable
 import dora.db.table.TableManager
 import java.lang.reflect.InvocationTargetException
 
 /**
- * 数据库开启助手。
+ * A helper class to manage database creation and version management.You need to create all tables
+ * in the [Orm.init] function and it is not recommended to create tables using [TableManager].
+ * If you need to upgrade the table structure, use an array of [OrmMigration] to specify each
+ * version change.
+ * 简体中文：一个帮助类，用于管理数据库的创建和版本管理。你需要在[Orm.init]函数中创建所有表，不建议使用
+ * [TableManager]自行创建表。如果你需要升级数据的表结构，需要使用[OrmMigration]的数组指定每一次版本的变动。
  */
 class OrmSQLiteOpenHelper(context: Context, name: String, version: Int,
                           private val tables: Array<Class<out OrmTable>>?) :
@@ -79,12 +85,10 @@ class OrmSQLiteOpenHelper(context: Context, name: String, version: Int,
                         }
                     } else {
                         var curVersion = oldVersion
-                        // 数据迁移，按顺序执行所有Migration
                         if (it.migrations == null) {
                             return@let
                         }
                         for (migration in it.migrations!!) {
-                            // 检测Migration可用性
                             if (migration.fromVersion >= migration.toVersion) {
                                 throw OrmMigrationException(
                                     "fromVersion can't be more than toVersion," +
@@ -92,7 +96,6 @@ class OrmSQLiteOpenHelper(context: Context, name: String, version: Int,
                                 )
                             }
                             if (migration.toVersion <= curVersion) {
-                                // 无需升级
                                 continue
                             }
                             if (migration.fromVersion == curVersion) {

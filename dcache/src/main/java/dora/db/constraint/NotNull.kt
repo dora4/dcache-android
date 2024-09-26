@@ -1,7 +1,8 @@
 package dora.db.constraint
 
 /**
- * 非空约束。
+ * Not null constraint.
+ * 简体中文：非空约束。
  */
 @Target(AnnotationTarget.FIELD)
 @Retention(AnnotationRetention.RUNTIME)

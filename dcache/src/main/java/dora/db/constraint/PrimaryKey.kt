@@ -1,7 +1,8 @@
 package dora.db.constraint
 
 /**
- * 主键约束。
+ * Primary key constraint.
+ * 简体中文：主键约束。
  */
 @Target(AnnotationTarget.FIELD)
 @Retention(AnnotationRetention.RUNTIME)

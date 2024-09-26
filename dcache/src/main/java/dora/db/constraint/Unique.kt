@@ -1,7 +1,8 @@
 package dora.db.constraint
 
 /**
- * 唯一约束。
+ * Unique constraint.
+ * 简体中文：唯一约束。
  */
 @Target(AnnotationTarget.FIELD)
 @Retention(AnnotationRetention.RUNTIME)

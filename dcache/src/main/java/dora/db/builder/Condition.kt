@@ -3,20 +3,28 @@ package dora.db.builder
 import android.text.TextUtils
 
 /**
- * 查询条件，它是一个和orm框架整合的协议。
+ * The query condition is a protocol integrated with the ORM framework.
+ * 简体中文：查询条件，它是一个和orm框架整合的协议。
  */
 class Condition(
-        // 条件语句，如 a > ? and a < ? , 或 a > 0
+        // Condition statements, such as a > ? AND a < ?, or a > 0.
+        // 简体中文：条件语句，如 a > ? and a < ? , 或 a > 0
         val selection: String,
-        // 条件参数，如 a > ? and a < ?中两个?的具体值0和100
+        // Condition parameters, such as the specific values 0 and 100 for the two
+        // placeholders ? in a > ? AND a < ?.
+        // 简体中文：条件参数，如 a > ? and a < ?中两个?的具体值0和100
                 val selectionArgs: Array<String?>,
-        // 同sql语句limit的用法
+        // Similar to the usage of LIMIT in SQL statements.
+        // 简体中文：同sql语句limit的用法
                 val limit: String? = "",
-        // 同sql语句order by的用法
+        // Similar to the usage of ORDER BY in SQL statements.
+        // 简体中文：同sql语句order by的用法
                 val orderBy: String? = "",
-        // 同sql语句group by的用法
+        // Similar to the usage of GROUP BY in SQL statements.
+        // 简体中文：同sql语句group by的用法
                 val groupBy: String? = "",
-        // 同sql语句having的用法
+        // Similar to the usage of HAVING in SQL statements.
+        // 简体中文：同sql语句having的用法
                 val having: String? = "")
 
 
@@ -46,7 +54,8 @@ private fun appendClause(name: String, clause: String?) : String {
 }
 
 /**
- * 将查询条件部分转化为sql。
+ * Convert the query conditions into SQL statements.
+ * 简体中文：将查询条件那部分转化为sql语句。
  */
 fun Condition.toSQL() : String {
         val sb = StringBuilder()

@@ -26,7 +26,8 @@ import java.lang.reflect.Modifier
 import java.util.*
 
 /**
- * 表管理器，定义一些表级别的操作。
+ * Used for database table management, such as creating, deleting, and extending tables.
+ * 简体中文：用于数据库表的管理，如创建、删除、扩展等。
  */
 object TableManager {
 
@@ -82,26 +83,34 @@ object TableManager {
         return columnName
     }
 
+    /**
+     * Get the table name corresponding to the class name in the [OrmTable] subclass.
+     * 简体中文：获取[OrmTable]子类中类名对应的表名。
+     */
     fun generateTableName(className: String): String {
         val sb = StringBuilder()
         for (i in className.indices) {
             if (className[i] in A..Z && i != 0) {
                 sb.append(UNDERLINE)
             }
-            sb.append(className[i].toString().toLowerCase(Locale.ENGLISH))
+            sb.append(className[i].toString().lowercase(Locale.ENGLISH))
         }
-        return TABLE_NAME_HEADER + sb.toString().toLowerCase()
+        return TABLE_NAME_HEADER + sb.toString().lowercase(Locale.ENGLISH)
     }
 
+    /**
+     * Get the column name corresponding to the member property name in the [OrmTable] subclass.
+     * 简体中文：获取[OrmTable]子类中成员属性名对应的列名。
+     */
     fun generateColumnName(fieldName: String): String {
         val sb = StringBuilder()
         for (i in fieldName.indices) {
             if (fieldName[i] in A..Z && i != 0) {
                 sb.append(UNDERLINE)
             }
-            sb.append(fieldName[i].toString().toLowerCase(Locale.ENGLISH))
+            sb.append(fieldName[i].toString().lowercase(Locale.ENGLISH))
         }
-        return sb.toString().toLowerCase(Locale.ENGLISH)
+        return sb.toString().lowercase(Locale.ENGLISH)
     }
 
     private val declaredDataTypes: List<DataType>
@@ -221,6 +230,7 @@ object TableManager {
                         AssignType::class.java)!!
                 if (assignType == AssignType.BY_MYSELF) {
                     // empty，no problem
+                    // 简体中文：这里什么也不用做
                 } else if (assignType == AssignType.AUTO_INCREMENT) {
                     builder.append(SPACE).append(AUTO_INCREMENT)
                 }
@@ -239,7 +249,6 @@ object TableManager {
         var columnType: String = sqlType.name
         val convert: Convert? = field.getAnnotation(Convert::class.java)
         if (convert != null) {
-            // 使用convert的columnType的值再次匹配
             columnType = matchDataType(convert.columnType.java).sqlType.name
         }
         val columnName = getColumnName(field)
@@ -256,7 +265,7 @@ object TableManager {
         val tableName = getTableName(tableClass)
         val fields = tableClass.declaredFields
         val sqlBuilder = StringBuilder(CREATE_TABLE + SPACE + IF_NOT_EXISTS + SPACE
-                + tableName + LEFT_PARENTHESIS) //table header
+                + tableName + LEFT_PARENTHESIS)
         var hasPrimaryKey = false
         for (field in fields) {
             field.isAccessible = true

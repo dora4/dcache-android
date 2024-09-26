@@ -3,7 +3,9 @@ package dora.db
 import dora.db.table.OrmTable
 
 /**
- * ORM配置类。
+ * ORM configuration information class, which specifies the global ORM configuration details using
+ * [Orm.init] during application initialization.
+ * 简体中文：ORM配置信息类，在应用初始化时，使用[Orm.init]指定全局的ORM配置信息。
  */
 class OrmConfig private constructor(builder: Builder) {
 

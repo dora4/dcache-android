@@ -26,16 +26,9 @@ abstract class RSAConverter : PropertyConverter<String, String> {
         return entityProperty?.let { encryptByPublic(getPublicKey(), it) }
     }
 
-    /**
-     * 使用公钥加密。
-     *
-     * @param rsa_public
-     * @param content
-     * @return
-     */
-    fun encryptByPublic(rsa_public: String, content: String): String? {
+    fun encryptByPublic(rsaPublic: String, content: String): String? {
         return try {
-            val publicKey: RSAPublicKey = getPublicKey(rsa_public)
+            val publicKey: RSAPublicKey = getPublicKey(rsaPublic)
             val cipher: Cipher = Cipher.getInstance("RSA")
             cipher.init(Cipher.ENCRYPT_MODE, publicKey)
             Base64.encodeToString(rsaSplitCodec(cipher, Cipher.ENCRYPT_MODE, content.toByteArray(charset("UTF-8")),
@@ -45,16 +38,9 @@ abstract class RSAConverter : PropertyConverter<String, String> {
         }
     }
 
-    /**
-     * 使用私钥解密。
-     *
-     * @param rsa_private
-     * @param content
-     * @return
-     */
-    fun decryptByPrivate(rsa_private: String, content: String?): String? {
+    fun decryptByPrivate(rsaPrivate: String, content: String?): String? {
         return try {
-            val privateKey: RSAPrivateKey = getPrivateKey(rsa_private)
+            val privateKey: RSAPrivateKey = getPrivateKey(rsaPrivate)
             val cipher: Cipher = Cipher.getInstance("RSA")
             cipher.init(Cipher.DECRYPT_MODE, privateKey)
             String(rsaSplitCodec(cipher, Cipher.DECRYPT_MODE, Base64.decode(content, Base64.NO_WRAP), privateKey.modulus.bitLength())!!,
@@ -64,16 +50,9 @@ abstract class RSAConverter : PropertyConverter<String, String> {
         }
     }
 
-    /**
-     * 使用私钥加密。
-     *
-     * @param rsa_private
-     * @param content
-     * @return
-     */
-    fun encryptByPrivate(rsa_private: String, content: String): String? {
+    fun encryptByPrivate(rsaPrivate: String, content: String): String? {
         return try {
-            val privateKey: RSAPrivateKey = getPrivateKey(rsa_private)
+            val privateKey: RSAPrivateKey = getPrivateKey(rsaPrivate)
             val cipher: Cipher = Cipher.getInstance("RSA")
             cipher.init(Cipher.ENCRYPT_MODE, privateKey)
             Base64.encodeToString(rsaSplitCodec(cipher, Cipher.ENCRYPT_MODE, content.toByteArray(charset("UTF-8")), privateKey.getModulus().bitLength()),
@@ -83,16 +62,9 @@ abstract class RSAConverter : PropertyConverter<String, String> {
         }
     }
 
-    /**
-     * 使用公钥解密。
-     *
-     * @param rsa_public
-     * @param content
-     * @return
-     */
-    fun decryptByPublic(rsa_public: String, content: String?): String? {
+    fun decryptByPublic(rsaPublic: String, content: String?): String? {
         return try {
-            val publicKey: RSAPublicKey = getPublicKey(rsa_public)
+            val publicKey: RSAPublicKey = getPublicKey(rsaPublic)
             val cipher: Cipher = Cipher.getInstance("RSA")
             cipher.init(Cipher.DECRYPT_MODE, publicKey)
             String(rsaSplitCodec(cipher, Cipher.DECRYPT_MODE, Base64.decode(content, Base64.NO_WRAP),
@@ -104,7 +76,6 @@ abstract class RSAConverter : PropertyConverter<String, String> {
 
     @Throws(NoSuchAlgorithmException::class, InvalidKeySpecException::class)
     fun getPublicKey(publicKey: String?): RSAPublicKey {
-        //通过X509编码的Key指令获得公钥对象
         val keyFactory: KeyFactory = KeyFactory.getInstance("RSA")
         val x509KeySpec = X509EncodedKeySpec(Base64.decode(publicKey, Base64.NO_WRAP))
         return keyFactory.generatePublic(x509KeySpec) as RSAPublicKey
@@ -112,7 +83,6 @@ abstract class RSAConverter : PropertyConverter<String, String> {
 
     @Throws(NoSuchAlgorithmException::class, InvalidKeySpecException::class)
     fun getPrivateKey(privateKey: String?): RSAPrivateKey {
-        //通过PKCS#8编码的Key指令获得私钥对象
         val keyFactory: KeyFactory = KeyFactory.getInstance("RSA")
         val pkcs8KeySpec = PKCS8EncodedKeySpec(Base64.decode(privateKey, Base64.NO_WRAP))
         return keyFactory.generatePrivate(pkcs8KeySpec) as RSAPrivateKey
@@ -140,7 +110,8 @@ abstract class RSAConverter : PropertyConverter<String, String> {
                 offSet = i * maxBlock
             }
         } catch (e: Exception) {
-            throw RuntimeException("加解密阀值为[$maxBlock]的数据时发生异常", e)
+            throw RuntimeException("An exception occurred when processing data with an " +
+                    "encryption/decryption threshold of [$maxBlock].", e)
         }
         val result: ByteArray = out.toByteArray()
         try {

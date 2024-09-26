@@ -1,7 +1,8 @@
 package dora.db.converter
 
 /**
- * 默认实现，空实现，一般不会用在实际场景。
+ * Default empty implementation; this class is generally not used in practical scenarios.
+ * 简体中文：默认的空实现，这个类一般不会用在实际场景。
  */
 class EmptyConverter : PropertyConverter<Any, Any> {
 

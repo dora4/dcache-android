@@ -1,7 +1,8 @@
 package dora.db.builder
 
 /**
- * 查询条件构建者。
+ * Query condition builder, used for conveniently specifying query conditions.
+ * 简体中文：查询条件的构建者，用于方便指定查询条件。
  *
  * @see WhereBuilder
  */
@@ -15,7 +16,8 @@ class QueryBuilder private constructor() {
     private var whereBuilder: WhereBuilder
 
     /**
-     * 指定where子句。
+     * Specify the WHERE clause.
+     * 简体中文：指定where子句。
      */
     fun where(builder: WhereBuilder): QueryBuilder {
         whereBuilder = builder
@@ -23,7 +25,8 @@ class QueryBuilder private constructor() {
     }
 
     /**
-     * 指定where子句。
+     * Specify the WHERE clause.
+     * 简体中文：指定where子句。
      */
     fun where(condition: Condition): QueryBuilder {
         whereBuilder = WhereBuilder.create()
@@ -32,7 +35,8 @@ class QueryBuilder private constructor() {
     }
 
     /**
-     * 指定要查询的列。
+     * Specify the columns to be queried.
+     * 简体中文：指定要查询的列。
      */
     fun column(columns: Array<String>): QueryBuilder {
         this.columns = columns
@@ -40,7 +44,8 @@ class QueryBuilder private constructor() {
     }
 
     /**
-     * 指定having子句。
+     * Specify the HAVING clause.
+     * 简体中文：指定having子句。
      */
     fun having(having: String): QueryBuilder {
         this.having = HAVING + having
@@ -48,7 +53,8 @@ class QueryBuilder private constructor() {
     }
 
     /**
-     * 指定order by。
+     * Specify the ORDER BY clause.
+     * 简体中文：指定order by子句。
      */
     fun orderBy(order: String): QueryBuilder {
         this.order = ORDER_BY + order
@@ -56,7 +62,8 @@ class QueryBuilder private constructor() {
     }
 
     /**
-     * 指定group by。
+     * Specify the GROUP BY clause.
+     * 简体中文：指定group by子句。
      */
     fun groupBy(group: String): QueryBuilder {
         this.group = GROUP_BY + group
@@ -64,7 +71,8 @@ class QueryBuilder private constructor() {
     }
 
     /**
-     * 指定limit。
+     * Specify the LIMIT clause.
+     * 简体中文：指定limit子句。
      */
     fun limit(limit: Int): QueryBuilder {
         this.limit = LIMIT + limit
@@ -72,7 +80,8 @@ class QueryBuilder private constructor() {
     }
 
     /**
-     * 指定limit，数据索引从start开始，数size条数据。
+     * Specify the LIMIT clause, starting the data index from [start] and retrieving [size] records.
+     * 简体中文：指定limit子句，数据索引从[start]开始，取[size]条数据。
      */
     fun limit(start: Int, size: Int): QueryBuilder {
         limit = LIMIT + start + COMMA + size
@@ -80,11 +89,13 @@ class QueryBuilder private constructor() {
     }
 
     /**
-     * 构建query的sql语句。
+     * Build the SQL statement for the query.
+     * 简体中文：构建query的sql语句。
      */
     fun build(): String {
-        return (whereBuilder.build() + (if (group != null) group else SPACE) + (if (having != null) having else SPACE)
-                + (if (order != null) order else SPACE) + if (limit != null) limit else SPACE)
+        return (whereBuilder.build() + (if (group != null) group else SPACE) + (if (having != null)
+            having else SPACE) + (if (order != null) order else SPACE) + if (limit != null) limit
+        else SPACE)
     }
 
     fun getColumns() : Array<String>? {
@@ -112,7 +123,8 @@ class QueryBuilder private constructor() {
     }
 
     /**
-     * 转化为Condition。
+     * Convert to the [Condition] class.
+     * 简体中文：转化为[Condition]类。
      */
     fun toCondition(): Condition {
         return Condition(whereBuilder.selection, whereBuilder.selectionArgs ?: arrayOf(),

@@ -1,7 +1,8 @@
 package dora.db.constraint
 
 /**
- * 默认约束。
+ * Default constraint.
+ * 简体中文：默认约束。
  */
 @Target(AnnotationTarget.FIELD)
 @Retention(AnnotationRetention.RUNTIME)

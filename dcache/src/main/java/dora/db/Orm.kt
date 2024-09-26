@@ -7,7 +7,9 @@ import dora.db.exception.OrmStateException
 import dora.db.table.OrmTable
 
 /**
- * ORM框架入口。
+ * Use it to configure the ORM framework.Call [Orm.init] during application initialization to
+ * complete the configuration.
+ * 简体中文：使用它对ORM框架进行配置。在应用初始化时调用[Orm.init]即可完成配置。
  */
 object Orm {
 
@@ -16,17 +18,6 @@ object Orm {
     private const val STATE_DATABASE_NOT_EXISTS = -1
     private const val STATE_DATABASE_EXISTS = 0
     private var dbState = STATE_DATABASE_NOT_EXISTS
-
-    fun getDB() : SQLiteDatabase {
-        if (isPrepared()) {
-            return database!!
-        }
-        throw OrmStateException("Database is not exists.")
-    }
-
-    fun isPrepared() : Boolean {
-        return dbState == STATE_DATABASE_EXISTS
-    }
 
     @Synchronized
     fun init(context: Context, databaseName: String) {
@@ -45,5 +36,16 @@ object Orm {
         database = dbHelper!!.writableDatabase
         dbState = STATE_DATABASE_EXISTS
         dbHelper!!.onCreate(database)
+    }
+
+    fun getDB() : SQLiteDatabase {
+        if (isPrepared()) {
+            return database!!
+        }
+        throw OrmStateException("Database is not exists.")
+    }
+
+    fun isPrepared() : Boolean {
+        return dbState == STATE_DATABASE_EXISTS
     }
 }

@@ -10,8 +10,7 @@ internal fun Call<*>.registerOnCancellation(continuation: CancellableContinuatio
     continuation.invokeOnCancellation {
         try {
             cancel()
-        } catch (e: Exception) {
-            // Ignore cancel exception
+        } catch (ignore: Exception) {
         }
     }
 }

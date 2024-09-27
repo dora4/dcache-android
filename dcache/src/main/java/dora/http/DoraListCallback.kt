@@ -5,7 +5,8 @@ import retrofit2.Callback
 import retrofit2.Response
 
 /**
- * REST API返回列表数据的回调。
+ * Callback for REST API returning list data.
+ * 简体中文：REST API返回列表数据的回调。
  */
 abstract class DoraListCallback<M> : Callback<MutableList<M>> {
 

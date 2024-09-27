@@ -8,7 +8,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.Consumer
 
 /**
- * RxJava变换器，提供执行Rx函数的工具方法。
+ * RxJava transformer that provides utility methods for executing Rx functions.
+ * 简体中文：RxJava变换器，提供执行Rx函数的工具方法。
  */
 object RxTransformer {
 

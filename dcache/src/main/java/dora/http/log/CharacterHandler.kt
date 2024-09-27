@@ -3,7 +3,6 @@ package dora.http.log
 import android.text.InputFilter
 import android.text.Spanned
 import android.text.TextUtils
-import okhttp3.internal.and
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -21,46 +20,6 @@ class CharacterHandler private constructor() {
 
     companion object {
 
-        val EMOJI_FILTER: InputFilter = object : InputFilter {
-            // emoji过滤器
-            var emoji = Pattern.compile(
-                    "[\ud83c\udc00-\ud83c\udfff]|[\ud83d\udc00-\ud83d\udfff]|[\u2600-\u27ff]",
-                    Pattern.UNICODE_CASE or Pattern.CASE_INSENSITIVE)
-
-            override fun filter(source: CharSequence, start: Int, end: Int, dest: Spanned, dstart: Int,
-                                dend: Int): CharSequence? {
-                val emojiMatcher = emoji.matcher(source)
-                return if (emojiMatcher.find()) {
-                    ""
-                } else null
-            }
-        }
-
-        /**
-         * 字符串转换成十六进制字符串。
-         *
-         * @return String 每个Byte之间空格分隔，如: [61 6C 6B]
-         */
-        fun str2HexStr(str: String): String {
-            val chars = "0123456789ABCDEF".toCharArray()
-            val sb = StringBuilder()
-            val bs = str.toByteArray()
-            var bit: Int
-            for (b in bs) {
-                bit = b and 0x0f0 shr 4
-                sb.append(chars[bit])
-                bit = b and 0x0f
-                sb.append(chars[bit])
-            }
-            return sb.toString().trim { it <= ' ' }
-        }
-
-        /**
-         * json 格式化。
-         *
-         * @param json
-         * @return
-         */
         @JvmStatic
         fun jsonFormat(json: String): String {
             var json = json
@@ -87,12 +46,6 @@ class CharacterHandler private constructor() {
             return message
         }
 
-        /**
-         * xml 格式化。
-         *
-         * @param xml
-         * @return
-         */
         @JvmStatic
         fun xmlFormat(xml: String?): String? {
             if (TextUtils.isEmpty(xml)) {

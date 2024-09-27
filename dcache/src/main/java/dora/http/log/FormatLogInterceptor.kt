@@ -20,7 +20,6 @@ class FormatLogInterceptor : Interceptor {
         val request = chain.request()
         val logRequest = printLevel == Level.ALL || printLevel != Level.NONE && printLevel == Level.REQUEST
         if (logRequest) {
-            // 打印请求信息
             if (request.body != null && isParseable(request.body!!.contentType())) {
                 printer.printJsonRequest(request, parseParams(request))
             } else {
@@ -39,7 +38,6 @@ class FormatLogInterceptor : Interceptor {
         val t2 = if (logResponse) System.nanoTime() else 0
         val responseBody = originalResponse.body
 
-        //打印响应结果
         var bodyString: String? = null
         if (responseBody != null && isParseable(responseBody.contentType())) {
             bodyString = printResult(request, originalResponse, logResponse)
@@ -62,30 +60,18 @@ class FormatLogInterceptor : Interceptor {
         return originalResponse
     }
 
-    /**
-     * 打印响应结果。
-     *
-     * @param request     [Request]
-     * @param response    [Response]
-     * @param logResponse 是否打印响应结果
-     * @return 解析后的响应结果
-     * @throws IOException
-     */
     @Throws(IOException::class)
     private fun printResult(request: Request, response: Response, logResponse: Boolean): String? {
         return try {
-            //读取服务器返回的结果
             val responseBody = response.newBuilder().build().body
             val source = responseBody!!.source()
-            source.request(Long.MAX_VALUE) // Buffer the entire body.
+            source.request(Long.MAX_VALUE)
             val buffer = source.buffer()
 
-            //获取content的压缩类型
             val encoding = response
                     .headers["Content-Encoding"]
             val clone = buffer.clone()
 
-            //解析response content
             parseContent(responseBody, encoding, clone)
         } catch (e: IOException) {
             e.printStackTrace()
@@ -93,63 +79,50 @@ class FormatLogInterceptor : Interceptor {
         }
     }
 
-    /**
-     * 解析服务器响应的内容。
-     *
-     * @param responseBody [ResponseBody]
-     * @param encoding     编码类型
-     * @param clone        克隆后的服务器响应内容
-     * @return 解析后的响应结果
-     */
     private fun parseContent(responseBody: ResponseBody?, encoding: String?, clone: Buffer): String? {
         var charset = Charset.forName("UTF-8")
         val contentType = responseBody!!.contentType()
         if (contentType != null) {
             charset = contentType.charset(charset)
         }
-        //content 使用 gzip 压缩
         return if ("gzip".equals(encoding, ignoreCase = true)) {
-            //解压
             ZipHelper.decompressForGzip(clone.readByteArray(), convertCharset(charset))
         } else if ("zlib".equals(encoding, ignoreCase = true)) {
-            //content 使用 zlib 压缩
             ZipHelper.decompressToStringForZlib(clone.readByteArray(), convertCharset(charset))
         } else {
-            //content 没有被压缩, 或者使用其他未知压缩方式
             clone.readString(charset!!)
         }
     }
 
     enum class Level {
+
         /**
-         * 不打印log。
+         * Do not print logs.
+         * 简体中文：不打印log。
          */
         NONE,
 
         /**
-         * 只打印请求信息。
+         * Only print request information.
+         * 简体中文：只打印请求信息。
          */
         REQUEST,
 
         /**
-         * 只打印响应信息。
+         * Only print response information.
+         * 简体中文：只打印响应信息。
          */
         RESPONSE,
 
         /**
-         * 所有数据全部打印。
+         * Print all data.
+         * 简体中文：所有数据全部打印。
          */
         ALL
     }
 
     companion object {
-        /**
-         * 解析请求服务器的请求参数。
-         *
-         * @param request [Request]
-         * @return 解析后的请求信息
-         * @throws UnsupportedEncodingException
-         */
+
         @Throws(UnsupportedEncodingException::class)
         fun parseParams(request: Request): String {
             return try {
@@ -172,12 +145,6 @@ class FormatLogInterceptor : Interceptor {
             }
         }
 
-        /**
-         * 是否可以解析。
-         *
-         * @param mediaType [MediaType]
-         * @return `true` 为可以解析
-         */
         fun isParseable(mediaType: MediaType?): Boolean {
             return if (mediaType == null || mediaType.type == null) {
                 false

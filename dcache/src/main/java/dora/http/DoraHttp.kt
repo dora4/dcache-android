@@ -41,7 +41,9 @@ import kotlin.coroutines.startCoroutine
 import kotlin.coroutines.suspendCoroutine
 
 /**
- * 用于发起网络请求，以及包含一些网络请求常用的工具方法。
+ * Used to initiate network requests and includes some commonly used utility methods for network
+ * requests.
+ * 简体中文：用于发起网络请求，以及包含一些网络请求常用的工具方法。
  */
 object DoraHttp {
 
@@ -78,7 +80,8 @@ object DoraHttp {
     }
 
     /**
-     * 在net作用域下使用，可将请求结果[DoraCallback]进行转换。
+     * Can be used within the net scope to convert the request result into a `[DoraCallback]`.
+     * 简体中文：在net作用域下使用，可将请求结果[DoraCallback]进行转换。
      */
     suspend fun <T, R : dora.cache.data.adapter.Result<T>> callback(
         call: Call<T>, success: (model: T) -> Unit, failure: ((msg: String)
@@ -111,7 +114,8 @@ object DoraHttp {
     }
 
     /**
-     * 在net作用域下使用，可将请求结果[DoraListCallback]进行转换。
+     * Can be used within the net scope to convert the request result into a `[DoraListCallback]`.
+     * 简体中文：在net作用域下使用，可将请求结果[DoraListCallback]进行转换。
      */
     suspend fun <T> listCallback(call: Call<MutableList<T>>, success: (model: MutableList<T>)
         -> Unit, failure: ((msg: String) -> Unit)? = null) = suspendCoroutine<MutableList<T>> {
@@ -130,7 +134,10 @@ object DoraHttp {
     }
 
     /**
-     * 在net作用域下使用，请求失败抛出异常，出块则自动释放锁，和request不同的是，无需手动释放。
+     * Can be used within the net scope, where a request failure throws an exception, and the lock
+     * is automatically released upon exiting the block. Unlike `request`, manual release is not
+     * required.
+     * 简体中文：在net作用域下使用，请求失败抛出异常，出块则自动释放锁，和request不同的是，无需手动释放。
      */
     suspend fun <T> api(apiMethod: ()-> Call<T>) = suspendCoroutine<T> {
         val data = apiMethod()
@@ -146,7 +153,10 @@ object DoraHttp {
     }
 
     /**
-     * RxJava的写法，在net作用域下使用，请求失败抛出异常，出块则自动释放锁，和request不同的是，无需手动释放。
+     * The RxJava approach, used within the net scope, throws an exception on request failure, and
+     * automatically releases the lock upon exiting the block. Unlike `request`, manual release is
+     * not required.
+     * 简体中文：RxJava的写法，在net作用域下使用，请求失败抛出异常，出块则自动释放锁，和request不同的是，无需手动释放。
      */
     suspend fun <T : Any> rxApi(apiMethod: ()-> Observable<T>) = suspendCoroutine<T> {
         val data = apiMethod()
@@ -168,7 +178,10 @@ object DoraHttp {
     }
 
     /**
-     * 在net作用域下使用，请求失败返回空值，出块则自动释放锁，和request不同的是，无需手动释放。
+     * Can be used within the net scope, where a request failure returns a null value, and the lock
+     * is automatically released upon exiting the block. Unlike `request`, manual release is not
+     * required.
+     * 简体中文：在net作用域下使用，请求失败返回空值，出块则自动释放锁，和request不同的是，无需手动释放。
      */
     suspend fun <T> result(apiMethod: ()-> Call<T>) = suspendCoroutine<T?> {
         val data = apiMethod()
@@ -184,7 +197,10 @@ object DoraHttp {
     }
 
     /**
-     * RxJava的写法，在net作用域下使用，请求失败返回空值，出块则自动释放锁，和request不同的是，无需手动释放。
+     * The RxJava approach, used within the net scope, returns a null value on request failure, and
+     * automatically releases the lock upon exiting the block. Unlike `request`, manual release is
+     * not required.
+     * 简体中文：RxJava的写法，在net作用域下使用，请求失败返回空值，出块则自动释放锁，和request不同的是，无需手动释放。
      */
     suspend fun <T : Any> rxResult(apiMethod: ()-> Observable<T>) = suspendCoroutine<T?> {
         val data = apiMethod()
@@ -206,14 +222,16 @@ object DoraHttp {
     }
 
     /**
-     * 模拟DoraHttp协程中类似线程中锁的概念。
+     * Simulate the concept of locks in threads within the DoraHttp coroutine.
+     * 简体中文：模拟DoraHttp协程中类似线程中锁的概念。
      */
     interface Lock<T> {
         fun releaseLock(returnVal : T)
     }
 
     /**
-     * net锁，用于解除net作用域下request函数的阻塞。
+     * Net lock, used to unblock the `request` function within the net scope.
+     * 简体中文：net锁，用于解除net作用域下request函数的阻塞。
      */
     class NetLock<T>(private val continuation: Continuation<T>) : Lock<T> {
 
@@ -223,7 +241,14 @@ object DoraHttp {
     }
 
     /**
-     * 自己执行网络请求代码，在net作用域下使用，执行完成（通常为onSuccess或onError的回调）后请调用
+     * Execute the network request code by using it within the net scope. After completion (usually
+     * in the `onSuccess` or `onError` callback), please call `lock.releaseLock()` to allow
+     * subsequent code to execute. Additionally, you can specify the return result of the
+     * higher-order function for the request; after releasing the lock, this can be assigned to a
+     * variable as the result of the request function. This wraps the coroutine method in a
+     * compatible way, eliminating the need to manually define coroutine methods for network data
+     * requests.
+     * 简体中文：自己执行网络请求代码，在net作用域下使用，执行完成（通常为onSuccess或onError的回调）后请调用
      * lock.releaseLock()，让后面的代码得以执行，另外可以指定request高阶函数的返回结果，释放锁后
      * 将可以作为request函数的执行结果赋值给变量。包装协程方法，以一种兼容的方式，无需手动定义协程方法
      * 去请求网络数据。
@@ -238,14 +263,14 @@ object DoraHttp {
     }
 
     /**
-     * 将一个普通的api接口包装成Flow返回值的接口。
+     * You wrap a regular API interface into an interface that returns a Flow value.
+     * 简体中文：你将一个普通的api接口包装成Flow返回值的接口。
      */
     suspend fun <T> flowResult(requestBlock: suspend () -> T,
                                loadingBlock: ((Boolean) -> Unit)? = null,
                                errorBlock: ((String) -> Unit)? = null,
     ) : Flow<T> {
         return flow {
-            // 设置超时时间为10秒
             val response = withTimeout(10 * 1000) {
                 requestBlock()
             }
@@ -264,7 +289,8 @@ object DoraHttp {
     }
 
     /**
-     * 将一个普通的api接口包装成Flow返回值的接口。
+     * Wrap a regular API interface into an interface that returns a Flow value.
+     * 简体中文：将一个普通的api接口包装成Flow返回值的接口。
      */
     suspend fun <T> flowResult(lifecycle: Lifecycle,
                                lifecycleState: Lifecycle.State = Lifecycle.State.STARTED,
@@ -276,9 +302,12 @@ object DoraHttp {
     }
 
     /**
-     * 直接发起Flow请求，如果你使用框架内部的[dora.http.retrofit.RetrofitManager]的话，需要开启
-     * [dora.http.retrofit.RetrofitManager]的flow配置选项[dora.http.retrofit.RetrofitManager.Config.useFlow]
-     * 为true。
+     * Directly initiate a Flow request. If you are using the internal framework's
+     * `[dora.http.retrofit.RetrofitManager]`, you need to enable the Flow configuration option
+     * `[dora.http.retrofit.RetrofitManager.Config.useFlow]` to `true`.
+     * 简体中文：直接发起Flow请求，如果你使用框架内部的[dora.http.retrofit.RetrofitManager]的话，需要开启
+     * [dora.http.retrofit.RetrofitManager]的flow配置选项
+     * [dora.http.retrofit.RetrofitManager.Config.useFlow]为true。
      */
     suspend fun <T> flowRequest(requestBlock: () -> Flow<T>,
                                 successBlock: ((T) -> Unit),
@@ -300,8 +329,12 @@ object DoraHttp {
     }
 
     /**
-     * 直接发起Flow请求，如果你使用框架内部的[dora.http.retrofit.RetrofitManager]的话，需要开启
-     * [dora.http.retrofit.RetrofitManager]的flow配置选项[dora.http.retrofit.RetrofitManager.Config.useFlow]
+     * Directly initiate a Flow request. If you are using the internal framework's
+     * `[dora.http.retrofit.RetrofitManager]`, you need to enable the Flow configuration option
+     * `[dora.http.retrofit.RetrofitManager.Config.useFlow]` to `true`.
+     * 简体中文：直接发起Flow请求，如果你使用框架内部的[dora.http.retrofit.RetrofitManager]的话，需要开启
+     * [dora.http.retrofit.RetrofitManager]的flow配置选项
+     * [dora.http.retrofit.RetrofitManager.Config.useFlow]
      * 为true。
      */
     suspend fun <T> flowRequest(
@@ -317,7 +350,8 @@ object DoraHttp {
     }
 
     /**
-     * Flow与生命周期绑定。
+     * Bind Flow to the lifecycle.
+     * 简体中文：Flow与生命周期绑定。
      */
     inline fun <T> Flow<T>.observeWithLifecycle(
         activity: AppCompatActivity,
@@ -331,7 +365,8 @@ object DoraHttp {
     }
 
     /**
-     * Flow与生命周期绑定。
+     * Bind Flow to the lifecycle.
+     * 简体中文：Flow与生命周期绑定。
      */
     inline fun <T> Flow<T>.observeWithLifecycle(
         fragment: Fragment,
@@ -347,7 +382,8 @@ object DoraHttp {
     }
 
     /**
-     * 便捷创建创建MultipartBody.Part对象。
+     * Conveniently create `MultipartBody.Part` objects.
+     * 简体中文：便捷创建创建MultipartBody.Part对象。
      */
     fun createFilePart(file: File, partName: String = "file", mimeType: String = "*/*") : MultipartBody.Part {
         val requestFile: RequestBody = file

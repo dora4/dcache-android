@@ -5,9 +5,6 @@ import kotlin.Result
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 
-/**
- * 线程切换。
- */
 class ThreadSwitchContinuation<T>(private val activity: Activity, private val continuation:
     Continuation<T>) : Continuation<T> {
 

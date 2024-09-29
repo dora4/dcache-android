@@ -13,6 +13,7 @@ import dora.db.constraint.AssignType
 import dora.db.constraint.Id
 import dora.db.constraint.PrimaryKey
 import dora.db.converter.PropertyConverter
+import dora.db.exception.UnsupportedDataTypeException
 import dora.db.table.*
 import java.lang.reflect.*
 import java.util.*
@@ -198,22 +199,34 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
                 } else {
                     values.put(columnName, field.getDouble(bean))
                 }
-            } else {
-                // is a object
-                // 简体中文：是一个对象
+            } else if (isAssignableFromCharacter(fieldType)) {
                 if (convert != null) {
                     val value = field[bean]
                     val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                    val propertyConverter: PropertyConverter<Any, String> = Proxy.newProxyInstance(converter.classLoader,
-                            converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, String>
+                    val propertyConverter: PropertyConverter<Any, Char> = Proxy.newProxyInstance(converter.classLoader,
+                        converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Char>
                     value?.let {
-                        // Save after calling toString() on the object.
-                        // 简体中文：object进行toString()后再保存
-                        values.put(columnName, propertyConverter.convertToDatabaseValue(it.toString()))
+                        values.put(columnName, propertyConverter.convertToDatabaseValue(it).toString())
                     }
                 } else {
-                    values.put(columnName, field[bean]?.toString() ?: "")
+                    values.put(columnName, field.getChar(bean).toString())
                 }
+            } else if (isAssignableFromClass(fieldType)) {
+                if (convert != null) {
+                    val value = field[bean]
+                    val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
+                    val propertyConverter: PropertyConverter<Any, Class<*>> = Proxy.newProxyInstance(converter.classLoader,
+                        converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Class<*>>
+                    value?.let {
+                        values.put(columnName, propertyConverter.convertToDatabaseValue(it)?.name ?: "")
+                    }
+                } else {
+                    values.put(columnName, (field.get(bean) as Class<*>).name)
+                }
+            } else {
+                throw UnsupportedDataTypeException("$columnName is using an unsupported type:" +
+                        " ${fieldType.name} . Please use the Convert annotation or specify a" +
+                        " supported type for columnType in the Convert annotation.")
             }
         }
         return values
@@ -646,8 +659,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
                     } else {
                         field[bean] = cursor.getInt(columnIndex)
                     }
-                } else if (isAssignableFromShort(fieldType)
-                        || isAssignableFromByte(fieldType)) {
+                } else if (isAssignableFromShort(fieldType)) {
                     if (convert != null) {
                         val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
                         val propertyConverter: PropertyConverter<Any, Short> = Proxy.newProxyInstance(converter.classLoader,
@@ -656,6 +668,16 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
                         field[bean] = value
                     } else {
                         field[bean] = cursor.getShort(columnIndex)
+                    }
+                } else if (isAssignableFromByte(fieldType)) {
+                    if (convert != null) {
+                        val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
+                        val propertyConverter: PropertyConverter<Any, Byte> = Proxy.newProxyInstance(converter.classLoader,
+                            converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Byte>
+                        val value: Any? = propertyConverter.convertToEntityProperty(cursor.getShort(columnIndex).toByte())
+                        field[bean] = value
+                    } else {
+                        field[bean] = cursor.getShort(columnIndex).toByte()
                     }
                 } else if (isAssignableFromDouble(fieldType)) {
                     if (convert != null) {
@@ -680,12 +702,12 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
                 } else if (isAssignableFromCharacter(fieldType)) {
                     if (convert != null) {
                         val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                        val propertyConverter: PropertyConverter<Any, String> = Proxy.newProxyInstance(converter.classLoader,
-                                converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, String>
-                        val value: Any? = propertyConverter.convertToEntityProperty(cursor.getString(columnIndex))
+                        val propertyConverter: PropertyConverter<Any, Char> = Proxy.newProxyInstance(converter.classLoader,
+                                converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Char>
+                        val value: Any? = propertyConverter.convertToEntityProperty(cursor.getString(columnIndex).first())
                         field[bean] = value
                     } else {
-                        field[bean] = cursor.getString(columnIndex)
+                        field[bean] = cursor.getString(columnIndex).first()
                     }
                 } else if (isAssignableFromClass(fieldType)) {
                     if (convert != null) {

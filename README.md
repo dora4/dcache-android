@@ -341,7 +341,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
      }
      ```
 
-**Three.Using Repositories**
+#### Three.Using Repositories
 
 - **Design Philosophy of Data Caching**
 

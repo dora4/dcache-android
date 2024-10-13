@@ -608,8 +608,3 @@ implementation "com.github.dora4:dcache-android:$stable_version"
    ```
 
    另外对于数据总条数是不断变化的场景，比如聊天消息，我们通常采用对数据进行快照的方式，也就是指定数据截止的时间戳。在这个时间节点之前的数据，我们可以认为是固定的大小。这样接口就需要多传一个timestamp的参数了，对于缓存也是一样的，也需要考虑这个timestamp进行数据的过滤。
-
-**最佳实践**
-
-Dora Chat（ https://dorachat.com ）
-Dora Music（[朵拉音乐](https://github.com/dora4/DoraMusic)）

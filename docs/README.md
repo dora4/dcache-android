@@ -561,8 +561,3 @@ implementation "com.github.dora4:dcache-android:$stable_version"
   ```
 
   In scenarios where the total number of data items is constantly changing, such as chat messages, we often use a snapshot approach by specifying a timestamp up to which data is considered fixed in size. In this case, the interface would need to include an additional timestamp parameter, and the cache would also need to consider this timestamp for data filtering.
-
-### Best Practices
-
-Dora Chat (https://dorachat.com)
-Dora Music ([Dora Music](https://github.com/dora4/DoraMusic))

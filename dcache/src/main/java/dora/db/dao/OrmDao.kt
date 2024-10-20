@@ -13,6 +13,7 @@ import dora.db.constraint.AssignType
 import dora.db.constraint.Id
 import dora.db.constraint.PrimaryKey
 import dora.db.converter.PropertyConverter
+import dora.db.exception.OrmResultCreationException
 import dora.db.exception.UnsupportedDataTypeException
 import dora.db.table.*
 import java.lang.reflect.*
@@ -546,7 +547,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
         for (c in constructors) {
             c.isAccessible = true
             val cls = c.parameterTypes
-            if (cls.size == 0) {
+            if (cls.isEmpty()) {
                 try {
                     return c.newInstance() as T
                 } catch (e: InstantiationException) {
@@ -602,7 +603,7 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
 
     @Throws(IllegalAccessException::class, ClassNotFoundException::class)
     private fun createResult(cursor: Cursor): T? {
-        val bean: T? = newOrmTableInstance(beanClass)
+        val bean: T = newOrmTableInstance(beanClass) ?: throw OrmResultCreationException("Failed to create ${beanClass.name} instance.")
         val fields = beanClass.declaredFields
         for (field in fields) {
             field.isAccessible = true

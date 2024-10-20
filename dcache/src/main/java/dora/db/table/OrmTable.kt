@@ -32,6 +32,15 @@ interface OrmTable {
         const val INDEX_ID = "_id"
 
         /**
+         * When using Kotlin data class, if the primary key ID is of type
+         * [dora.db.constraint.AssignType.AUTO_INCREMENT], you can use this default value so that
+         * you don't have to pass this parameter value.
+         * 简体中文：当使用kotlin data class时，主键ID如果是[dora.db.constraint.AssignType.AUTO_INCREMENT]
+         * 类型，则你可以使用这个默认值，这样你可以不传递这个参数值。
+         */
+        const val ID_UNASSIGNED = 0
+
+        /**
          * Used for pagination caching.
          * 简体中文：用于分页缓存。
          */

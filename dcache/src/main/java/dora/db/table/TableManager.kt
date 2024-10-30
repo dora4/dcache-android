@@ -53,6 +53,22 @@ object TableManager {
     private const val UNDERLINE = "_"
     private const val TABLE_NAME_HEADER = "t$UNDERLINE"
 
+    private fun assetNoKeyword(statement: String): Boolean {
+        val keywords = setOf(
+            "SELECT", "INSERT", "UPDATE", "DELETE", "CREATE", "DROP", "ALTER",
+            "WHERE", "AND", "OR", "NOT", "IN", "BETWEEN", "LIKE", "ORDER", "GROUP",
+            "BY", "JOIN", "INNER", "LEFT", "RIGHT", "CROSS", "DISTINCT", "UNION",
+            "EXISTS", "BEGIN", "COMMIT", "ROLLBACK", "LIMIT", "OFFSET", "AS"
+        )
+        val words = statement.split("\\s+".toRegex())
+        for (word in words) {
+            if (keywords.contains(word.uppercase())) {
+                return false
+            }
+        }
+        return true
+    }
+
     fun <T : OrmTable> getTableName(tableClass: Class<T>): String {
         val table = tableClass.getAnnotation(Table::class.java)
         val tableName: String = if (table != null) {
@@ -61,7 +77,11 @@ object TableManager {
             val className = tableClass.simpleName
             generateTableName(className)
         }
-        return tableName
+        if (assetNoKeyword(tableName)) {
+            return tableName
+        } else {
+            throw IllegalArgumentException("Table name contains a SQL keyword")
+        }
     }
 
     fun getColumnName(field: Field): String {
@@ -80,7 +100,11 @@ object TableManager {
                 generateColumnName(fieldName)
             }
         }
-        return columnName
+        if (assetNoKeyword(columnName)) {
+            return columnName
+        } else {
+            throw IllegalArgumentException("Column name contains a SQL keyword")
+        }
     }
 
     /**

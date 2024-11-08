@@ -1,5 +1,6 @@
 package dora.db
 
+import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
 import dora.db.dao.DaoFactory
 import dora.db.dao.OrmDao
@@ -31,6 +32,32 @@ object Transaction {
             // Execute the transaction operation.
             // 简体中文：执行事务操作
             block()
+            // Set the flag indicating that all operations were executed successfully.
+            // 简体中文：设置所有操作执行成功的标志位
+            db.setTransactionSuccessful()
+        } catch (e: SQLiteException) {
+            e.printStackTrace()
+        } finally {
+            // End the transaction.
+            // 简体中文：结束事务
+            db.endTransaction()
+        }
+    }
+
+    /**
+     * Execute a single-table transaction block.
+     * 简体中文：执行单表事务块。
+     */
+    internal fun <T : OrmTable> execute(db: SQLiteDatabase, tableClass: Class<T>, block: Transaction.(dao: OrmDao<T>) -> Unit) :
+            Any = apply {
+        val dao = DaoFactory.getDao(tableClass)
+        try {
+            // Begin the transaction.
+            // 简体中文：开始事务
+            db.beginTransaction()
+            // Execute the transaction operation.
+            // 简体中文：执行事务操作
+            block(dao)
             // Set the flag indicating that all operations were executed successfully.
             // 简体中文：设置所有操作执行成功的标志位
             db.setTransactionSuccessful()

@@ -151,4 +151,10 @@ interface Dao<T : OrmTable> {
      * 简体中文：查询符合条件的数据总数。
      */
     fun count(builder: QueryBuilder): Long
+
+    fun addColumn(fieldName: String) : Boolean
+
+    fun renameColumn(fieldName: String, oldColumnName: String) : Boolean
+
+    fun drop() : Boolean
 }

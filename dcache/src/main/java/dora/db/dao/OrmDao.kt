@@ -2,6 +2,7 @@ package dora.db.dao
 
 import android.content.ContentValues
 import android.database.Cursor
+import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
 import dora.db.Orm
@@ -505,6 +506,68 @@ class OrmDao<T : OrmTable> internal constructor(private val beanClass: Class<T>)
 
     override fun count(builder: QueryBuilder): Long {
         return countInternal(builder)
+    }
+
+    override fun addColumn(fieldName: String): Boolean {
+        val tableName = TableManager.getTableName(beanClass)
+        try {
+            val field = beanClass.getDeclaredField(fieldName)
+            field.isAccessible = true
+            val ignore = field.getAnnotation(Ignore::class.java)
+            if (ignore != null || field.modifiers and Modifier.STATIC != 0) {
+                return false
+            }
+            try {
+                val sql = (TableManager.ALTER_TABLE + TableManager.SPACE + tableName
+                        + TableManager.SPACE + TableManager.ADD_COLUMN + TableManager.SPACE
+                        + TableManager.createColumnBuilder(field).build() + TableManager.SEMICOLON)
+                OrmLog.d(sql)
+                database.execSQL(sql)
+            } catch (e: SQLException) {
+                e.message?.let { OrmLog.i(it) }
+            }
+        } catch (e: NoSuchFieldException) {
+            return false
+        }
+        return true
+    }
+
+    override fun renameColumn(fieldName: String, oldColumnName: String): Boolean {
+        val tableName = TableManager.getTableName(beanClass)
+        try {
+            val field = beanClass.getDeclaredField(fieldName)
+            field.isAccessible = true
+            val ignore = field.getAnnotation(Ignore::class.java)
+            if (ignore != null || field.modifiers and Modifier.STATIC != 0) {
+                return false
+            }
+            try {
+                val sql = (TableManager.ALTER_TABLE + TableManager.SPACE + tableName
+                        + TableManager.SPACE + TableManager.RENAME_COLUMN + TableManager.SPACE
+                        + oldColumnName  + TableManager.TO + TableManager.getColumnName(field)
+                        + TableManager.SEMICOLON)
+                OrmLog.d(sql)
+                database.execSQL(sql)
+            } catch (e: SQLException) {
+                e.message?.let { OrmLog.i(it) }
+            }
+        } catch (e: NoSuchFieldException) {
+            return false
+        }
+        return true
+    }
+
+    override fun drop(): Boolean {
+        try {
+            val tableName = TableManager.getTableName(beanClass)
+            val sql = TableManager.DROP_TABLE + TableManager.SPACE + tableName
+            OrmLog.d(sql)
+            database.execSQL(sql)
+            DaoFactory.removeDao(beanClass)
+        } catch (e: Exception) {
+            return false
+        }
+        return true
     }
 
     private fun countInternal(builder: QueryBuilder) : Long {

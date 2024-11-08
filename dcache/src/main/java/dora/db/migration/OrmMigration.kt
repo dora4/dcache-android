@@ -19,6 +19,11 @@ open class OrmMigration(val fromVersion: Int, val toVersion: Int) : Serializable
      */
     constructor(fromVersion: Int) : this(fromVersion, fromVersion + 1)
 
+    /**
+     * @see [dora.db.table.TableManager.createTable]
+     * @see [dora.db.dao.OrmDao.addColumn]
+     * @see [dora.db.dao.OrmDao.renameColumn]
+     */
     open fun <T : OrmTable> migrate(dao: OrmDao<T>) : Boolean {
         return false
     }

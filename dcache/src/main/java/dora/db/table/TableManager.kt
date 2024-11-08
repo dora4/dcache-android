@@ -34,12 +34,14 @@ object TableManager {
     private const val A = 'A'
     private const val Z = 'Z'
     private const val CREATE_TABLE = "CREATE TABLE"
-    private const val ALTER_TABLE = "ALTER TABLE"
-    private const val DROP_TABLE = "DROP TABLE"
+    const val ALTER_TABLE = "ALTER TABLE"
+    const val DROP_TABLE = "DROP TABLE"
     private const val IF_NOT_EXISTS = "IF NOT EXISTS"
-    private const val ADD_COLUMN = "ADD COLUMN"
+    const val ADD_COLUMN = "ADD COLUMN"
+    const val RENAME_COLUMN = "RENAME COLUMN"
     private const val AUTO_INCREMENT = "AUTOINCREMENT"
-    private const val SPACE = " "
+    const val SPACE = " "
+    const val TO = " TO "
     private const val SINGLE_QUOTES = "\'"
     private const val UNIQUE = "UNIQUE"
     private const val DEFAULT = "DEFAULT"
@@ -49,7 +51,7 @@ object TableManager {
     private const val LEFT_PARENTHESIS = "("
     private const val RIGHT_PARENTHESIS = ")"
     private const val COMMA = ","
-    private const val SEMICOLON = ";"
+    const val SEMICOLON = ";"
     private const val UNDERLINE = "_"
     private const val TABLE_NAME_HEADER = "t$UNDERLINE"
 
@@ -184,7 +186,7 @@ object TableManager {
         return value
     }
 
-    private class ColumnBuilder {
+    class ColumnBuilder {
 
         private var builder: StringBuilder
         private var field: Field
@@ -267,7 +269,7 @@ object TableManager {
         }
     }
 
-    private fun createColumnBuilder(field: Field): ColumnBuilder {
+    fun createColumnBuilder(field: Field): ColumnBuilder {
         val dataType: DataType = matchDataType(field.type)
         val sqlType: SqlType = dataType.sqlType
         var columnType: String = sqlType.name
@@ -317,6 +319,11 @@ object TableManager {
         removeDao(tableClass)
     }
 
+    @Deprecated(
+        message =
+        "Please use addColumn(fieldName: String) or renameColumn(fieldName: String, oldColumnName: String) instead.",
+        level = DeprecationLevel.WARNING
+    )
     private fun <T : OrmTable> _upgradeTable(tableClass: Class<T>, db: SQLiteDatabase) {
         val tableName = getTableName(tableClass)
         val fields = tableClass.declaredFields
@@ -351,6 +358,11 @@ object TableManager {
         }
     }
 
+    @Deprecated(
+        message =
+        "Please use addColumn(fieldName: String) or renameColumn(fieldName: String, oldColumnName: String) instead.",
+        level = DeprecationLevel.ERROR
+    )
     fun <T : OrmTable> upgradeTable(tableClass: Class<T>) {
         if (Orm.isPrepared()) {
             _upgradeTable(tableClass, Orm.getDB())

@@ -21,10 +21,7 @@ object Orm {
 
     @Synchronized
     fun init(context: Context, databaseName: String) {
-        dbHelper = OrmSQLiteOpenHelper(context, databaseName, 1, null)
-        database = dbHelper!!.writableDatabase
-        dbState = STATE_DATABASE_EXISTS
-        dbHelper!!.onCreate(database)
+        prepare(OrmSQLiteOpenHelper(context, databaseName, 1, null))
     }
 
     @Synchronized
@@ -32,9 +29,7 @@ object Orm {
         val name: String = config.databaseName
         val versionCode: Int = config.versionCode
         val tables: Array<Class<out OrmTable>>? = config.tables
-        database = dbHelper!!.writableDatabase
         prepare(context, name, versionCode, tables)
-        dbHelper!!.onCreate(database)
     }
 
     fun getDB() : SQLiteDatabase {
@@ -44,19 +39,20 @@ object Orm {
         throw OrmStateException("Database is not exists.")
     }
 
-    fun prepare(helper: OrmSQLiteOpenHelper) {
+    private fun prepare(helper: OrmSQLiteOpenHelper) {
         dbHelper = helper
+        database = dbHelper!!.writableDatabase
         dbState = STATE_DATABASE_EXISTS
     }
 
-    fun prepare(
+    private fun prepare(
         context: Context,
         name: String,
         versionCode: Int,
         tables: Array<Class<out OrmTable>>?
     ) {
         dbHelper = OrmSQLiteOpenHelper(context, name, versionCode, tables)
-        dbState = STATE_DATABASE_EXISTS
+        prepare(dbHelper as OrmSQLiteOpenHelper)
     }
 
     fun isPrepared() : Boolean {

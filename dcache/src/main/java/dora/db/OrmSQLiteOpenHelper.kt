@@ -99,7 +99,6 @@ class OrmSQLiteOpenHelper(private val context: Context, name: String, version: I
                                 continue
                             }
                             if (migration.fromVersion == curVersion) {
-                                Orm.prepare(this)
                                 val ok = Transaction.execute(it.javaClass as Class<out OrmTable>) { dao ->
                                     migration.migrate(dao)
                                 } as Boolean

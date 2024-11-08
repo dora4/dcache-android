@@ -39,9 +39,9 @@ object Orm {
         throw OrmStateException("Database is not exists.")
     }
 
-    private fun prepare(helper: OrmSQLiteOpenHelper) {
+    internal fun prepare(helper: OrmSQLiteOpenHelper) {
         dbHelper = helper
-        database = dbHelper!!.writableDatabase
+        database = helper.writableDatabase
         dbState = STATE_DATABASE_EXISTS
     }
 

@@ -21,9 +21,11 @@ import dora.db.table.*
 import java.lang.reflect.*
 import java.util.*
 
-class OrmDao<T : OrmTable> internal @JvmOverloads constructor(val beanClass: Class<T>,
-                                                val database: SQLiteDatabase? = if (Orm.isPrepared())
-                                                    Orm.getDB() else null) : Dao<T> {
+class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
+    private val beanClass: Class<T>,
+    db: SQLiteDatabase? = null) : Dao<T> {
+
+    val database: SQLiteDatabase = db ?: Orm.getDB()
 
     private fun isAssignableFromBoolean(fieldType: Class<*>): Boolean {
         return Boolean::class.javaPrimitiveType!!.isAssignableFrom(fieldType) ||
@@ -254,16 +256,10 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(val beanClass: Cla
         }
 
     override fun insert(bean: T): Boolean {
-        if (database == null) {
-            throw OrmStateException("Database is not exists.")
-        }
         return insertInternal(bean, database)
     }
 
     override fun insert(beans: List<T>): Boolean {
-        if (database == null) {
-            throw OrmStateException("Database is not exists.")
-        }
         return insertInternal(beans, database)
     }
 
@@ -285,16 +281,10 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(val beanClass: Cla
     }
 
     override fun delete(builder: WhereBuilder): Boolean {
-        if (database == null) {
-            throw OrmStateException("Database is not exists.")
-        }
         return deleteInternal(builder, database)
     }
 
     override fun delete(bean: T): Boolean {
-        if (database == null) {
-            throw OrmStateException("Database is not exists.")
-        }
         val field = bean.javaClass.getDeclaredField(getPrimaryKeyFieldName(bean))
         field.isAccessible = true
         val name = TableManager.getColumnName(field)
@@ -303,9 +293,6 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(val beanClass: Cla
     }
 
     override fun deleteAll(): Boolean {
-        if (database == null) {
-            throw OrmStateException("Database is not exists.")
-        }
         return deleteAllInternal(database)
     }
 
@@ -371,9 +358,6 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(val beanClass: Cla
     }
 
     override fun update(bean: T): Boolean {
-        if (database == null) {
-            throw OrmStateException("Database is not exists.")
-        }
         val field = bean.javaClass.getDeclaredField(getPrimaryKeyFieldName(bean))
         field.isAccessible = true
         val name = TableManager.getColumnName(field)
@@ -399,9 +383,6 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(val beanClass: Cla
     }
 
     private fun selectAllInternal(): List<T> {
-        if (database == null) {
-            throw OrmStateException("Database is not exists.")
-        }
         val tableName: String = TableManager.getTableName(beanClass)
         val cursor = database.query(tableName, null, null, null, null, null, null)
         return getResult(cursor)
@@ -416,9 +397,6 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(val beanClass: Cla
     }
 
     private fun selectInternal(builder: QueryBuilder): List<T> {
-        if (database == null) {
-            throw OrmStateException("Database is not exists.")
-        }
         val tableName: String = TableManager.getTableName(beanClass)
         val columns: Array<String>? = builder.getColumns()
         val group: String = builder.getGroup()
@@ -437,9 +415,6 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(val beanClass: Cla
     }
 
     private fun selectOneInternal(): T? {
-        if (database == null) {
-            throw OrmStateException("Database is not exists.")
-        }
         val tableName: String = TableManager.getTableName(beanClass)
         val cursor = database.query(tableName, null, null, null,
             null, null, null)
@@ -460,9 +435,6 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(val beanClass: Cla
     }
 
     private fun selectOneInternal(builder: QueryBuilder): T? {
-        if (database == null) {
-            throw OrmStateException("Database is not exists.")
-        }
         val beans: List<T> = select(builder)
         if (beans.isNotEmpty()) {
             return beans[0]
@@ -519,9 +491,6 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(val beanClass: Cla
     }
 
     private fun countInternal() : Long {
-        if (database == null) {
-            throw OrmStateException("Database is not exists.")
-        }
         var count: Long = 0
         try {
             val tableName: String = TableManager.getTableName(beanClass)
@@ -546,9 +515,6 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(val beanClass: Cla
     }
 
     override fun addColumn(fieldName: String): Boolean {
-        if (database == null) {
-            throw OrmStateException("Database is not exists.")
-        }
         val tableName = TableManager.getTableName(beanClass)
         try {
             val field = beanClass.getDeclaredField(fieldName)
@@ -573,9 +539,6 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(val beanClass: Cla
     }
 
     override fun renameColumn(fieldName: String, oldColumnName: String): Boolean {
-        if (database == null) {
-            throw OrmStateException("Database is not exists.")
-        }
         val tableName = TableManager.getTableName(beanClass)
         try {
             val field = beanClass.getDeclaredField(fieldName)
@@ -601,9 +564,6 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(val beanClass: Cla
     }
 
     override fun drop(): Boolean {
-        if (database == null) {
-            throw OrmStateException("Database is not exists.")
-        }
         try {
             val tableName = TableManager.getTableName(beanClass)
             val sql = TableManager.DROP_TABLE + TableManager.SPACE + tableName
@@ -617,9 +577,6 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(val beanClass: Cla
     }
 
     private fun countInternal(builder: QueryBuilder) : Long {
-        if (database == null) {
-            throw OrmStateException("Database is not exists.")
-        }
         var count: Long = 0
         try {
             val tableName: String = TableManager.getTableName(beanClass)
@@ -898,9 +855,6 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(val beanClass: Cla
      * @see dora.db.Transaction
      */
     fun runInTransaction(block:() -> T) {
-        if (database == null) {
-            throw OrmStateException("Database is not exists.")
-        }
         try {
             // Begin the transaction.
             // 简体中文：开始事务

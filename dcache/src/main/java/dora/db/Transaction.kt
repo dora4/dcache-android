@@ -18,7 +18,9 @@ object Transaction {
      * [execute] function.
      * 简体中文：[android.database.sqlite.SQLiteDatabase]对象，可以在[execute]函数中直接使用。
      */
-    val db = Orm.getDB()
+    val db by lazy {
+        Orm.getDB()
+    }
 
     /**
      * Execute a general transaction block.

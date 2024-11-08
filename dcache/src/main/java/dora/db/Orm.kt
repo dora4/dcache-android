@@ -34,7 +34,7 @@ object Orm {
         val tables: Array<Class<out OrmTable>>? = config.tables
         dbHelper = OrmSQLiteOpenHelper(context, name, versionCode, tables)
         database = dbHelper!!.writableDatabase
-        dbState = STATE_DATABASE_EXISTS
+        prepare()
         dbHelper!!.onCreate(database)
     }
 
@@ -43,6 +43,10 @@ object Orm {
             return database!!
         }
         throw OrmStateException("Database is not exists.")
+    }
+
+    fun prepare() {
+        dbState = STATE_DATABASE_EXISTS
     }
 
     fun isPrepared() : Boolean {

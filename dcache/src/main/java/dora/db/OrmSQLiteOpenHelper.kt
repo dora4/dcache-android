@@ -4,6 +4,7 @@ import android.content.Context
 import android.database.DatabaseErrorHandler
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import dora.db.dao.OrmDao
 import dora.db.exception.OrmMigrationException
 import dora.db.migration.OrmMigration
 import dora.db.table.OrmTable
@@ -99,7 +100,8 @@ class OrmSQLiteOpenHelper(context: Context, name: String, version: Int,
                                 continue
                             }
                             if (migration.fromVersion == curVersion) {
-                                val ok = Transaction.execute(it.javaClass) { dao ->
+                                Orm.prepare()
+                                val ok = Transaction.execute(it.javaClass as Class<out OrmTable>) { dao ->
                                     migration.migrate(dao)
                                 } as Boolean
                                 if (ok) {

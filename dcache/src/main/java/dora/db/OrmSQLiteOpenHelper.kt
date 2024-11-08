@@ -79,7 +79,7 @@ class OrmSQLiteOpenHelper(private val context: Context, name: String, version: I
                 ormTable?.let {
                     val isRecreated = it.isUpgradeRecreated
                     if (isRecreated) {
-                        Transaction.execute {
+                        Transaction.execute(db) {
                             TableManager.dropTable(table)
                             TableManager.createTable(table)
                         }

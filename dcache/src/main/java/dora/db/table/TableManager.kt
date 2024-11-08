@@ -378,8 +378,8 @@ object TableManager {
     fun <T : OrmTable> recreateTable(tableClass: Class<T>) {
         if (Orm.isPrepared()) {
             Transaction.execute(tableClass) {
-                _dropTable(tableClass, Orm.getDB())
-                _createTable(tableClass, Orm.getDB())
+                _dropTable(tableClass, db)
+                _createTable(tableClass, db)
             }
         }
     }

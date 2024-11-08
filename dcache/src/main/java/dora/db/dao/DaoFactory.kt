@@ -1,5 +1,6 @@
 package dora.db.dao
 
+import android.database.sqlite.SQLiteDatabase
 import dora.db.table.OrmTable
 import java.lang.IllegalArgumentException
 import java.util.*
@@ -17,12 +18,13 @@ object DaoFactory {
         }
     }
 
-    fun <T : OrmTable> getDao(beanClass: Class<T>): OrmDao<T> {
+    @JvmOverloads
+    fun <T : OrmTable> getDao(beanClass: Class<T>, db: SQLiteDatabase? = null): OrmDao<T> {
         synchronized(LOCK) {
             return if (DAO_MAP.containsKey(beanClass)) {
                 DAO_MAP[beanClass] as OrmDao<T>
             } else {
-                val dao = OrmDao<T>(beanClass)
+                val dao = OrmDao<T>(beanClass, db)
                 DAO_MAP[beanClass] = dao
                 dao
             }

@@ -18,8 +18,8 @@ object Transaction {
      * [execute] function.
      * 简体中文：[android.database.sqlite.SQLiteDatabase]对象，可以在[execute]函数中直接使用。
      */
-    val db: SQLiteDatabase?
-        get() = if (Orm.isPrepared()) Orm.getDB() else null
+    val db: SQLiteDatabase
+        get() = Orm.getDB()
 
     /**
      * Execute a general transaction block.
@@ -53,19 +53,19 @@ object Transaction {
         try {
             // Begin the transaction.
             // 简体中文：开始事务
-            db?.beginTransaction()
+            db.beginTransaction()
             // Execute the transaction operation.
             // 简体中文：执行事务操作
             block()
             // Set the flag indicating that all operations were executed successfully.
             // 简体中文：设置所有操作执行成功的标志位
-            db?.setTransactionSuccessful()
+            db.setTransactionSuccessful()
         } catch (e: SQLiteException) {
             e.printStackTrace()
         } finally {
             // End the transaction.
             // 简体中文：结束事务
-            db?.endTransaction()
+            db.endTransaction()
         }
     }
 
@@ -75,7 +75,7 @@ object Transaction {
      */
     internal fun <T : OrmTable> execute(db: SQLiteDatabase, tableClass: Class<T>, block: Transaction.(dao: OrmDao<T>) -> Unit) :
             Any = apply {
-        val dao = DaoFactory.getDao(tableClass)
+        val dao = DaoFactory.getDao(tableClass, db)
         try {
             // Begin the transaction.
             // 简体中文：开始事务
@@ -105,19 +105,19 @@ object Transaction {
         try {
             // Begin the transaction.
             // 简体中文：开始事务
-            db?.beginTransaction()
+            db.beginTransaction()
             // Execute the transaction operation.
             // 简体中文：执行事务操作
             block(dao)
             // Set the flag indicating that all operations were executed successfully.
             // 简体中文：设置所有操作执行成功的标志位
-            db?.setTransactionSuccessful()
+            db.setTransactionSuccessful()
         } catch (e: SQLiteException) {
             e.printStackTrace()
         } finally {
             // End the transaction.
             // 简体中文：结束事务
-            db?.endTransaction()
+            db.endTransaction()
         }
     }
 }

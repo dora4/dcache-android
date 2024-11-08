@@ -99,12 +99,15 @@ class OrmSQLiteOpenHelper(private val context: Context, name: String, version: I
                                 continue
                             }
                             if (migration.fromVersion == curVersion) {
-                                val ok = Transaction.execute(db, it.javaClass as Class<out OrmTable>) { dao ->
-                                    migration.migrate(dao)
-                                } as Boolean
-                                if (ok) {
+                                try {
+                                    Transaction.execute(db, it.javaClass as Class<out OrmTable>) { dao ->
+                                        migration.migrate(dao)
+                                    }
                                     curVersion = migration.toVersion
                                     OrmLog.d("${it.javaClass.name}'s version has succeeded upgraded to $curVersion")
+                                } catch (e: Exception) {
+                                    OrmLog.e(e.toString())
+                                    throw OrmMigrationException("${it.javaClass.name}'s version failed to upgrade to $curVersion")
                                 }
                             }
                         }

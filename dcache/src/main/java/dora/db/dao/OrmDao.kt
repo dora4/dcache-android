@@ -559,6 +559,24 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
             }
         } catch (e: NoSuchFieldException) {
             return false
+        } catch (e: SQLException) {
+            e.message?.let { OrmLog.i(it) }
+            return false
+        }
+        return true
+    }
+
+    override fun renameTable(oldTableName: String): Boolean {
+        val tableName = TableManager.getTableName(beanClass)
+        try {
+            val sql = (TableManager.ALTER_TABLE + TableManager.SPACE + oldTableName
+                    + TableManager.SPACE + TableManager.RENAME_TO + TableManager.SPACE
+                    + tableName + TableManager.SEMICOLON)
+            OrmLog.d(sql)
+            database.execSQL(sql)
+        } catch (e: SQLException) {
+            e.message?.let { OrmLog.i(it) }
+            return false
         }
         return true
     }
@@ -570,7 +588,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
             OrmLog.d(sql)
             database.execSQL(sql)
             DaoFactory.removeDao(beanClass)
-        } catch (e: Exception) {
+        } catch (e: SQLException) {
+            e.message?.let { OrmLog.i(it) }
             return false
         }
         return true

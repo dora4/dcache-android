@@ -39,6 +39,7 @@ object TableManager {
     private const val IF_NOT_EXISTS = "IF NOT EXISTS"
     const val ADD_COLUMN = "ADD COLUMN"
     const val RENAME_COLUMN = "RENAME COLUMN"
+    const val RENAME_TO = "RENAME TO"
     private const val AUTO_INCREMENT = "AUTOINCREMENT"
     const val SPACE = " "
     const val TO = " TO "

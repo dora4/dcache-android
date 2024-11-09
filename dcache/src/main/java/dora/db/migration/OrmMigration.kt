@@ -21,6 +21,7 @@ open class OrmMigration(val fromVersion: Int, val toVersion: Int) : Serializable
 
     /**
      * @see [dora.db.table.TableManager.createTable]
+     * @see [dora.db.dao.OrmDao.renameTable]
      * @see [dora.db.dao.OrmDao.addColumn]
      * @see [dora.db.dao.OrmDao.renameColumn]
      */

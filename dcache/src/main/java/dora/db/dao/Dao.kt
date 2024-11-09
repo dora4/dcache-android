@@ -152,9 +152,27 @@ interface Dao<T : OrmTable> {
      */
     fun count(builder: QueryBuilder): Long
 
+    /**
+     * Add a new column to the table.
+     * 简体中文：向表中添加新列。
+     */
     fun addColumn(fieldName: String) : Boolean
 
+    /**
+     * Rename a column in the table.
+     * 简体中文：重命名表中的列。
+     */
     fun renameColumn(fieldName: String, oldColumnName: String) : Boolean
 
+    /**
+     * Rename the table.
+     * 简体中文：重命名表。
+     */
+    fun renameTable(oldTableName: String) : Boolean
+
+    /**
+     * Drop the table.
+     * 简体中文：删除表。
+     */
     fun drop() : Boolean
 }

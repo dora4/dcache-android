@@ -26,8 +26,8 @@ SQL、Retrofit、Kotlin协程等
 
 ```groovy
 maven { url 'https://jitpack.io' }
-// 稳定版本2.4.13，最新版本请使用Jitpack成功编译（带有绿色版本标识）的版本
-def stable_version = '2.4.13'
+// 稳定版本2.5.19，最新版本请使用Jitpack成功编译（带有绿色版本标识）的版本
+def stable_version = '2.5.19'
 implementation "com.github.dora4:dcache-android:$stable_version"
 ```
 

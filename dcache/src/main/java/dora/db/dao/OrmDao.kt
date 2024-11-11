@@ -21,69 +21,138 @@ import dora.db.table.*
 import java.lang.reflect.*
 import java.util.*
 
+/**
+ * An object-oriented database operation encapsulation class, based on an OrmTable implementation
+ * class, used to operate a table.
+ * 简体中文：一个面向对象的数据库操作的封装类，基于一个OrmTable的实现类，用来操作一张表。
+ */
 class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
     private val beanClass: Class<T>,
     db: SQLiteDatabase? = null) : Dao<T> {
 
-    val database: SQLiteDatabase = db ?: Orm.getDB()
+    /**
+     * This object can be obtained only after the database is prepared.
+     * 简体中文：数据库准备完成后才能获取到这个对象。
+     */
+    private val database: SQLiteDatabase = db ?: Orm.getDB()
 
+    /**
+     * It is used to retain the operation mode of sql statements.
+     * 简体中文：它用来保留sql语句的操作方式。
+     */
+    fun getDB() : SQLiteDatabase {
+        return database
+    }
+
+    /**
+     * Checks whether the attribute is of type boolean.
+     * 简体中文：检测属性是否是boolean类型。
+     */
     private fun isAssignableFromBoolean(fieldType: Class<*>): Boolean {
         return Boolean::class.javaPrimitiveType!!.isAssignableFrom(fieldType) ||
                 Boolean::class.java.isAssignableFrom(fieldType)
     }
 
+    /**
+     * Checks whether the attribute is of type byte.
+     * 简体中文：检测属性是否是byte类型。
+     */
     private fun isAssignableFromByte(fieldType: Class<*>): Boolean {
         return Byte::class.javaPrimitiveType!!.isAssignableFrom(fieldType) ||
                 Byte::class.java.isAssignableFrom(fieldType)
     }
 
+    /**
+     * Checks whether the attribute is of type short.
+     * 简体中文：检测属性是否是short类型。
+     */
     private fun isAssignableFromShort(fieldType: Class<*>): Boolean {
         return Short::class.javaPrimitiveType!!.isAssignableFrom(fieldType) ||
                 Short::class.java.isAssignableFrom(fieldType)
     }
 
+    /**
+     * Checks whether the attribute is of type int.
+     * 简体中文：检测属性是否是int类型。
+     */
     private fun isAssignableFromInteger(fieldType: Class<*>): Boolean {
         return Int::class.javaPrimitiveType!!.isAssignableFrom(fieldType) ||
                 Int::class.java.isAssignableFrom(fieldType)
     }
 
+    /**
+     * Checks whether the attribute is of type long.
+     * 简体中文：检测属性是否是long类型。
+     */
     private fun isAssignableFromLong(fieldType: Class<*>): Boolean {
         return Long::class.javaPrimitiveType!!.isAssignableFrom(fieldType) ||
                 Long::class.java.isAssignableFrom(fieldType)
     }
 
+    /**
+     * Checks whether the attribute is of type float.
+     * 简体中文：检测属性是否是float类型。
+     */
     private fun isAssignableFromFloat(fieldType: Class<*>): Boolean {
         return Float::class.javaPrimitiveType!!.isAssignableFrom(fieldType) ||
                 Float::class.java.isAssignableFrom(fieldType)
     }
 
+    /**
+     * Checks whether the attribute is of type double.
+     * 简体中文：检测属性是否是double类型。
+     */
     private fun isAssignableFromDouble(fieldType: Class<*>): Boolean {
         return Double::class.javaPrimitiveType!!.isAssignableFrom(fieldType) ||
                 Double::class.java.isAssignableFrom(fieldType)
     }
 
+    /**
+     * Checks whether the attribute is of type char.
+     * 简体中文：检测属性是否是char类型。
+     */
     private fun isAssignableFromCharacter(fieldType: Class<*>): Boolean {
         return Char::class.javaPrimitiveType!!.isAssignableFrom(fieldType) ||
                 Char::class.java.isAssignableFrom(fieldType)
     }
 
+    /**
+     * Checks whether the attribute is of type string.
+     * 简体中文：检测属性是否是字符串类型。
+     */
     private fun isAssignableFromCharSequence(fieldType: Class<*>): Boolean {
         return CharSequence::class.java.isAssignableFrom(fieldType) ||
                 String::class.java.isAssignableFrom(fieldType)
     }
 
+    /**
+     * Checks whether the attribute is of type class.
+     * 简体中文：检测属性是否是Class类型。
+     */
     private fun isAssignableFromClass(fieldType: Class<*>): Boolean {
         return Class::class.java.isAssignableFrom(fieldType)
     }
 
+    /**
+     * Check if this is a reserved attribute of OrmTable.
+     * 简体中文：检测是否是OrmTable的保留属性。
+     */
     private fun isOrmTableField(field: Field) : Boolean {
         return field.name.equals("isUpgradeRecreated") || field.name.equals("migrations")
     }
 
+    /**
+     * Used to convert boolean type into int type and save it.
+     * 简体中文：用来将boolean类型转换成int类型保存起来。
+     */
     private fun convertBooleanToInt(boolean: Boolean) : Int {
         return if (boolean) 1 else 0
     }
 
+    /**
+     * Convert entity classes into ContentValues object。
+     * 简体中文：将实体类转换成ContentValues对象。
+     */
     private fun getContentValues(bean: T): ContentValues {
         val values = ContentValues()
         val fields = beanClass.declaredFields
@@ -255,14 +324,36 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
             return sb.substring(0, sb.length - 2)
         }
 
+    /**
+     * Insert a record.
+     * 简体中文：插入一条数据。
+     */
     override fun insert(bean: T): Boolean {
         return insertInternal(bean, database)
     }
 
+    /**
+     * Insert a record.
+     * 简体中文：插入一条数据。
+     */
+    private fun insertInternal(bean: T, db: SQLiteDatabase): Boolean {
+        val tableName: String = TableManager.getTableName(beanClass)
+        val contentValues = getContentValues(bean)
+        return db.insert(tableName, columnHack, contentValues) > 0
+    }
+
+    /**
+     * Insert multiple records.
+     * 简体中文：插入多条数据。
+     */
     override fun insert(beans: List<T>): Boolean {
         return insertInternal(beans, database)
     }
 
+    /**
+     * Insert multiple records.
+     * 简体中文：插入多条数据。
+     */
     private fun insertInternal(beans: List<T>, db: SQLiteDatabase): Boolean {
         var count = 0
         for (bean in beans) {
@@ -274,16 +365,18 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         return count == beans.size
     }
 
-    private fun insertInternal(bean: T, db: SQLiteDatabase): Boolean {
-        val tableName: String = TableManager.getTableName(beanClass)
-        val contentValues = getContentValues(bean)
-        return db.insert(tableName, columnHack, contentValues) > 0
-    }
-
+    /**
+     * Delete data based on conditions.
+     * 简体中文：按条件删除数据。
+     */
     override fun delete(builder: WhereBuilder): Boolean {
         return deleteInternal(builder, database)
     }
 
+    /**
+     * Delete a record.
+     * 简体中文：删除一条数据。
+     */
     override fun delete(bean: T): Boolean {
         val field = bean.javaClass.getDeclaredField(getPrimaryKeyFieldName(bean))
         field.isAccessible = true
@@ -292,20 +385,37 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         return deleteInternal(WhereBuilder.create(Condition("$name=?", arrayOf(value))), database)
     }
 
+    /**
+     * Delete all records.
+     * 简体中文：删除所有数据。
+     */
     override fun deleteAll(): Boolean {
         return deleteAllInternal(database)
     }
 
+    /**
+     * Delete all records.
+     * 简体中文：删除所有数据。
+     */
     private fun deleteAllInternal(db: SQLiteDatabase): Boolean {
         val tableName: String = TableManager.getTableName(beanClass)
         return db.delete(tableName, null, null) > 0
     }
 
+    /**
+     * Delete data based on conditions.
+     * 简体中文：按条件删除数据。
+     */
     private fun deleteInternal(builder: WhereBuilder, db: SQLiteDatabase): Boolean {
         val tableName: String = TableManager.getTableName(beanClass)
         return db.delete(tableName, builder.selection, builder.selectionArgs) > 0
     }
 
+    /**
+     * Query all data that meets the conditions; if any are found, update them to [newBean]; if
+     * none are found, insert a new [newBean].
+     * 简体中文：查询所有满足条件的数据，如果有，则全部更新为[newBean]，没有，则插入一个[newBean]。
+     */
     private fun insertOrUpdateInternal(builder: WhereBuilder, newBean: T): Boolean {
         val result = select(builder);
         if (result.isEmpty()) {
@@ -329,10 +439,19 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         }
     }
 
+    /**
+     * Query all data that meets the conditions; if any are found, update them to [newBean]; if
+     * none are found, insert a new [newBean].
+     * 简体中文：查询所有满足条件的数据，如果有，则全部更新为[newBean]，没有，则插入一个[newBean]。
+     */
     override fun insertOrUpdate(builder: WhereBuilder, newBean: T): Boolean {
         return insertOrUpdateInternal(builder, newBean)
     }
 
+    /**
+     * Insert or update data. If it exists, update it; if not, insert it.
+     * 简体中文：插入或更新数据。如果有，则更新，没有，则插入。
+     */
     private fun insertOrUpdateInternal(bean: T): Boolean {
         val field = bean.javaClass.getDeclaredField(getPrimaryKeyFieldName(bean))
         field.isAccessible = true
@@ -346,17 +465,26 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         }
     }
 
+    /**
+     * Insert or update data. If it exists, update it; if not, insert it.
+     * 简体中文：插入或更新数据。如果有，则更新，没有，则插入。
+     */
     override fun insertOrUpdate(bean: T): Boolean {
         return insertOrUpdateInternal(bean)
     }
 
+    /**
+     * Update all data that meets the conditions to [newBean].
+     * 简体中文：更新所有满足条件的数据为[newBean]。
+     */
     override fun update(builder: WhereBuilder, newBean: T): Boolean {
-        if (database == null) {
-            throw OrmStateException("Database is not exists.")
-        }
         return updateInternal(builder, newBean, database)
     }
 
+    /**
+     * Update a record.
+     * 简体中文：更新一条数据。
+     */
     override fun update(bean: T): Boolean {
         val field = bean.javaClass.getDeclaredField(getPrimaryKeyFieldName(bean))
         field.isAccessible = true
@@ -366,36 +494,64 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
                 bean, database)
     }
 
+    /**
+     * Query all data in the table.
+     * 简体中文：查询该表中的所有数据。
+     */
     private fun updateAllInternal(newBean: T, db: SQLiteDatabase): Boolean {
         val tableName: String = TableManager.getTableName(beanClass)
         val contentValues = getContentValues(newBean)
         return db.update(tableName, contentValues, null, null) > 0
     }
 
+    /**
+     * Update a record.
+     * 简体中文：更新一条数据。
+     */
     private fun updateInternal(builder: WhereBuilder, newBean: T, db: SQLiteDatabase): Boolean {
         val tableName: String = TableManager.getTableName(beanClass)
         val contentValues = getContentValues(newBean)
         return db.update(tableName, contentValues, builder.selection, builder.selectionArgs) > 0
     }
 
+    /**
+     * Query all data in the table.
+     * 简体中文：查询该表中的所有数据。
+     */
     override fun selectAll(): List<T> {
         return selectAllInternal()
     }
 
+    /**
+     * Query all data in the table.
+     * 简体中文：查询该表中的所有数据。
+     */
     private fun selectAllInternal(): List<T> {
         val tableName: String = TableManager.getTableName(beanClass)
         val cursor = database.query(tableName, null, null, null, null, null, null)
         return getResult(cursor)
     }
 
+    /**
+     * Query data based on conditions.
+     * 简体中文：按条件查询数据。
+     */
     override fun select(builder: WhereBuilder): List<T> {
         return select(QueryBuilder.create().where(builder))
     }
 
+    /**
+     * Query data based on conditions.
+     * 简体中文：按条件查询数据。
+     */
     override fun select(builder: QueryBuilder): List<T> {
         return selectInternal(builder)
     }
 
+    /**
+     * Query data based on conditions.
+     * 简体中文：按条件查询数据。
+     */
     private fun selectInternal(builder: QueryBuilder): List<T> {
         val tableName: String = TableManager.getTableName(beanClass)
         val columns: Array<String>? = builder.getColumns()
@@ -410,10 +566,18 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         return getResult(cursor)
     }
 
+    /**
+     * Query a specific record.
+     * 简体中文：查询特定的一条数据。
+     */
     override fun selectOne(): T? {
         return selectOneInternal()
     }
 
+    /**
+     * Query a specific record.
+     * 简体中文：查询特定的一条数据。
+     */
     private fun selectOneInternal(): T? {
         val tableName: String = TableManager.getTableName(beanClass)
         val cursor = database.query(tableName, null, null, null,
@@ -430,10 +594,18 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         return null
     }
 
+    /**
+     * Query a specific record.
+     * 简体中文：查询特定的一条数据。
+     */
     override fun selectOne(builder: WhereBuilder): T? {
         return selectOne(QueryBuilder.create().where(builder))
     }
 
+    /**
+     * Query a specific record.
+     * 简体中文：查询特定的一条数据。
+     */
     private fun selectOneInternal(builder: QueryBuilder): T? {
         val beans: List<T> = select(builder)
         if (beans.isNotEmpty()) {
@@ -461,10 +633,18 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         return null
     }
 
+    /**
+     * Query a specific record.
+     * 简体中文：查询特定的一条数据。
+     */
     override fun selectOne(builder: QueryBuilder): T? {
         return selectOneInternal(builder)
     }
 
+    /**
+     * Count the number of query results.
+     * 简体中文：统计查询的结果数量。
+     */
     @Deprecated("Please use count() instead.", level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("count()")
     )
@@ -472,6 +652,10 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         return count()
     }
 
+    /**
+     * Count the number of query results.
+     * 简体中文：统计查询的结果数量。
+     */
     @Deprecated("Please use count(builder: WhereBuilder) instead.", level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("count(builder)")
     )
@@ -479,6 +663,10 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         return count(builder)
     }
 
+    /**
+     * Count the number of query results.
+     * 简体中文：统计查询的结果数量。
+     */
     @Deprecated("Please use count(builder: QueryBuilder) instead.", level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("count(builder)")
     )
@@ -486,10 +674,18 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         return count(builder)
     }
 
+    /**
+     * Count the number of query results.
+     * 简体中文：统计查询的结果数量。
+     */
     override fun count(): Long {
         return countInternal()
     }
 
+    /**
+     * Count the number of query results.
+     * 简体中文：统计查询的结果数量。
+     */
     private fun countInternal() : Long {
         var count: Long = 0
         try {
@@ -506,14 +702,48 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         return count
     }
 
+    /**
+     * Count the number of query results.
+     * 简体中文：统计查询的结果数量。
+     */
     override fun count(builder: WhereBuilder): Long {
         return count(QueryBuilder.create().where(builder))
     }
 
+    /**
+     * Count the number of query results.
+     * 简体中文：统计查询的结果数量。
+     */
     override fun count(builder: QueryBuilder): Long {
         return countInternal(builder)
     }
 
+    /**
+     * Count the number of query results.
+     * 简体中文：统计查询的结果数量。
+     */
+    private fun countInternal(builder: QueryBuilder) : Long {
+        var count: Long = 0
+        try {
+            val tableName: String = TableManager.getTableName(beanClass)
+            val sql: String = builder.build()
+            val cursor = database.rawQuery("SELECT COUNT(*) FROM $tableName$sql",
+                builder.getWhereBuilder().selectionArgs)
+            if (cursor != null) {
+                cursor.moveToFirst()
+                count = cursor.getLong(0)
+                cursor.close()
+            }
+        } catch (e: Exception) {
+            OrmLog.d("select count(*) result is zero")
+        }
+        return count
+    }
+
+    /**
+     * Add a new column to the table.
+     * 简体中文：给表添加新列。
+     */
     override fun addColumn(fieldName: String): Boolean {
         val tableName = TableManager.getTableName(beanClass)
         try {
@@ -538,6 +768,10 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         return true
     }
 
+    /**
+     * Rename a column in a table.
+     * 简体中文：重命名表中的列。
+     */
     override fun renameColumn(fieldName: String, oldColumnName: String): Boolean {
         val tableName = TableManager.getTableName(beanClass)
         try {
@@ -566,6 +800,10 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         return true
     }
 
+    /**
+     * Rename the table.
+     * 简体中文：重命名表。
+     */
     override fun renameTable(oldTableName: String): Boolean {
         val tableName = TableManager.getTableName(beanClass)
         try {
@@ -581,6 +819,10 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         return true
     }
 
+    /**
+     * Delete a table, including its data and structure.
+     * 简体中文：删除表，包括表数据和表结构。
+     */
     override fun drop(): Boolean {
         try {
             val tableName = TableManager.getTableName(beanClass)
@@ -595,24 +837,10 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         return true
     }
 
-    private fun countInternal(builder: QueryBuilder) : Long {
-        var count: Long = 0
-        try {
-            val tableName: String = TableManager.getTableName(beanClass)
-            val sql: String = builder.build()
-            val cursor = database.rawQuery("SELECT COUNT(*) FROM $tableName$sql",
-                builder.getWhereBuilder().selectionArgs)
-            if (cursor != null) {
-                cursor.moveToFirst()
-                count = cursor.getLong(0)
-                cursor.close()
-            }
-        } catch (e: Exception) {
-            OrmLog.d("select count(*) result is zero")
-        }
-        return count
-    }
-
+    /**
+     * Collect query results.
+     * 简体中文：收集查询结果。
+     */
     private fun getResult(cursor: Cursor): List<T> {
         val result: MutableList<T> = arrayListOf()
         while (cursor.moveToNext()) {
@@ -630,6 +858,10 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         return result
     }
 
+    /**
+     * Create an instance of an OrmTable implementation class.
+     * 简体中文：创建一个OrmTable实现类的实例。
+     */
     private fun <T : OrmTable> newOrmTableInstance(clazz: Class<T>): T? {
         val constructors = clazz.declaredConstructors
         for (c in constructors) {
@@ -664,12 +896,20 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         return null
     }
 
+    /**
+     * Gets the default value of a primitive data type.
+     * 简体中文：获取基本数据类型的默认值。
+     */
     private fun getPrimitiveDefaultValue(clazz: Class<*>): Any? {
         return if (clazz.isPrimitive) {
             if (clazz == Boolean::class.javaPrimitiveType) false else 0
         } else null
     }
 
+    /**
+     * Gets the name of the primary key property.
+     * 简体中文：获取主键的属性名称。
+     */
     private fun getPrimaryKeyFieldName(bean: T): String {
         val fields = bean.javaClass.declaredFields
         for (field in fields) {
@@ -689,6 +929,10 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         return ""
     }
 
+    /**
+     * Convert the data stored in the database into data entity objects.
+     * 简体中文：将数据库中保存的数据转换成数据实体对象。
+     */
     @Throws(IllegalAccessException::class, ClassNotFoundException::class)
     private fun createResult(cursor: Cursor): T? {
         val bean: T = newOrmTableInstance(beanClass) ?: throw OrmResultCreationException("Failed to create ${beanClass.name} instance.")

@@ -1,6 +1,7 @@
 package dora.http.retrofit
 
 import android.annotation.SuppressLint
+import android.util.ArrayMap
 import dora.http.coroutine.flow.FlowCallAdapterFactory
 import dora.http.exception.DoraHttpException
 import okhttp3.OkHttpClient
@@ -12,7 +13,6 @@ import java.security.cert.X509Certificate
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
-import kotlin.collections.HashMap
 
 /**
  * Retrofit Manager: In Kotlin, initialization is done by calling [initConfig], while in Java,
@@ -27,13 +27,13 @@ object RetrofitManager {
      * It is used to store the Retrofit objects corresponding to all API services.
      * 简体中文：用于保存所有API服务对应的Retrofit对象。
      */
-    private val retrofitMap: MutableMap<Class<*>, Retrofit> = HashMap()
+    private val retrofitMap: MutableMap<Class<*>, Retrofit> = ArrayMap()
 
     /**
      * It is used to store the URL addresses mapped to all API services.
      * 简体中文：用于保存所有API服务映射的URL地址。
      */
-    private val urlMap: MutableMap<Class<*>, String> = HashMap()
+    private val urlMap: MutableMap<Class<*>, String> = ArrayMap()
 
     /**
      * It is used to store global configuration information.

@@ -14,6 +14,8 @@ import dora.cache.repository.BaseRepository
 import dora.http.coroutine.ContextContinuation
 import dora.http.coroutine.DoraCoroutineContext
 import dora.http.exception.DoraHttpException
+import dora.http.retrofit.ApiService
+import dora.http.retrofit.RetrofitManager
 import dora.http.rx.RxTransformer
 import io.reactivex.Observable
 import io.reactivex.Observer
@@ -47,12 +49,22 @@ import kotlin.coroutines.suspendCoroutine
  */
 object DoraHttp {
 
+    operator fun <T : ApiService> DoraHttp.get(clazz: Class<T>): T {
+        return RetrofitManager.getService(clazz)
+    }
+
     fun netScope(activity: Activity, block: suspend () -> Unit) {
         block.startCoroutine(ContextContinuation(DoraCoroutineContext(activity)))
     }
 
     fun netScope(fragment: Fragment, block: suspend () -> Unit) {
         block.startCoroutine(ContextContinuation(DoraCoroutineContext(fragment.requireActivity())))
+    }
+
+    fun netScope(dialog: Dialog, block: suspend () -> Unit) {
+        if (dialog.ownerActivity != null) {
+            block.startCoroutine(ContextContinuation(DoraCoroutineContext(dialog.ownerActivity!!)))
+        }
     }
 
     fun <M, F : CacheHolderFactory<M>> netScope(repository: BaseRepository<M, F>,

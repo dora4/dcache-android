@@ -53,6 +53,7 @@ object RetrofitManager {
      * It is called in Kotlin to initialize the global configuration.
      * 简体中文：kotlin调用它初始化全局配置。
      */
+    @JvmSynthetic
     fun initConfig(block: Config.() -> Unit) {
         block(config)
     }

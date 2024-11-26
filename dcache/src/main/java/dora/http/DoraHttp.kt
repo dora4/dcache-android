@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -50,6 +51,7 @@ import kotlin.reflect.KClass
  */
 object DoraHttp {
 
+    @JvmSynthetic
     operator fun <T : ApiService> DoraHttp.get(clazz: KClass<T>): T {
         return RetrofitManager.getService(clazz.java)
     }
@@ -166,6 +168,32 @@ object DoraHttp {
     }
 
     /**
+     * Can be used within the net scope, where a request failure throws an exception, and the lock
+     * is automatically released upon exiting the block. Unlike `request`, manual release is not
+     * required.
+     * 简体中文：在net作用域下使用，请求失败抛出异常，出块则自动释放锁，和request不同的是，无需手动释放。
+     */
+    inline fun <reified T : ApiService, M> api(
+        crossinline apiMethod: T.() -> Call<M>
+    ): M? {
+        val service = DoraHttp[T::class]
+        return runBlocking {
+            suspendCoroutine<M?> { continuation ->
+                val data = service.apiMethod()
+                data.enqueue(object : DoraCallback<M>() {
+                    override fun onSuccess(model: M) {
+                        continuation.resume(model)
+                    }
+
+                    override fun onFailure(msg: String) {
+                        continuation.resumeWith(Result.failure(DoraHttpException(data.request(), msg)))
+                    }
+                })
+            }
+        }
+    }
+
+    /**
      * The RxJava approach, used within the net scope, throws an exception on request failure, and
      * automatically releases the lock upon exiting the block. Unlike `request`, manual release is
      * not required.
@@ -191,6 +219,36 @@ object DoraHttp {
     }
 
     /**
+     * The RxJava approach, used within the net scope, throws an exception on request failure, and
+     * automatically releases the lock upon exiting the block. Unlike `request`, manual release is
+     * not required.
+     * 简体中文：RxJava的写法，在net作用域下使用，请求失败抛出异常，出块则自动释放锁，和request不同的是，无需手动释放。
+     */
+    inline fun <reified T : ApiService, M: Any> rxApi(crossinline apiMethod: T.() -> Observable<M>) :M? {
+        val service = DoraHttp[T::class]
+        return runBlocking {
+            suspendCoroutine<M?> {
+                val data = service.apiMethod()
+                RxTransformer.doApiObserver(data, object : Observer<M> {
+                    override fun onSubscribe(d: Disposable) {
+                    }
+
+                    override fun onNext(t: M) {
+                        it.resume(t)
+                    }
+
+                    override fun onError(e: Throwable) {
+                        it.resumeWith(Result.failure(DoraHttpException(e.toString())))
+                    }
+
+                    override fun onComplete() {
+                    }
+                })
+            }
+        }
+    }
+
+    /**
      * Can be used within the net scope, where a request failure returns a null value, and the lock
      * is automatically released upon exiting the block. Unlike `request`, manual release is not
      * required.
@@ -207,6 +265,30 @@ object DoraHttp {
                 it.resumeWith(Result.success(null))
             }
         })
+    }
+
+    /**
+     * Can be used within the net scope, where a request failure returns a null value, and the lock
+     * is automatically released upon exiting the block. Unlike `request`, manual release is not
+     * required.
+     * 简体中文：在net作用域下使用，请求失败返回空值，出块则自动释放锁，和request不同的是，无需手动释放。
+     */
+    inline fun <reified T : ApiService, M> result(crossinline apiMethod: T.() -> Call<M>): M? {
+        val service = DoraHttp[T::class]
+        return runBlocking {
+            suspendCoroutine<M?> { continuation ->
+                val data = service.apiMethod()
+                data.enqueue(object : DoraCallback<M?>() {
+                    override fun onSuccess(model: M?) {
+                        continuation.resume(model)
+                    }
+
+                    override fun onFailure(msg: String) {
+                        continuation.resumeWith(Result.success(null))
+                    }
+                })
+            }
+        }
     }
 
     /**
@@ -232,6 +314,36 @@ object DoraHttp {
             override fun onComplete() {
             }
         })
+    }
+
+    /**
+     * The RxJava approach, used within the net scope, returns a null value on request failure, and
+     * automatically releases the lock upon exiting the block. Unlike `request`, manual release is
+     * not required.
+     * 简体中文：RxJava的写法，在net作用域下使用，请求失败返回空值，出块则自动释放锁，和request不同的是，无需手动释放。
+     */
+    inline fun <reified T : ApiService, M : Any> rxResult(crossinline apiMethod: T.()-> Observable<M>): M? {
+        val service = DoraHttp[T::class]
+        return runBlocking {
+            suspendCoroutine<M?> {
+                val data = service.apiMethod()
+                RxTransformer.doApiObserver(data, object : Observer<M> {
+                    override fun onSubscribe(d: Disposable) {
+                    }
+
+                    override fun onNext(t: M) {
+                        it.resume(t)
+                    }
+
+                    override fun onError(e: Throwable) {
+                        it.resumeWith(Result.success(null))
+                    }
+
+                    override fun onComplete() {
+                    }
+                })
+            }
+        }
     }
 
     /**
@@ -272,6 +384,46 @@ object DoraHttp {
             block(lock)
         } catch (e: Exception) {
             it.resumeWith(Result.failure(e))
+        }
+    }
+
+    /**
+     * Execute the network request code by using it within the net scope. After completion (usually
+     * in the `onSuccess` or `onError` callback), please call `lock.releaseLock()` to allow
+     * subsequent code to execute. Additionally, you can specify the return result of the
+     * higher-order function for the request; after releasing the lock, this can be assigned to a
+     * variable as the result of the request function. This wraps the coroutine method in a
+     * compatible way, eliminating the need to manually define coroutine methods for network data
+     * requests.
+     * 简体中文：自己执行网络请求代码，在net作用域下使用，执行完成（通常为onSuccess或onError的回调）后请调用
+     * lock.releaseLock()，让后面的代码得以执行，另外可以指定request高阶函数的返回结果，释放锁后
+     * 将可以作为request函数的执行结果赋值给变量。包装协程方法，以一种兼容的方式，无需手动定义协程方法
+     * 去请求网络数据。
+     */
+    inline fun <reified T : ApiService, M> request(
+        crossinline apiMethod: T.() -> Call<M>,
+        noinline block: (lock: Lock<M?>) -> Unit
+    ): M? {
+        val service = DoraHttp[T::class]
+        return runBlocking {
+            suspendCoroutine<M?> { continuation ->
+                try {
+                    val lock = NetLock(continuation)
+                    val call = service.apiMethod()
+                    call.enqueue(object : DoraCallback<M>() {
+                        override fun onSuccess(model: M) {
+                            lock.releaseLock(model)
+                        }
+
+                        override fun onFailure(msg: String) {
+                            lock.releaseLock(null)
+                        }
+                    })
+                    block(lock)
+                } catch (e: Exception) {
+                    continuation.resumeWith(Result.failure(e))
+                }
+            }
         }
     }
 

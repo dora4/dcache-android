@@ -41,6 +41,7 @@ import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.startCoroutine
 import kotlin.coroutines.suspendCoroutine
+import kotlin.reflect.KClass
 
 /**
  * Used to initiate network requests and includes some commonly used utility methods for network
@@ -49,8 +50,8 @@ import kotlin.coroutines.suspendCoroutine
  */
 object DoraHttp {
 
-    operator fun <T : ApiService> DoraHttp.get(clazz: Class<T>): T {
-        return RetrofitManager.getService(clazz)
+    operator fun <T : ApiService> DoraHttp.get(clazz: KClass<T>): T {
+        return RetrofitManager.getService(clazz.java)
     }
 
     fun netScope(activity: Activity, block: suspend () -> Unit) {

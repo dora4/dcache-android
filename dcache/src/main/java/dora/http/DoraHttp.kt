@@ -30,7 +30,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -175,8 +174,8 @@ object DoraHttp {
      */
     suspend inline fun <reified T : ApiService, M> api(clazz: KClass<T>, crossinline apiMethod: T.() -> Call<M>): M? {
         val service = DoraHttp[clazz]
-        val data = service.apiMethod()
         return suspendCoroutine<M?> {
+            val data = service.apiMethod()
             data.enqueue(object : DoraCallback<M>() {
                 override fun onSuccess(model: M) {
                     it.resume(model)
@@ -215,6 +214,34 @@ object DoraHttp {
     }
 
     /**
+     * The RxJava approach, used within the net scope, throws an exception on request failure, and
+     * automatically releases the lock upon exiting the block. Unlike `request`, manual release is
+     * not required.
+     * 简体中文：RxJava的写法，在net作用域下使用，请求失败抛出异常，出块则自动释放锁，和request不同的是，无需手动释放。
+     */
+    suspend inline fun <reified T : ApiService, M : Any> rxApi(clazz: KClass<T>, crossinline apiMethod: T.() -> Observable<M>): M? {
+        val service = DoraHttp[clazz]
+        return suspendCoroutine<M?> {
+            val data = service.apiMethod()
+            RxTransformer.doApiObserver(data, object : Observer<M> {
+                override fun onSubscribe(d: Disposable) {
+                }
+
+                override fun onNext(model: M) {
+                    it.resume(model)
+                }
+
+                override fun onError(e: Throwable) {
+                    it.resumeWith(Result.failure(DoraHttpException(e.toString())))
+                }
+
+                override fun onComplete() {
+                }
+            })
+        }
+    }
+
+    /**
      * Can be used within the net scope, where a request failure returns a null value, and the lock
      * is automatically released upon exiting the block. Unlike `request`, manual release is not
      * required.
@@ -241,8 +268,8 @@ object DoraHttp {
      */
     suspend inline fun <reified T : ApiService, M> result(clazz: KClass<T>, crossinline apiMethod: T.() -> Call<M>): M? {
         val service = DoraHttp[clazz]
-        val data = service.apiMethod()
         return suspendCoroutine<M?> {
+            val data = service.apiMethod()
             data.enqueue(object : DoraCallback<M>() {
                 override fun onSuccess(model: M) {
                     it.resume(model)
@@ -286,27 +313,25 @@ object DoraHttp {
      * not required.
      * 简体中文：RxJava的写法，在net作用域下使用，请求失败返回空值，出块则自动释放锁，和request不同的是，无需手动释放。
      */
-    inline fun <reified T : ApiService, M : Any> rxResult(crossinline apiMethod: T.()-> Observable<M>): M? {
-        val service = DoraHttp[T::class]
-        return runBlocking {
-            suspendCoroutine<M?> {
-                val data = service.apiMethod()
-                RxTransformer.doApiObserver(data, object : Observer<M> {
-                    override fun onSubscribe(d: Disposable) {
-                    }
+    suspend inline fun <reified T : ApiService, M : Any> rxResult(clazz: KClass<T>, crossinline apiMethod: T.() -> Observable<M>): M? {
+        return suspendCoroutine<M?> {
+            val service = DoraHttp[clazz]
+            val data = service.apiMethod()
+            RxTransformer.doApiObserver(data, object : Observer<M> {
+                override fun onSubscribe(d: Disposable) {
+                }
 
-                    override fun onNext(t: M) {
-                        it.resume(t)
-                    }
+                override fun onNext(t: M) {
+                    it.resume(t)
+                }
 
-                    override fun onError(e: Throwable) {
-                        it.resumeWith(Result.success(null))
-                    }
+                override fun onError(e: Throwable) {
+                    it.resumeWith(Result.success(null))
+                }
 
-                    override fun onComplete() {
-                    }
-                })
-            }
+                override fun onComplete() {
+                }
+            })
         }
     }
 

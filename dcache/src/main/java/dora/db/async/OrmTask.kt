@@ -89,7 +89,7 @@ open class OrmTask<T : OrmTable> internal constructor(
      */
     @Synchronized
     @Throws(OrmTaskException::class)
-    fun getResult(): Any? {
+    fun result(): Any? {
         if (!isCompleted) {
             waitForCompletion()
         }

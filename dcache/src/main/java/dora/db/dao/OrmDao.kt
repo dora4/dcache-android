@@ -31,7 +31,7 @@ import java.util.concurrent.Callable
  */
 class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
     private val beanClass: Class<T>,
-    db: SQLiteDatabase? = null, type: OrmTask.Type
+    db: SQLiteDatabase? = null
 ) : Dao<T> {
 
     /**

@@ -90,7 +90,7 @@ object RetrofitManager {
             return retrofit.create(clazz)
         } else {
             if (urlMap.containsKey(clazz)) {
-                val url = urlMap[clazz] ?: ""
+                val url = urlMap[clazz].orEmpty()
                 val builder = Retrofit.Builder()
                     .baseUrl(url)
                     .addConverterFactory(GsonConverterFactory.create())

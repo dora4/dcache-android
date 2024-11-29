@@ -28,8 +28,7 @@ class FormatLogInterceptor : Interceptor {
         }
         val logResponse = printLevel == Level.ALL || printLevel != Level.NONE && printLevel == Level.RESPONSE
         val t1 = if (logResponse) System.nanoTime() else 0
-        val originalResponse: Response
-        originalResponse = try {
+        val originalResponse: Response = try {
             chain.proceed(request)
         } catch (e: Exception) {
             Log.w("Http Error: %s", e)
@@ -138,7 +137,7 @@ class FormatLogInterceptor : Interceptor {
                 if (UrlEncoderUtils.hasUrlEncoded(json)) {
                     json = URLDecoder.decode(json, convertCharset(charset))
                 }
-                jsonFormat(json!!)
+                jsonFormat(json)
             } catch (e: IOException) {
                 e.printStackTrace()
                 "{\"error\": \"" + e.message + "\"}"
@@ -146,7 +145,7 @@ class FormatLogInterceptor : Interceptor {
         }
 
         fun isParseable(mediaType: MediaType?): Boolean {
-            return if (mediaType == null || mediaType.type == null) {
+            return if (mediaType == null) {
                 false
             } else isText(mediaType) || isPlain(mediaType)
                     || isJson(mediaType) || isForm(mediaType)
@@ -154,39 +153,29 @@ class FormatLogInterceptor : Interceptor {
         }
 
         fun isText(mediaType: MediaType?): Boolean {
-            return if (mediaType == null || mediaType.type == null) {
+            return if (mediaType == null) {
                 false
             } else "text" == mediaType.type
         }
 
         fun isPlain(mediaType: MediaType?): Boolean {
-            return if (mediaType == null || mediaType.subtype == null) {
-                false
-            } else mediaType.subtype.toLowerCase().contains("plain")
+            return mediaType?.subtype?.toLowerCase()?.contains("plain") ?: false
         }
 
         fun isJson(mediaType: MediaType?): Boolean {
-            return if (mediaType == null || mediaType.subtype == null) {
-                false
-            } else mediaType.subtype.toLowerCase().contains("json")
+            return mediaType?.subtype?.toLowerCase()?.contains("json") ?: false
         }
 
         fun isXml(mediaType: MediaType?): Boolean {
-            return if (mediaType == null || mediaType.subtype == null) {
-                false
-            } else mediaType.subtype.toLowerCase().contains("xml")
+            return mediaType?.subtype?.toLowerCase()?.contains("xml") ?: false
         }
 
         fun isHtml(mediaType: MediaType?): Boolean {
-            return if (mediaType == null || mediaType.subtype == null) {
-                false
-            } else mediaType.subtype.toLowerCase().contains("html")
+            return mediaType?.subtype?.toLowerCase()?.contains("html") ?: false
         }
 
         fun isForm(mediaType: MediaType?): Boolean {
-            return if (mediaType == null || mediaType.subtype == null) {
-                false
-            } else mediaType.subtype.toLowerCase().contains("x-www-form-urlencoded")
+            return mediaType?.subtype?.toLowerCase()?.contains("x-www-form-urlencoded") ?: false
         }
 
         fun convertCharset(charset: Charset?): String {

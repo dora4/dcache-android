@@ -12,6 +12,7 @@ object OrmLog {
      * Log printing flag.
      * 简体中文：日志打印标志位。
      */
+    @JvmStatic
     private var ORM_DEBUG = true
 
     /**
@@ -24,34 +25,40 @@ object OrmLog {
      * Whether to enable the printing of ORM logs.
      * 简体中文：是否开启ORM日志的打印。
      */
+    @JvmStatic
     fun setDebugMode(debugMode: Boolean) {
         ORM_DEBUG = debugMode
     }
 
+    @JvmStatic
     fun i(msg: String) {
         if (ORM_DEBUG) {
             Log.i(TAG, msg)
         }
     }
 
+    @JvmStatic
     fun w(msg: String) {
         if (ORM_DEBUG) {
             Log.w(TAG, msg)
         }
     }
 
+    @JvmStatic
     fun d(msg: String) {
         if (ORM_DEBUG) {
             Log.d(TAG, msg)
         }
     }
 
+    @JvmStatic
     fun e(msg: String) {
         if (ORM_DEBUG) {
             Log.e(TAG, msg)
         }
     }
 
+    @JvmStatic
     fun v(msg: String) {
         if (ORM_DEBUG) {
             Log.v(TAG, msg)

@@ -83,21 +83,45 @@ open class OrmTask<T : OrmTable> internal constructor(
 
     /**
      * The operation's result after it has completed. Waits until a result is available.
+     * 简体中文：操作完成后返回结果。等待直到结果可用。
      *
      * @return The operation's result or null if the operation type does not produce any result.
-     * @throws [OrmTaskException] if the operation produced an exception
+     * 简体中文：操作完成后的结果。等待直到结果可用。操作的结果，如果操作类型没有产生结果，则返回null。
+     * @throws [OrmTaskException]
      * @see .waitForCompletion
      */
     @Synchronized
     @Throws(OrmTaskException::class)
-    fun result(): T {
+    fun result(): Any {
+        if (!isCompleted) {
+            waitForCompletion()
+        }
+        throwable?.let { throw OrmTaskException(this, it) }
+        // all orm operations have return value.
+        // 简体中文：所有ORM操作都有返回值
+        return result!!
+    }
+
+    /**
+     * The operation's result after it has completed. Waits until a result is available.
+     * 简体中文：操作完成后返回结果。等待直到结果可用。
+     *
+     * @return The operation's result or null if the operation type does not produce any result.
+     * 简体中文：操作完成后的结果。等待直到结果可用。操作的结果，如果操作类型没有产生结果，则返回null。
+     * @throws [OrmTaskException]
+     * @see .waitForCompletion
+     */
+    @Synchronized
+    @Throws(OrmTaskException::class)
+    fun <R> result(clazz: Class<R>): R {
         if (!isCompleted) {
             waitForCompletion()
         }
         if (throwable != null) {
             throw OrmTaskException(this, throwable!!)
         }
-        return result as T
+        return result?.takeIf { clazz.isInstance(it) } as? R
+            ?: throw OrmTaskException("The result type does not match the expected type: ${clazz.name}")
     }
 
     val isMergeTx: Boolean

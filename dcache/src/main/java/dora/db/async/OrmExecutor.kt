@@ -292,8 +292,8 @@ internal class OrmExecutor<T : OrmTable> : Runnable, Handler.Callback {
             }
             task.creatorStacktrace?.let { stacktrace ->
                 OrmLog.e(
-                    "Task failed: ${task.type}, Sequence: ${task.sequenceNumber}. Created at:",
-                    stacktrace
+                    "Task failed: ${task.type}, Sequence: ${task.sequenceNumber}. Created at:"
+                            + stacktrace
                 )
             }
         } finally {

@@ -21,7 +21,7 @@ import java.lang.reflect.InvocationTargetException
 class OrmSQLiteOpenHelper(private val context: Context, name: String, version: Int,
                           private val tables: Array<Class<out OrmTable>>?) :
         SQLiteOpenHelper(context, name, null, version, DatabaseErrorHandler {
-            dbObj -> OrmLog.e(dbObj.toString(), stacktrace) }) {
+            dbObj -> OrmLog.e(dbObj.toString()) }) {
 
     override fun onCreate(db: SQLiteDatabase) {
         if (!tables.isNullOrEmpty()) {
@@ -106,7 +106,7 @@ class OrmSQLiteOpenHelper(private val context: Context, name: String, version: I
                                     curVersion = migration.toVersion
                                     OrmLog.d("${it.javaClass.name}'s version has succeeded upgraded to $curVersion")
                                 } catch (e: Exception) {
-                                    OrmLog.e(e.toString(), stacktrace)
+                                    OrmLog.e(e.toString())
                                     throw OrmMigrationException("${it.javaClass.name}'s version failed to upgrade to $curVersion")
                                 }
                             }

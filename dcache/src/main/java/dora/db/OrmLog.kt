@@ -52,7 +52,7 @@ object OrmLog {
     }
 
     @JvmStatic
-    fun e(msg: String) {
+    fun e(msg: String, stacktrace: Exception) {
         if (ORM_DEBUG) {
             Log.e(TAG, msg)
         }

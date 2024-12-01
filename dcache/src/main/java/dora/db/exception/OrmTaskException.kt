@@ -38,8 +38,8 @@ class OrmTaskException : SQLException {
         try {
             initCause(cause)
         } catch (e: Throwable) {
-            OrmLog.e("Could not set initial cause.\n$e")
-            OrmLog.e("Initial cause is:$cause")
+            OrmLog.e("Could not set initial cause.\n$e", stacktrace)
+            OrmLog.e("Initial cause is:$cause", stacktrace)
         }
     }
 }

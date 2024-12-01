@@ -377,7 +377,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun insertAsync(bean: T, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.Insert, this, bean, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+        executor.enqueue(OrmTask(OrmTask.Type.Insert, this, bean, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -386,7 +386,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun insertAsync(beans: List<T>, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.InsertList, this, beans, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+        executor.enqueue(OrmTask(OrmTask.Type.InsertList, this, beans, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -403,7 +403,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun deleteAsync(builder: WhereBuilder, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.Delete, this, builder, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+        executor.enqueue(OrmTask(OrmTask.Type.Delete, this, builder, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -412,7 +412,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun deleteAsync(bean: T, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.DeleteByKey, this, bean, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+        executor.enqueue(OrmTask(OrmTask.Type.DeleteByKey, this, bean, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -441,7 +441,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun deleteAllAsync(listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.DeleteAll, this, null, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+        executor.enqueue(OrmTask(OrmTask.Type.DeleteAll, this, null, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -450,7 +450,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun updateAsync(bean: T, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.UpdateByKey, this, bean, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+        executor.enqueue(OrmTask(OrmTask.Type.UpdateByKey, this, bean, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -463,7 +463,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
             Callable() {
                 update(builder, newBean)
             },
-            OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -472,7 +472,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun insertOrUpdateAsync(bean: T, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.InsertOrReplace, this, null, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+        executor.enqueue(OrmTask(OrmTask.Type.InsertOrReplace, this, bean, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -486,7 +486,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
             Callable() {
                 insertOrUpdate(builder, newBean)
                        },
-            OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -624,7 +624,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun selectAllAsync(listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.QueryAll, this, null, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+        executor.enqueue(OrmTask(OrmTask.Type.QueryAll, this, null, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -659,7 +659,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun selectAsync(builder: QueryBuilder, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.QueryList, this, builder, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+        executor.enqueue(OrmTask(OrmTask.Type.QueryList, this, builder, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -668,7 +668,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun selectAsync(builder: WhereBuilder, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.WhereList, this, builder, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+        executor.enqueue(OrmTask(OrmTask.Type.WhereList, this, builder, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -770,7 +770,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun selectOneAsync(listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.IndexUnique, this, null, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+        executor.enqueue(OrmTask(OrmTask.Type.IndexUnique, this, null, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -779,7 +779,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun selectOneAsync(builder: WhereBuilder, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.WhereUnique, this, builder, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+        executor.enqueue(OrmTask(OrmTask.Type.WhereUnique, this, builder, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -788,7 +788,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun selectOneAsync(builder: QueryBuilder, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.QueryUnique, this, builder, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+        executor.enqueue(OrmTask(OrmTask.Type.QueryUnique, this, builder, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -874,7 +874,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun countAsync(listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.Count, this, null, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+        executor.enqueue(OrmTask(OrmTask.Type.Count, this, null, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -883,7 +883,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun countAsync(builder: WhereBuilder, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.WhereCount, this, builder, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+        executor.enqueue(OrmTask(OrmTask.Type.WhereCount, this, builder, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -892,7 +892,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun countAsync(builder: QueryBuilder, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.QueryCount, this, builder, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+        executor.enqueue(OrmTask(OrmTask.Type.QueryCount, this, builder, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -951,7 +951,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun addColumnAsync(fieldName: String, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.AddColumn, this, fieldName, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+        executor.enqueue(OrmTask(OrmTask.Type.AddColumn, this, fieldName, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -1000,7 +1000,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
             Callable {
                      renameColumn(fieldName, oldColumnName)
             },
-            OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -1028,7 +1028,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun renameTableAsync(oldTableName: String, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.RenameTable, this, oldTableName, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+        executor.enqueue(OrmTask(OrmTask.Type.RenameTable, this, oldTableName, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -1055,7 +1055,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun dropAsync(listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.Drop, this, null, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+        executor.enqueue(OrmTask(OrmTask.Type.Drop, this, null, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**

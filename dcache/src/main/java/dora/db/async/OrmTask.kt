@@ -62,7 +62,7 @@ open class OrmTask<T : OrmTable> internal constructor(
      * The stacktrace is captured using an exception if [.FLAG_TRACK_CREATOR_STACKTRACE] was used (null
      * otherwise). 简体中文：如果使用了 [.FLAG_TRACK_CREATOR_STACKTRACE]，则使用异常捕获堆栈跟踪（否则为 null）。
      */
-    val creatorStacktrace: Exception?
+    val creatorStacktrace: Exception? = if ((flags and FLAG_TRACK_CREATOR_STACKTRACE) != 0) Exception("OrmTask was created here") else null
 
     @Volatile
     var result: Any? = null
@@ -80,11 +80,6 @@ open class OrmTask<T : OrmTable> internal constructor(
      * identifying/mapping operations. 简体中文：每个操作在排队时都会获得一个唯一的序列号。可以用于高效地识别/映射操作。
      */
     var sequenceNumber: Int = 0
-
-    init {
-        creatorStacktrace =
-            if ((flags and FLAG_TRACK_CREATOR_STACKTRACE) != 0) Exception("OrmTask was created here") else null
-    }
 
     /**
      * The operation's result after it has completed. Waits until a result is available.
@@ -117,7 +112,7 @@ open class OrmTask<T : OrmTable> internal constructor(
      * [.FLAG_MERGE_TX], and if the database instances match. 简体中文：判断此操作是否可以与指定的操作合并。
      * 会检查 null、[.FLAG_MERGE_TX] 以及数据库实例是否匹配。
      */
-    fun isMergeableWith(other: OrmTask<out OrmTable>?): Boolean {
+    fun isMergeableWith(other: OrmTask<T>?): Boolean {
         return other != null && isMergeTx && other.isMergeTx && getDatabase() == other.getDatabase()
     }
 

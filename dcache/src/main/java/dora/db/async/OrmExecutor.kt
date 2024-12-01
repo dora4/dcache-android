@@ -44,6 +44,15 @@ internal class OrmExecutor<T : OrmTable> : Runnable, Handler.Callback {
 
     private var handlerMainThread: Handler? = null
     private var lastSequenceNumber = 0
+    private var stopQueue: Boolean = false
+
+    fun resetQueueStopFlag() {
+        stopQueue = false
+    }
+
+    private fun shouldStopQueue(task: OrmTask<T>): Boolean {
+        return (task.flags and OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION) != 0
+    }
 
     fun enqueue(task: OrmTask<T>) {
         synchronized(this) {
@@ -129,6 +138,7 @@ internal class OrmExecutor<T : OrmTable> : Runnable, Handler.Callback {
                                 }
                             }
                         }
+
                         if (task.isMergeTx) {
                             val task2 =
                                 queue.poll(waitForMergeMillis.toLong(), TimeUnit.MILLISECONDS)
@@ -205,20 +215,21 @@ internal class OrmExecutor<T : OrmTable> : Runnable, Handler.Callback {
 
     private fun handleTaskCompleted(task: OrmTask<T>) {
         task.setCompleted()
-        val listenerToCall = listener
-        listenerToCall?.onCompleted(task)
-        if (listenerMainThread != null) {
-            if (handlerMainThread == null) {
-                handlerMainThread = Handler(Looper.getMainLooper(), this)
-            }
-            val msg = handlerMainThread!!.obtainMessage(1, task)
-            handlerMainThread!!.sendMessage(msg)
+        listener?.onCompleted(task)
+        listenerMainThread?.let {
+            getMainThreadHandler().obtainMessage(1, task).sendToTarget()
         }
-        synchronized(this) {
+        lock.withLock {
             countTasksCompleted++
             if (countTasksCompleted == countTasksEnqueued) {
-                (this as Object).notifyAll()
+                condition.signalAll()
             }
+        }
+    }
+
+    private fun getMainThreadHandler(): Handler {
+        return handlerMainThread ?: synchronized(this) {
+            handlerMainThread ?: Handler(Looper.getMainLooper(), this).also { handlerMainThread = it }
         }
     }
 
@@ -228,6 +239,11 @@ internal class OrmExecutor<T : OrmTable> : Runnable, Handler.Callback {
     }
 
     private fun executeTask(task: OrmTask<T>) {
+        if (stopQueue) {
+            OrmLog.w("Task queue stopped due to previous exception.")
+            return
+        }
+
         task.timeStarted = System.currentTimeMillis()
         try {
             when (task.type) {
@@ -271,8 +287,18 @@ internal class OrmExecutor<T : OrmTable> : Runnable, Handler.Callback {
             }
         } catch (th: Throwable) {
             task.throwable = th
+            if ((task.flags and OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION) != 0) {
+                stopQueue = true
+            }
+            task.creatorStacktrace?.let { stacktrace ->
+                OrmLog.e(
+                    "Task failed: ${task.type}, Sequence: ${task.sequenceNumber}. Created at:",
+                    stacktrace
+                )
+            }
+        } finally {
+            task.timeCompleted = System.currentTimeMillis()
         }
-        task.timeCompleted = System.currentTimeMillis()
     }
 
     private fun executeTransactionRunnable(task: OrmTask<T>) {

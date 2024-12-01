@@ -213,13 +213,13 @@ internal class OrmExecutor<T : OrmTable> : Runnable, Handler.Callback {
         task.timeStarted = System.currentTimeMillis()
         try {
             when (task.type) {
-                OrmTask.Type.Insert -> task.dao.insert(task.parameter as T)
-                OrmTask.Type.InsertList -> task.dao.insert(task.parameter as List<T>)
-                OrmTask.Type.Delete -> task.dao.delete((task.parameter as WhereBuilder))
-                OrmTask.Type.DeleteByKey -> task.dao.delete(task.parameter as T)
-                OrmTask.Type.DeleteAll -> task.dao.deleteAll()
-                OrmTask.Type.InsertOrReplace -> task.dao.insertOrUpdate(task.parameter as T)
-                OrmTask.Type.UpdateByKey -> task.dao.update(task.parameter as T)
+                OrmTask.Type.Insert -> task.result = task.dao.insert(task.parameter as T)
+                OrmTask.Type.InsertList -> task.result = task.dao.insert(task.parameter as List<T>)
+                OrmTask.Type.Delete -> task.result = task.dao.delete((task.parameter as WhereBuilder))
+                OrmTask.Type.DeleteByKey -> task.result = task.dao.delete(task.parameter as T)
+                OrmTask.Type.DeleteAll -> task.result = task.dao.deleteAll()
+                OrmTask.Type.InsertOrReplace -> task.result = task.dao.insertOrUpdate(task.parameter as T)
+                OrmTask.Type.UpdateByKey -> task.result = task.dao.update(task.parameter as T)
                 OrmTask.Type.WhereList -> task.result =
                     task.dao.select((task.parameter as WhereBuilder))
                 OrmTask.Type.QueryList -> task.result =

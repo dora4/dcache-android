@@ -4,11 +4,16 @@ import android.database.sqlite.SQLiteDatabase
 import dora.db.dao.OrmDao
 import dora.db.exception.OrmTaskException
 import dora.db.table.OrmTable
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.ReentrantLock
 
 open class OrmTask<T : OrmTable> internal constructor(
     val type: Type, val dao: OrmDao<T>,
     val parameter: Any? = null, val flags: Int
 ) {
+
+    private val lock = ReentrantLock()
+    private val condition = lock.newCondition()
 
     /**
      * @see OrmExecutor.executeTask
@@ -89,7 +94,7 @@ open class OrmTask<T : OrmTable> internal constructor(
      */
     @Synchronized
     @Throws(OrmTaskException::class)
-    fun result(): T? {
+    fun result(): T {
         if (!isCompleted) {
             waitForCompletion()
         }
@@ -138,14 +143,22 @@ open class OrmTask<T : OrmTable> internal constructor(
     @Synchronized
     @Throws(OrmTaskException::class)
     fun waitForCompletion(): Any? {
-        while (!isCompleted) {
-            try {
-                (this as Object).wait()
-            } catch (e: InterruptedException) {
-                throw OrmTaskException("Interrupted while waiting for operation to complete.\n$e")
+        lock.lock()
+        try {
+            while (!isCompleted) {
+                try {
+                    condition.await()
+                } catch (e: InterruptedException) {
+                    throw OrmTaskException("Interrupted while waiting for operation to complete.\n$e", e)
+                }
             }
+            if (throwable != null) {
+                throw OrmTaskException(this, throwable!!)
+            }
+            return result
+        } finally {
+            lock.unlock()
         }
-        return result
     }
 
     /**
@@ -160,14 +173,22 @@ open class OrmTask<T : OrmTable> internal constructor(
     @Synchronized
     @Throws(OrmTaskException::class)
     fun waitForCompletion(maxMillis: Int): Boolean {
-        if (!isCompleted) {
-            try {
-                (this as Object).wait(maxMillis.toLong())
-            } catch (e: InterruptedException) {
-                throw OrmTaskException("Interrupted while waiting for operation to complete.\n$e")
+        lock.lock()
+        try {
+            if (!isCompleted) {
+                try {
+                    val completedInTime = condition.await(maxMillis.toLong(), TimeUnit.MILLISECONDS)
+                    if (!completedInTime && !isCompleted) {
+                        return false
+                    }
+                } catch (e: InterruptedException) {
+                    throw OrmTaskException("Interrupted while waiting for operation to complete.\n$e", e)
+                }
             }
+            return isCompleted
+        } finally {
+            lock.unlock()
         }
-        return isCompleted
     }
 
     /**

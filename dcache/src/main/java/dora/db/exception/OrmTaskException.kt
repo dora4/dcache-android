@@ -12,14 +12,14 @@ class OrmTaskException : SQLException {
         this.failedTask = failedTask
     }
 
-    constructor(error: String, failedTask: OrmTask<*>?) : super(error) {
+    constructor(error: String, failedTask: OrmTask<*>? = null) : super(error) {
         this.failedTask = failedTask
     }
 
     constructor(error: String) : super(error) {
     }
 
-    constructor(error: String, cause: Throwable, failedTask: OrmTask<*>?) : super(error) {
+    constructor(error: String, cause: Throwable, failedTask: OrmTask<*>? = null) : super(error) {
         this.failedTask = failedTask
         safeInitCause(cause)
     }

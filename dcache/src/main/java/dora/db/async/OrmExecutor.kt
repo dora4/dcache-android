@@ -15,10 +15,15 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 internal class OrmExecutor<T : OrmTable> : Runnable, Handler.Callback {
 
     private val queue: BlockingQueue<OrmTask<T>> = LinkedBlockingQueue()
+
+    private val lock = ReentrantLock()
+    private val condition = lock.newCondition()
 
     @Volatile
     private var executorRunning = false
@@ -55,7 +60,9 @@ internal class OrmExecutor<T : OrmTable> : Runnable, Handler.Callback {
 
     @get:Synchronized
     val isCompleted: Boolean
-        get() = countTasksEnqueued == countTasksCompleted
+        get() = lock.withLock {
+            countTasksEnqueued == countTasksCompleted
+        }
 
     /**
      * Waits until all enqueued operations are complete. If the thread gets interrupted, any
@@ -66,12 +73,17 @@ internal class OrmExecutor<T : OrmTable> : Runnable, Handler.Callback {
     @Synchronized
     @Throws(OrmTaskException::class)
     fun waitForCompletion() {
-        while (!isCompleted) {
-            try {
-                (this as Object).wait()
-            } catch (e: InterruptedException) {
-                throw OrmTaskException("Interrupted while waiting for all tasks to complete.\n$e")
+        lock.lock()
+        try {
+            while (!isCompleted) {
+                try {
+                    condition.await()
+                } catch (e: InterruptedException) {
+                    throw OrmTaskException("Interrupted while waiting for all tasks to complete.\n$e", e)
+                }
             }
+        } finally {
+            lock.unlock()
         }
     }
 
@@ -85,15 +97,22 @@ internal class OrmExecutor<T : OrmTable> : Runnable, Handler.Callback {
      */
     @Synchronized
     @Throws(OrmTaskException::class)
-    fun waitForCompletion(maxMillis: Int): Boolean {
-        if (!isCompleted) {
-            try {
-                (this as Object).wait(maxMillis.toLong())
-            } catch (e: InterruptedException) {
-                throw OrmTaskException("Interrupted while waiting for all tasks to complete.\n$e")
+    fun waitForCompletion(maxMillis: Int = 0): Boolean {
+        lock.withLock {
+            val deadline = System.currentTimeMillis() + maxMillis
+            while (!isCompleted) {
+                val remainingTime = deadline - System.currentTimeMillis()
+                if (remainingTime <= 0 || maxMillis == 0) {
+                    break
+                }
+                try {
+                    condition.await(remainingTime, TimeUnit.MILLISECONDS)
+                } catch (e: InterruptedException) {
+                    throw OrmTaskException("Interrupted while waiting: ${e.message}", e)
+                }
             }
+            return isCompleted
         }
-        return isCompleted
     }
 
     override fun run() {

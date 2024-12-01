@@ -40,7 +40,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     private val database: SQLiteDatabase = db ?: Orm.getDB()
 
-    private val executor: OrmExecutor<T> by lazy { OrmExecutor<T>() }
+    private val executor: OrmExecutor<T> = OrmExecutor<T>()
 
     /**
      * It is used to retain the operation mode of sql statements.

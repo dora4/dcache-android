@@ -21,7 +21,6 @@ import kotlin.concurrent.withLock
 internal class OrmExecutor<T : OrmTable> : Runnable, Handler.Callback {
 
     private val queue: BlockingQueue<OrmTask<T>> = LinkedBlockingQueue()
-
     private val lock = ReentrantLock()
     private val condition = lock.newCondition()
 
@@ -248,6 +247,8 @@ internal class OrmExecutor<T : OrmTable> : Runnable, Handler.Callback {
                     task.dao.selectOne((task.parameter as WhereBuilder))
                 OrmTask.Type.QueryUnique -> task.result =
                     task.dao.selectOne((task.parameter as QueryBuilder))
+                OrmTask.Type.IndexUnique -> task.result =
+                    task.dao.selectOne()
                 OrmTask.Type.Count -> task.result = task.dao.count()
                 OrmTask.Type.WhereCount -> task.result =
                     task.dao.count((task.parameter as WhereBuilder))

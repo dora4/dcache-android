@@ -33,6 +33,7 @@ open class OrmTask<T : OrmTable> internal constructor(
         QueryList,
         QueryAll,
         QueryUnique,
+        IndexUnique,
         Count,
         WhereCount,
         QueryCount,

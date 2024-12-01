@@ -770,7 +770,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun selectOneAsync(listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.QueryUnique, this, null, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
+        executor.enqueue(OrmTask(OrmTask.Type.IndexUnique, this, null, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
     }
 
     /**

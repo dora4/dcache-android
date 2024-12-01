@@ -89,14 +89,14 @@ open class OrmTask<T : OrmTable> internal constructor(
      */
     @Synchronized
     @Throws(OrmTaskException::class)
-    fun result(): Any? {
+    fun result(): T? {
         if (!isCompleted) {
             waitForCompletion()
         }
         if (throwable != null) {
             throw OrmTaskException(this, throwable!!)
         }
-        return result
+        return result as T
     }
 
     val isMergeTx: Boolean
@@ -111,7 +111,7 @@ open class OrmTask<T : OrmTable> internal constructor(
      * [.FLAG_MERGE_TX], and if the database instances match. 简体中文：判断此操作是否可以与指定的操作合并。
      * 会检查 null、[.FLAG_MERGE_TX] 以及数据库实例是否匹配。
      */
-    fun isMergeableWith(other: OrmTask<*>?): Boolean {
+    fun isMergeableWith(other: OrmTask<out OrmTable>?): Boolean {
         return other != null && isMergeTx && other.isMergeTx && getDatabase() == other.getDatabase()
     }
 

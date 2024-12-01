@@ -13,9 +13,9 @@ import dora.db.async.OrmTaskListener
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import dora.db.builder.WhereBuilder
-import dora.db.constraint.AssignType
 import dora.db.constraint.Id
 import dora.db.constraint.PrimaryKey
+import dora.db.constraint.AssignType
 import dora.db.converter.PropertyConverter
 import dora.db.exception.OrmResultCreationException
 import dora.db.exception.UnsupportedDataTypeException
@@ -40,7 +40,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     private val database: SQLiteDatabase = db ?: Orm.getDB()
 
-    private val executor: OrmExecutor by lazy { OrmExecutor() }
+    private val executor: OrmExecutor<T> by lazy { OrmExecutor<T>() }
 
     /**
      * It is used to retain the operation mode of sql statements.
@@ -375,7 +375,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * Insert a record.
      * 简体中文：插入一条数据。
      */
-    override fun insertAsync(bean: T, listener: OrmTaskListener) {
+    override fun insertAsync(bean: T, listener: OrmTaskListener<T>?) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.Insert, this, bean, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
     }
@@ -384,7 +384,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * Insert multiple records.
      * 简体中文：插入多条数据。
      */
-    override fun insertAsync(beans: List<T>, listener: OrmTaskListener) {
+    override fun insertAsync(beans: List<T>, listener: OrmTaskListener<T>?) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.InsertList, this, beans, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
     }
@@ -401,7 +401,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * Delete data based on conditions.
      * 简体中文：按条件删除数据。
      */
-    override fun deleteAsync(builder: WhereBuilder, listener: OrmTaskListener) {
+    override fun deleteAsync(builder: WhereBuilder, listener: OrmTaskListener<T>?) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.Delete, this, builder, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
     }
@@ -410,7 +410,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * Delete a record.
      * 简体中文：删除一条数据。
      */
-    override fun deleteAsync(bean: T, listener: OrmTaskListener) {
+    override fun deleteAsync(bean: T, listener: OrmTaskListener<T>?) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.DeleteByKey, this, bean, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
     }
@@ -439,7 +439,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * Delete all records.
      * 简体中文：删除所有数据。
      */
-    override fun deleteAllAsync(listener: OrmTaskListener) {
+    override fun deleteAllAsync(listener: OrmTaskListener<T>?) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.DeleteAll, this, null, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
     }
@@ -448,7 +448,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * Update a record.
      * 简体中文：更新一条数据。
      */
-    override fun updateAsync(bean: T, listener: OrmTaskListener) {
+    override fun updateAsync(bean: T, listener: OrmTaskListener<T>?) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.UpdateByKey, this, bean, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
     }
@@ -457,7 +457,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * Update all data that meets the conditions to [newBean].
      * 简体中文：更新所有满足条件的数据为[newBean]。
      */
-    override fun updateAsync(builder: WhereBuilder, newBean: T, listener: OrmTaskListener) {
+    override fun updateAsync(builder: WhereBuilder, newBean: T, listener: OrmTaskListener<T>?) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.WhereInsertOrReplace, this,
             Callable() {
@@ -470,7 +470,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * Insert or update data. If it exists, update it; if not, insert it.
      * 简体中文：插入或更新数据。如果有，则更新，没有，则插入。
      */
-    override fun insertOrUpdateAsync(bean: T, listener: OrmTaskListener) {
+    override fun insertOrUpdateAsync(bean: T, listener: OrmTaskListener<T>?) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.InsertOrReplace, this, null, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
     }
@@ -480,7 +480,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * none are found, insert a new [newBean].
      * 简体中文：查询所有满足条件的数据，如果有，则全部更新为[newBean]，没有，则插入一个[newBean]。
      */
-    override fun insertOrUpdateAsync(builder: WhereBuilder, newBean: T, listener: OrmTaskListener) {
+    override fun insertOrUpdateAsync(builder: WhereBuilder, newBean: T, listener: OrmTaskListener<T>?) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.WhereInsertOrReplace, this,
             Callable() {
@@ -622,7 +622,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * Query all data in the table.
      * 简体中文：查询该表中的所有数据。
      */
-    override fun selectAllAsync(listener: OrmTaskListener) {
+    override fun selectAllAsync(listener: OrmTaskListener<T>?) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.QueryAll, this, null, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
     }
@@ -657,7 +657,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * Query data based on conditions.
      * 简体中文：按条件查询数据。
      */
-    override fun selectAsync(builder: QueryBuilder, listener: OrmTaskListener) {
+    override fun selectAsync(builder: QueryBuilder, listener: OrmTaskListener<T>?) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.QueryList, this, builder, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
     }
@@ -666,7 +666,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * Query data based on conditions.
      * 简体中文：按条件查询数据。
      */
-    override fun selectAsync(builder: WhereBuilder, listener: OrmTaskListener) {
+    override fun selectAsync(builder: WhereBuilder, listener: OrmTaskListener<T>?) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.WhereList, this, builder, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
     }
@@ -768,7 +768,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * Query a specific record.
      * 简体中文：查询特定的一条数据。
      */
-    override fun selectOneAsync(listener: OrmTaskListener) {
+    override fun selectOneAsync(listener: OrmTaskListener<T>?) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.QueryUnique, this, null, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
     }
@@ -777,7 +777,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * Query the record that matches the conditions.
      * 简体中文：查询符合条件的一条数据。
      */
-    override fun selectOneAsync(builder: WhereBuilder, listener: OrmTaskListener) {
+    override fun selectOneAsync(builder: WhereBuilder, listener: OrmTaskListener<T>?) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.WhereUnique, this, builder, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
     }
@@ -786,7 +786,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * Query the record that matches the conditions.
      * 简体中文：查询符合条件的一条数据。
      */
-    override fun selectOneAsync(builder: QueryBuilder, listener: OrmTaskListener) {
+    override fun selectOneAsync(builder: QueryBuilder, listener: OrmTaskListener<T>?) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.QueryUnique, this, builder, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
     }
@@ -872,7 +872,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * Query the total count of records.
      * 简体中文：查询数据总数。
      */
-    override fun countAsync(listener: OrmTaskListener) {
+    override fun countAsync(listener: OrmTaskListener<T>?) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.Count, this, null, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
     }
@@ -881,7 +881,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * Query the total count of records that matches the conditions.
      * 简体中文：查询符合条件的数据总数。
      */
-    override fun countAsync(builder: WhereBuilder, listener: OrmTaskListener) {
+    override fun countAsync(builder: WhereBuilder, listener: OrmTaskListener<T>?) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.WhereCount, this, builder, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
     }
@@ -890,7 +890,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * Query the total count of records that matches the conditions.
      * 简体中文：查询符合条件的数据总数。
      */
-    override fun countAsync(builder: QueryBuilder, listener: OrmTaskListener) {
+    override fun countAsync(builder: QueryBuilder, listener: OrmTaskListener<T>?) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.QueryCount, this, builder, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
     }
@@ -949,7 +949,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * Add a new column to the table.
      * 简体中文：向表中添加新列。
      */
-    override fun addColumnAsync(fieldName: String, listener: OrmTaskListener) {
+    override fun addColumnAsync(fieldName: String, listener: OrmTaskListener<T>?) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.AddColumn, this, fieldName, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
     }
@@ -993,7 +993,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
     override fun renameColumnAsync(
         fieldName: String,
         oldColumnName: String,
-        listener: OrmTaskListener
+        listener: OrmTaskListener<T>?
     ) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.RenameColumn, this,
@@ -1026,7 +1026,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * Rename the table.
      * 简体中文：重命名表。
      */
-    override fun renameTableAsync(oldTableName: String, listener: OrmTaskListener) {
+    override fun renameTableAsync(oldTableName: String, listener: OrmTaskListener<T>?) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.RenameTable, this, oldTableName, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
     }
@@ -1053,7 +1053,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * Drop the table.
      * 简体中文：删除表。
      */
-    override fun dropAsync(listener: OrmTaskListener) {
+    override fun dropAsync(listener: OrmTaskListener<T>?) {
         executor.listener = listener
         executor.enqueue(OrmTask(OrmTask.Type.Drop, this, null, OrmTask.FLAG_STOP_QUEUE_ON_EXCEPTION))
     }

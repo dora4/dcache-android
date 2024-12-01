@@ -2,9 +2,9 @@ package dora.db.async
 
 import dora.db.table.OrmTable
 
-interface OrmTaskListener {
+interface OrmTaskListener<T : OrmTable> {
 
-    fun onCompleted(task: OrmTask<out OrmTable>)
+    fun onCompleted(task: OrmTask<T>)
 
-    fun onFailed(task: OrmTask<out OrmTable>, e: Exception)
+    fun onFailed(task: OrmTask<T>, e: Exception)
 }

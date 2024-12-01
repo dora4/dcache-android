@@ -21,7 +21,7 @@ interface Dao<T : OrmTable> {
      * Insert a record.
      * 简体中文：插入一条数据。
      */
-    fun insertAsync(bean: T, listener: OrmTaskListener)
+    fun insertAsync(bean: T, listener: OrmTaskListener<T>? = null)
 
     /**
      * Insert multiple records.
@@ -33,7 +33,7 @@ interface Dao<T : OrmTable> {
      * Insert multiple records.
      * 简体中文：插入多条数据。
      */
-    fun insertAsync(beans: List<T>, listener: OrmTaskListener)
+    fun insertAsync(beans: List<T>, listener: OrmTaskListener<T>? = null)
 
     /**
      * Delete data based on conditions.
@@ -45,7 +45,7 @@ interface Dao<T : OrmTable> {
      * Delete data based on conditions.
      * 简体中文：按条件删除数据。
      */
-    fun deleteAsync(builder: WhereBuilder, listener: OrmTaskListener)
+    fun deleteAsync(builder: WhereBuilder, listener: OrmTaskListener<T>? = null)
 
     /**
      * Delete a record.
@@ -57,7 +57,7 @@ interface Dao<T : OrmTable> {
      * Delete a record.
      * 简体中文：删除一条数据。
      */
-    fun deleteAsync(bean: T, listener: OrmTaskListener)
+    fun deleteAsync(bean: T, listener: OrmTaskListener<T>? = null)
 
     /**
      * Delete all records.
@@ -69,7 +69,7 @@ interface Dao<T : OrmTable> {
      * Delete all records.
      * 简体中文：删除所有数据。
      */
-    fun deleteAllAsync(listener: OrmTaskListener)
+    fun deleteAllAsync(listener: OrmTaskListener<T>? = null)
 
     /**
      * Query all data that meets the conditions; if any are found, update them to [newBean]; if
@@ -83,7 +83,7 @@ interface Dao<T : OrmTable> {
      * none are found, insert a new [newBean].
      * 简体中文：查询所有满足条件的数据，如果有，则全部更新为[newBean]，没有，则插入一个[newBean]。
      */
-    fun insertOrUpdateAsync(builder: WhereBuilder, newBean: T, listener: OrmTaskListener)
+    fun insertOrUpdateAsync(builder: WhereBuilder, newBean: T, listener: OrmTaskListener<T>? = null)
 
     /**
      * Insert or update data. If it exists, update it; if not, insert it.
@@ -95,7 +95,7 @@ interface Dao<T : OrmTable> {
      * Insert or update data. If it exists, update it; if not, insert it.
      * 简体中文：插入或更新数据。如果有，则更新，没有，则插入。
      */
-    fun insertOrUpdateAsync(bean: T, listener: OrmTaskListener)
+    fun insertOrUpdateAsync(bean: T, listener: OrmTaskListener<T>? = null)
 
     /**
      * Update all data that meets the conditions to [newBean].
@@ -107,7 +107,7 @@ interface Dao<T : OrmTable> {
      * Update all data that meets the conditions to [newBean].
      * 简体中文：更新所有满足条件的数据为[newBean]。
      */
-    fun updateAsync(builder: WhereBuilder, newBean: T, listener: OrmTaskListener)
+    fun updateAsync(builder: WhereBuilder, newBean: T, listener: OrmTaskListener<T>? = null)
 
     /**
      * Update a record.
@@ -119,7 +119,7 @@ interface Dao<T : OrmTable> {
      * Update a record.
      * 简体中文：更新一条数据。
      */
-    fun updateAsync(bean: T, listener: OrmTaskListener)
+    fun updateAsync(bean: T, listener: OrmTaskListener<T>? = null)
 
     /**
      * Query all data in the table.
@@ -131,7 +131,7 @@ interface Dao<T : OrmTable> {
      * Query all data in the table.
      * 简体中文：查询该表中的所有数据。
      */
-    fun selectAllAsync(listener: OrmTaskListener)
+    fun selectAllAsync(listener: OrmTaskListener<T>? = null)
 
     /**
      * Query data based on conditions.
@@ -143,7 +143,7 @@ interface Dao<T : OrmTable> {
      * Query data based on conditions.
      * 简体中文：按条件查询数据。
      */
-    fun selectAsync(builder: WhereBuilder, listener: OrmTaskListener)
+    fun selectAsync(builder: WhereBuilder, listener: OrmTaskListener<T>? = null)
 
     /**
      * Query data based on conditions.
@@ -155,7 +155,7 @@ interface Dao<T : OrmTable> {
      * Query data based on conditions.
      * 简体中文：按条件查询数据。
      */
-    fun selectAsync(builder: QueryBuilder, listener: OrmTaskListener)
+    fun selectAsync(builder: QueryBuilder, listener: OrmTaskListener<T>? = null)
 
     /**
      * Query a specific record.
@@ -167,7 +167,7 @@ interface Dao<T : OrmTable> {
      * Query a specific record.
      * 简体中文：查询特定的一条数据。
      */
-    fun selectOneAsync(listener: OrmTaskListener)
+    fun selectOneAsync(listener: OrmTaskListener<T>? = null)
 
     /**
      * Query the record that matches the conditions.
@@ -179,7 +179,7 @@ interface Dao<T : OrmTable> {
      * Query the record that matches the conditions.
      * 简体中文：查询符合条件的一条数据。
      */
-    fun selectOneAsync(builder: WhereBuilder, listener: OrmTaskListener)
+    fun selectOneAsync(builder: WhereBuilder, listener: OrmTaskListener<T>? = null)
 
     /**
      * Query the record that matches the conditions.
@@ -191,7 +191,7 @@ interface Dao<T : OrmTable> {
      * Query the record that matches the conditions.
      * 简体中文：查询符合条件的一条数据。
      */
-    fun selectOneAsync(builder: QueryBuilder, listener: OrmTaskListener)
+    fun selectOneAsync(builder: QueryBuilder, listener: OrmTaskListener<T>? = null)
 
     /**
      * Query the total count of records. Deprecated.
@@ -214,7 +214,7 @@ interface Dao<T : OrmTable> {
      * Query the total count of records.
      * 简体中文：查询数据总数。
      */
-    fun countAsync(listener: OrmTaskListener)
+    fun countAsync(listener: OrmTaskListener<T>? = null)
 
     /**
      * Query the total count of records that matches the conditions. Deprecated.
@@ -237,7 +237,7 @@ interface Dao<T : OrmTable> {
      * Query the total count of records that matches the conditions.
      * 简体中文：查询符合条件的数据总数。
      */
-    fun countAsync(builder: WhereBuilder, listener: OrmTaskListener)
+    fun countAsync(builder: WhereBuilder, listener: OrmTaskListener<T>? = null)
 
     /*
      * Query the total count of records that matches the conditions. Deprecated.
@@ -260,7 +260,7 @@ interface Dao<T : OrmTable> {
      * Query the total count of records that matches the conditions.
      * 简体中文：查询符合条件的数据总数。
      */
-    fun countAsync(builder: QueryBuilder, listener: OrmTaskListener)
+    fun countAsync(builder: QueryBuilder, listener: OrmTaskListener<T>? = null)
 
     /**
      * Add a new column to the table.
@@ -272,7 +272,7 @@ interface Dao<T : OrmTable> {
      * Add a new column to the table.
      * 简体中文：向表中添加新列。
      */
-    fun addColumnAsync(fieldName: String, listener: OrmTaskListener)
+    fun addColumnAsync(fieldName: String, listener: OrmTaskListener<T>? = null)
 
     /**
      * Rename a column in the table.
@@ -284,7 +284,7 @@ interface Dao<T : OrmTable> {
      * Rename a column in the table.
      * 简体中文：重命名表中的列。
      */
-    fun renameColumnAsync(fieldName: String, oldColumnName: String, listener: OrmTaskListener)
+    fun renameColumnAsync(fieldName: String, oldColumnName: String, listener: OrmTaskListener<T>? = null)
 
     /**
      * Rename the table.
@@ -296,7 +296,7 @@ interface Dao<T : OrmTable> {
      * Rename the table.
      * 简体中文：重命名表。
      */
-    fun renameTableAsync(oldTableName: String, listener: OrmTaskListener)
+    fun renameTableAsync(oldTableName: String, listener: OrmTaskListener<T>? = null)
 
     /**
      * Drop the table.
@@ -308,5 +308,5 @@ interface Dao<T : OrmTable> {
      * Drop the table.
      * 简体中文：删除表。
      */
-    fun dropAsync(listener: OrmTaskListener)
+    fun dropAsync(listener: OrmTaskListener<T>? = null)
 }

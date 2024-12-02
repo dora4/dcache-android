@@ -87,7 +87,7 @@ internal class OrmExecutor<T : OrmTable> : Runnable, Handler.Callback {
                 try {
                     condition.await()
                 } catch (e: InterruptedException) {
-                    throw OrmTaskException("Interrupted while waiting for all tasks to complete.\n$e", e)
+                    throw OrmTaskException("Interrupted while waiting for all tasks to complete.\n${e.message}")
                 }
             }
         } finally {
@@ -116,7 +116,7 @@ internal class OrmExecutor<T : OrmTable> : Runnable, Handler.Callback {
                 try {
                     condition.await(remainingTime, TimeUnit.MILLISECONDS)
                 } catch (e: InterruptedException) {
-                    throw OrmTaskException("Interrupted while waiting: ${e.message}", e)
+                    throw OrmTaskException("Interrupted while waiting: ${e.message}")
                 }
             }
             return isCompleted
@@ -154,7 +154,7 @@ internal class OrmExecutor<T : OrmTable> : Runnable, Handler.Callback {
                         }
                         executeTaskAndPostCompleted(task)
                     } catch (e: Exception) {
-                        listener?.onFailed(task, e)
+                        listener?.onFailed(task, OrmTaskException(task, e))
                     }
                 }
             } catch (e: InterruptedException) {

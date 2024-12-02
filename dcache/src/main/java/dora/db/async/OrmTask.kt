@@ -169,7 +169,7 @@ open class OrmTask<T : OrmTable> internal constructor(
                 try {
                     condition.await()
                 } catch (e: InterruptedException) {
-                    throw OrmTaskException("Interrupted while waiting for operation to complete.\n$e", e)
+                    throw OrmTaskException("Interrupted while waiting for operation to complete.\n${e.message}")
                 }
             }
             if (throwable != null) {
@@ -202,7 +202,7 @@ open class OrmTask<T : OrmTable> internal constructor(
                         return false
                     }
                 } catch (e: InterruptedException) {
-                    throw OrmTaskException("Interrupted while waiting for operation to complete.\n$e", e)
+                    throw OrmTaskException("Interrupted while waiting for operation to complete.\n${e.message}")
                 }
             }
             return isCompleted
@@ -215,10 +215,14 @@ open class OrmTask<T : OrmTable> internal constructor(
      * Called when the operation is done. Notifies any threads waiting for this operation's completion.
      * 简体中文：在操作完成时调用，通知所有等待该操作完成的线程。
      */
-    @Synchronized
     fun setCompleted() {
-        isCompleted = true
-        (this as Object).notifyAll()
+        lock.lock() // 获取锁
+        try {
+            isCompleted = true
+            condition.signalAll()
+        } finally {
+            lock.unlock()
+        }
     }
 
     val isCompletedSuccessfully: Boolean

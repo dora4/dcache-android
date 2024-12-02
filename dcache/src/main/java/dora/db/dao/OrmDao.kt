@@ -187,8 +187,10 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
                 if (convert != null) {
                     val value = field[bean]
                     val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                    val propertyConverter: PropertyConverter<Any, String> = Proxy.newProxyInstance(converter.classLoader,
-                            converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, String>
+                    val propertyConverter: PropertyConverter<Any, String> = Proxy
+                        .newProxyInstance(converter.classLoader,
+                            converter.interfaces, PropertyHandler(converter))
+                            as PropertyConverter<Any, String>
                     value?.let {
                         values.put(columnName, propertyConverter.convertToDatabaseValue(it))
                     }
@@ -199,10 +201,13 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
                 if (convert != null) {
                     val value = field[bean]
                     val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                    val propertyConverter: PropertyConverter<Any, Boolean> = Proxy.newProxyInstance(converter.classLoader,
-                            converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Boolean>
+                    val propertyConverter: PropertyConverter<Any, Boolean> = Proxy
+                        .newProxyInstance(converter.classLoader,
+                            converter.interfaces, PropertyHandler(converter))
+                            as PropertyConverter<Any, Boolean>
                     value?.let {
-                        values.put(columnName, convertBooleanToInt(propertyConverter.convertToDatabaseValue(it) as Boolean))
+                        values.put(columnName, convertBooleanToInt(
+                            propertyConverter.convertToDatabaseValue(it) as Boolean))
                     }
                 } else {
                     values.put(columnName, convertBooleanToInt(field.getBoolean(bean)))
@@ -211,8 +216,10 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
                 if (convert != null) {
                     val value = field[bean]
                     val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                    val propertyConverter: PropertyConverter<Any, Byte> = Proxy.newProxyInstance(converter.classLoader,
-                            converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Byte>
+                    val propertyConverter: PropertyConverter<Any, Byte> = Proxy
+                        .newProxyInstance(converter.classLoader,
+                            converter.interfaces, PropertyHandler(converter))
+                            as PropertyConverter<Any, Byte>
                     value?.let {
                         values.put(columnName, propertyConverter.convertToDatabaseValue(it))
                     }
@@ -223,8 +230,10 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
                 if (convert != null) {
                     val value = field[bean]
                     val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                    val propertyConverter: PropertyConverter<Any, Short> = Proxy.newProxyInstance(converter.classLoader,
-                            converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Short>
+                    val propertyConverter: PropertyConverter<Any, Short> = Proxy
+                        .newProxyInstance(converter.classLoader,
+                            converter.interfaces, PropertyHandler(converter))
+                            as PropertyConverter<Any, Short>
                     value?.let {
                         values.put(columnName, propertyConverter.convertToDatabaseValue(it))
                     }
@@ -235,8 +244,10 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
                 if (convert != null) {
                     val value = field[bean]
                     val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                    val propertyConverter: PropertyConverter<Any, Int> = Proxy.newProxyInstance(converter.classLoader,
-                            converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Int>
+                    val propertyConverter: PropertyConverter<Any, Int> = Proxy
+                        .newProxyInstance(converter.classLoader,
+                            converter.interfaces, PropertyHandler(converter))
+                            as PropertyConverter<Any, Int>
                     value?.let {
                         values.put(columnName, propertyConverter.convertToDatabaseValue(it))
                     }
@@ -247,8 +258,10 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
                 if (convert != null) {
                     val value = field[bean]
                     val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                    val propertyConverter: PropertyConverter<Any, Long> = Proxy.newProxyInstance(converter.classLoader,
-                            converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Long>
+                    val propertyConverter: PropertyConverter<Any, Long> = Proxy
+                        .newProxyInstance(converter.classLoader,
+                            converter.interfaces, PropertyHandler(converter))
+                            as PropertyConverter<Any, Long>
                     value?.let {
                         values.put(columnName, propertyConverter.convertToDatabaseValue(it))
                     }
@@ -259,8 +272,10 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
                 if (convert != null) {
                     val value = field[bean]
                     val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                    val propertyConverter: PropertyConverter<Any, Float> = Proxy.newProxyInstance(converter.classLoader,
-                            converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Float>
+                    val propertyConverter: PropertyConverter<Any, Float> = Proxy
+                        .newProxyInstance(converter.classLoader,
+                            converter.interfaces, PropertyHandler(converter))
+                            as PropertyConverter<Any, Float>
                     value?.let {
                         values.put(columnName, propertyConverter.convertToDatabaseValue(it))
                     }
@@ -271,8 +286,10 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
                 if (convert != null) {
                     val value = field[bean]
                     val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                    val propertyConverter: PropertyConverter<Any, Double> = Proxy.newProxyInstance(converter.classLoader,
-                            converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Double>
+                    val propertyConverter: PropertyConverter<Any, Double> = Proxy
+                        .newProxyInstance(converter.classLoader,
+                            converter.interfaces, PropertyHandler(converter))
+                            as PropertyConverter<Any, Double>
                     value?.let {
                         values.put(columnName, propertyConverter.convertToDatabaseValue(it))
                     }
@@ -283,8 +300,10 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
                 if (convert != null) {
                     val value = field[bean]
                     val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                    val propertyConverter: PropertyConverter<Any, Char> = Proxy.newProxyInstance(converter.classLoader,
-                        converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Char>
+                    val propertyConverter: PropertyConverter<Any, Char> = Proxy
+                        .newProxyInstance(converter.classLoader,
+                        converter.interfaces, PropertyHandler(converter))
+                            as PropertyConverter<Any, Char>
                     value?.let {
                         values.put(columnName, propertyConverter.convertToDatabaseValue(it).toString())
                     }
@@ -295,8 +314,10 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
                 if (convert != null) {
                     val value = field[bean]
                     val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                    val propertyConverter: PropertyConverter<Any, Class<*>> = Proxy.newProxyInstance(converter.classLoader,
-                        converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Class<*>>
+                    val propertyConverter: PropertyConverter<Any, Class<*>> = Proxy
+                        .newProxyInstance(converter.classLoader,
+                        converter.interfaces, PropertyHandler(converter))
+                            as PropertyConverter<Any, Class<*>>
                     value?.let {
                         values.put(columnName, propertyConverter.convertToDatabaseValue(it)?.name.orEmpty())
                     }
@@ -377,7 +398,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun insertAsync(bean: T, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.Insert, this, bean, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
+        executor.enqueue(OrmTask(OrmTask.Type.Insert, this, bean,
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -386,7 +408,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun insertAsync(beans: List<T>, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.InsertList, this, beans, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
+        executor.enqueue(OrmTask(OrmTask.Type.InsertList, this, beans,
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -403,7 +426,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun deleteAsync(builder: WhereBuilder, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.Delete, this, builder, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
+        executor.enqueue(OrmTask(OrmTask.Type.Delete, this, builder,
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -412,7 +436,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun deleteAsync(bean: T, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.DeleteByKey, this, bean, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
+        executor.enqueue(OrmTask(OrmTask.Type.DeleteByKey, this, bean,
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -424,7 +449,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         field.isAccessible = true
         val name = TableManager.getColumnName(field)
         val value = field.get(bean)?.toString()
-        return deleteInternal(WhereBuilder.create(Condition("$name=?", arrayOf(value))), database)
+        return deleteInternal(WhereBuilder.create(Condition("$name=?",
+            arrayOf(value))), database)
     }
 
     /**
@@ -441,7 +467,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun deleteAllAsync(listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.DeleteAll, this, null, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
+        executor.enqueue(OrmTask(OrmTask.Type.DeleteAll, this, null,
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -450,7 +477,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun updateAsync(bean: T, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.UpdateByKey, this, bean, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
+        executor.enqueue(OrmTask(OrmTask.Type.UpdateByKey, this, bean,
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -472,7 +500,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun insertOrUpdateAsync(bean: T, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.InsertOrReplace, this, bean, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
+        executor.enqueue(OrmTask(OrmTask.Type.InsertOrReplace, this, bean,
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -624,7 +653,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun selectAllAsync(listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.QueryAll, this, null, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
+        executor.enqueue(OrmTask(OrmTask.Type.QueryAll, this, null,
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -633,7 +663,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     private fun selectAllInternal(): List<T> {
         val tableName: String = TableManager.getTableName(beanClass)
-        val cursor = database.query(tableName, null, null, null, null, null, null)
+        val cursor = database.query(tableName, null, null,
+            null, null, null, null)
         return getResult(cursor)
     }
 
@@ -659,7 +690,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun selectAsync(builder: QueryBuilder, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.QueryList, this, builder, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
+        executor.enqueue(OrmTask(OrmTask.Type.QueryList, this, builder,
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -668,7 +700,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun selectAsync(builder: WhereBuilder, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.WhereList, this, builder, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
+        executor.enqueue(OrmTask(OrmTask.Type.WhereList, this, builder,
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -743,7 +776,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         val where: WhereBuilder = builder.getWhereBuilder()
         val selection: String = where.selection
         val selectionArgs: Array<String?>? = where.selectionArgs
-        val cursor = database.query(tableName, columns, selection, selectionArgs, group, having, order, limit)
+        val cursor = database.query(tableName, columns, selection, selectionArgs, group, having,
+            order, limit)
         if (cursor.moveToFirst()) {
             try {
                 return createResult(cursor)
@@ -770,7 +804,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun selectOneAsync(listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.IndexUnique, this, null, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
+        executor.enqueue(OrmTask(OrmTask.Type.IndexUnique, this, null,
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -779,7 +814,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun selectOneAsync(builder: WhereBuilder, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.WhereUnique, this, builder, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
+        executor.enqueue(OrmTask(OrmTask.Type.WhereUnique, this, builder,
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -788,7 +824,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun selectOneAsync(builder: QueryBuilder, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.QueryUnique, this, builder, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
+        executor.enqueue(OrmTask(OrmTask.Type.QueryUnique, this, builder,
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -874,7 +911,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun countAsync(listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.Count, this, null, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
+        executor.enqueue(OrmTask(OrmTask.Type.Count, this, null,
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -883,7 +921,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun countAsync(builder: WhereBuilder, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.WhereCount, this, builder, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
+        executor.enqueue(OrmTask(OrmTask.Type.WhereCount, this, builder,
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -892,7 +931,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun countAsync(builder: QueryBuilder, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.QueryCount, this, builder, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
+        executor.enqueue(OrmTask(OrmTask.Type.QueryCount, this, builder,
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -951,7 +991,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun addColumnAsync(fieldName: String, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.AddColumn, this, fieldName, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
+        executor.enqueue(OrmTask(OrmTask.Type.AddColumn, this, fieldName,
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -1028,7 +1069,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun renameTableAsync(oldTableName: String, listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.RenameTable, this, oldTableName, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
+        executor.enqueue(OrmTask(OrmTask.Type.RenameTable, this, oldTableName,
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -1055,7 +1097,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     override fun dropAsync(listener: OrmTaskListener<T>?) {
         executor.listener = listener
-        executor.enqueue(OrmTask(OrmTask.Type.Drop, this, null, OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
+        executor.enqueue(OrmTask(OrmTask.Type.Drop, this, null,
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
     /**
@@ -1156,7 +1199,8 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      */
     @Throws(IllegalAccessException::class, ClassNotFoundException::class)
     private fun createResult(cursor: Cursor): T? {
-        val bean: T = newOrmTableInstance(beanClass) ?: throw OrmResultCreationException("Failed to create ${beanClass.name} instance.")
+        val bean: T = newOrmTableInstance(beanClass) ?: throw OrmResultCreationException("Failed" +
+                " to create ${beanClass.name} instance.")
         val fields = beanClass.declaredFields
         for (field in fields) {
             field.isAccessible = true
@@ -1176,9 +1220,12 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
                 if (isAssignableFromCharSequence(fieldType)) {
                     if (convert != null) {
                         val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                        val propertyConverter: PropertyConverter<Any, String> = Proxy.newProxyInstance(converter.classLoader,
-                                converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, String>
-                        val value: Any? = propertyConverter.convertToEntityProperty(cursor.getString(columnIndex))
+                        val propertyConverter: PropertyConverter<Any, String> = Proxy
+                            .newProxyInstance(converter.classLoader,
+                                converter.interfaces, PropertyHandler(converter))
+                                as PropertyConverter<Any, String>
+                        val value: Any? = propertyConverter.convertToEntityProperty(
+                            cursor.getString(columnIndex))
                         field[bean] = value
                     } else {
                         field[bean] = cursor.getString(columnIndex)
@@ -1186,9 +1233,12 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
                 } else if (isAssignableFromBoolean(fieldType)) {
                     if (convert != null) {
                         val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                        val propertyConverter: PropertyConverter<Any, Boolean> = Proxy.newProxyInstance(converter.classLoader,
-                                converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Boolean>
-                        val value: Any? = propertyConverter.convertToEntityProperty(cursor.getInt(columnIndex) == 1)
+                        val propertyConverter: PropertyConverter<Any, Boolean> = Proxy
+                            .newProxyInstance(converter.classLoader,
+                                converter.interfaces, PropertyHandler(converter))
+                                as PropertyConverter<Any, Boolean>
+                        val value: Any? = propertyConverter.convertToEntityProperty(
+                            cursor.getInt(columnIndex) == 1)
                         field[bean] = value
                     } else {
                         field[bean] = (cursor.getInt(columnIndex) == 1)
@@ -1196,9 +1246,12 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
                 } else if (isAssignableFromLong(fieldType)) {
                     if (convert != null) {
                         val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                        val propertyConverter: PropertyConverter<Any, Long> = Proxy.newProxyInstance(converter.classLoader,
-                                converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Long>
-                        val value: Any? = propertyConverter.convertToEntityProperty(cursor.getLong(columnIndex))
+                        val propertyConverter: PropertyConverter<Any, Long> = Proxy
+                            .newProxyInstance(converter.classLoader,
+                                converter.interfaces, PropertyHandler(converter))
+                                as PropertyConverter<Any, Long>
+                        val value: Any? = propertyConverter.convertToEntityProperty(
+                            cursor.getLong(columnIndex))
                         field[bean] = value
                     } else {
                         field[bean] = cursor.getLong(columnIndex)
@@ -1206,9 +1259,12 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
                 } else if (isAssignableFromInteger(fieldType)) {
                     if (convert != null) {
                         val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                        val propertyConverter: PropertyConverter<Any, Int> = Proxy.newProxyInstance(converter.classLoader,
-                                converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Int>
-                        val value: Any? = propertyConverter.convertToEntityProperty(cursor.getInt(columnIndex))
+                        val propertyConverter: PropertyConverter<Any, Int> = Proxy
+                            .newProxyInstance(converter.classLoader,
+                                converter.interfaces, PropertyHandler(converter))
+                                as PropertyConverter<Any, Int>
+                        val value: Any? = propertyConverter.convertToEntityProperty(
+                            cursor.getInt(columnIndex))
                         field[bean] = value
                     } else {
                         field[bean] = cursor.getInt(columnIndex)
@@ -1216,9 +1272,12 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
                 } else if (isAssignableFromShort(fieldType)) {
                     if (convert != null) {
                         val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                        val propertyConverter: PropertyConverter<Any, Short> = Proxy.newProxyInstance(converter.classLoader,
-                                converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Short>
-                        val value: Any? = propertyConverter.convertToEntityProperty(cursor.getShort(columnIndex))
+                        val propertyConverter: PropertyConverter<Any, Short> = Proxy
+                            .newProxyInstance(converter.classLoader,
+                                converter.interfaces, PropertyHandler(converter))
+                                as PropertyConverter<Any, Short>
+                        val value: Any? = propertyConverter.convertToEntityProperty(
+                            cursor.getShort(columnIndex))
                         field[bean] = value
                     } else {
                         field[bean] = cursor.getShort(columnIndex)
@@ -1226,9 +1285,12 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
                 } else if (isAssignableFromByte(fieldType)) {
                     if (convert != null) {
                         val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                        val propertyConverter: PropertyConverter<Any, Byte> = Proxy.newProxyInstance(converter.classLoader,
-                            converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Byte>
-                        val value: Any? = propertyConverter.convertToEntityProperty(cursor.getShort(columnIndex).toByte())
+                        val propertyConverter: PropertyConverter<Any, Byte> = Proxy
+                            .newProxyInstance(converter.classLoader,
+                            converter.interfaces, PropertyHandler(converter))
+                                as PropertyConverter<Any, Byte>
+                        val value: Any? = propertyConverter.convertToEntityProperty(
+                            cursor.getShort(columnIndex).toByte())
                         field[bean] = value
                     } else {
                         field[bean] = cursor.getShort(columnIndex).toByte()
@@ -1236,9 +1298,12 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
                 } else if (isAssignableFromDouble(fieldType)) {
                     if (convert != null) {
                         val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                        val propertyConverter: PropertyConverter<Any, Double> = Proxy.newProxyInstance(converter.classLoader,
-                                converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Double>
-                        val value: Any? = propertyConverter.convertToEntityProperty(cursor.getDouble(columnIndex))
+                        val propertyConverter: PropertyConverter<Any, Double> = Proxy
+                            .newProxyInstance(converter.classLoader,
+                                converter.interfaces, PropertyHandler(converter))
+                                as PropertyConverter<Any, Double>
+                        val value: Any? = propertyConverter.convertToEntityProperty(
+                            cursor.getDouble(columnIndex))
                         field[bean] = value
                     } else {
                         field[bean] = cursor.getDouble(columnIndex)
@@ -1246,9 +1311,12 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
                 } else if (isAssignableFromFloat(fieldType)) {
                     if (convert != null) {
                         val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                        val propertyConverter: PropertyConverter<Any, Float> = Proxy.newProxyInstance(converter.classLoader,
-                                converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Float>
-                        val value: Any? = propertyConverter.convertToEntityProperty(cursor.getFloat(columnIndex))
+                        val propertyConverter: PropertyConverter<Any, Float> = Proxy
+                            .newProxyInstance(converter.classLoader,
+                                converter.interfaces, PropertyHandler(converter))
+                                as PropertyConverter<Any, Float>
+                        val value: Any? = propertyConverter.convertToEntityProperty(
+                            cursor.getFloat(columnIndex))
                         field[bean] = value
                     } else {
                         field[bean] = cursor.getFloat(columnIndex)
@@ -1256,9 +1324,12 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
                 } else if (isAssignableFromCharacter(fieldType)) {
                     if (convert != null) {
                         val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                        val propertyConverter: PropertyConverter<Any, Char> = Proxy.newProxyInstance(converter.classLoader,
-                                converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Char>
-                        val value: Any? = propertyConverter.convertToEntityProperty(cursor.getString(columnIndex).first())
+                        val propertyConverter: PropertyConverter<Any, Char> = Proxy
+                            .newProxyInstance(converter.classLoader,
+                                converter.interfaces, PropertyHandler(converter))
+                                as PropertyConverter<Any, Char>
+                        val value: Any? = propertyConverter.convertToEntityProperty(
+                            cursor.getString(columnIndex).first())
                         field[bean] = value
                     } else {
                         field[bean] = cursor.getString(columnIndex).first()
@@ -1266,9 +1337,12 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
                 } else if (isAssignableFromClass(fieldType)) {
                     if (convert != null) {
                         val converter: Class<out PropertyConverter<*, *>> = convert.converter.java
-                        val propertyConverter: PropertyConverter<Any, Class<*>> = Proxy.newProxyInstance(converter.classLoader,
-                                converter.interfaces, PropertyHandler(converter)) as PropertyConverter<Any, Class<*>>
-                        val value: Any? = propertyConverter.convertToEntityProperty(Class.forName(cursor.getString(columnIndex)))
+                        val propertyConverter: PropertyConverter<Any, Class<*>> = Proxy
+                            .newProxyInstance(converter.classLoader,
+                                converter.interfaces, PropertyHandler(converter))
+                                as PropertyConverter<Any, Class<*>>
+                        val value: Any? = propertyConverter.convertToEntityProperty(
+                            Class.forName(cursor.getString(columnIndex)))
                         field[bean] = value
                     } else {
                         field[bean] = Class.forName(cursor.getString(columnIndex))

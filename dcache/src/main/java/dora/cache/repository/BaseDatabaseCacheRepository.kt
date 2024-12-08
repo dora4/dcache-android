@@ -27,7 +27,7 @@ import java.lang.IllegalArgumentException
  * Repository using the built-in SQLite database for caching.
  * 简体中文：使用内置SQLite数据库进行缓存的仓库。
  */
-abstract class BaseDatabaseCacheRepository<T : Any>(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>(context) {
+abstract class BaseDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFactory<T>>(context: Context) : BaseRepository<T, F>(context) {
 
     /**
      * Perform initial filtering of the data loaded from the database based on query conditions;

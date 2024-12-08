@@ -11,8 +11,6 @@ import dora.cache.data.fetcher.OnLoadStateListener
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
 import dora.cache.factory.DatabaseCacheHolderFactory
-import dora.cache.holder.DatabaseCacheHolder
-import dora.cache.holder.ListDatabaseCacheHolder
 import dora.cache.holder.SuspendDatabaseCacheHolder
 import dora.cache.holder.SuspendListDatabaseCacheHolder
 import dora.db.builder.Condition
@@ -32,7 +30,7 @@ import kotlinx.coroutines.launch
  *
  * @since 3.1.1
  */
-abstract class BaseSuspendDatabaseCacheRepository<T : Any>(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>(context) {
+abstract class BaseSuspendDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFactory<T>>(context: Context) : BaseRepository<T, F>(context) {
 
     /**
      * Perform initial filtering of the data loaded from the database based on query conditions;
@@ -115,7 +113,9 @@ abstract class BaseSuspendDatabaseCacheRepository<T : Any>(context: Context) : B
         if (isListMode) {
             getListLiveData().value?.let {
                 it.addAll(data)
-                (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(data)
+                viewModelScope.launch {
+                    (listCacheHolder as SuspendListDatabaseCacheHolder<T>).addNewCache(data)
+                }
                 listener?.onSyncData(data.size == 1, data)
             }
         }
@@ -142,10 +142,8 @@ abstract class BaseSuspendDatabaseCacheRepository<T : Any>(context: Context) : B
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         var result: Boolean = false
                         if (type === DataSource.CacheType.DATABASE) {
-                            if (type === DataSource.CacheType.DATABASE) {
-                                onLoadFromCache(liveData) {
-                                    result = it
-                                }
+                            onLoadFromCache(liveData) {
+                                result = it
                             }
                         }
                         liveData.postValue(null)
@@ -397,7 +395,9 @@ abstract class BaseSuspendDatabaseCacheRepository<T : Any>(context: Context) : B
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")
             clearData()
-            (cacheHolder as DatabaseCacheHolder<T>).removeOldCache(query())
+            viewModelScope.launch {
+                (cacheHolder as SuspendDatabaseCacheHolder<T>).removeOldCache(query())
+            }
         }
     }
 

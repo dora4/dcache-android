@@ -19,8 +19,7 @@ import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 
-abstract class BaseMMKVCacheRepository<M>
-constructor(context: Context) : BaseRepository<M, MMKVCacheHolderFactory<M>>(context) {
+abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, MMKVCacheHolderFactory<M>>(context) {
 
     override fun selectData(ds: DataSource): Boolean {
         val isLoaded = ds.loadFromCache(DataSource.CacheType.MMKV)

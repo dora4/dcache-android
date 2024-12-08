@@ -18,8 +18,9 @@ import java.lang.reflect.InvocationTargetException
  * 简体中文：一个帮助类，用于管理数据库的创建和版本管理。你需要在[Orm.init]函数中创建所有表，不建议使用
  * [TableManager]自行创建表。如果你需要升级数据的表结构，需要使用[OrmMigration]的数组指定每一次版本的变动。
  */
-class OrmSQLiteOpenHelper(private val context: Context, name: String, version: Int,
-                          private val tables: Array<Class<out OrmTable>>?) :
+class OrmSQLiteOpenHelper(
+    context: Context, name: String, version: Int,
+    private val tables: Array<Class<out OrmTable>>?) :
         SQLiteOpenHelper(context, name, null, version, DatabaseErrorHandler {
             dbObj -> OrmLog.e(dbObj.toString()) }) {
 

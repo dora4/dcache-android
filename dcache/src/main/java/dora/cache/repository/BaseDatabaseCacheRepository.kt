@@ -15,7 +15,6 @@ import dora.cache.holder.ListDatabaseCacheHolder
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import dora.db.builder.WhereBuilder
-import dora.db.table.OrmTable
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import dora.http.rx.RxTransformer
@@ -28,8 +27,7 @@ import java.lang.IllegalArgumentException
  * Repository using the built-in SQLite database for caching.
  * 简体中文：使用内置SQLite数据库进行缓存的仓库。
  */
-abstract class BaseDatabaseCacheRepository<T : OrmTable>
-constructor(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>(context) {
+abstract class BaseDatabaseCacheRepository<T>(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>(context) {
 
     /**
      * Perform initial filtering of the data loaded from the database based on query conditions;

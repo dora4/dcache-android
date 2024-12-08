@@ -11,7 +11,7 @@ import dora.db.dao.OrmDao
  * Built-in ListCacheHolder, default implementation.
  * 简体中文：内置的ListCacheHolder，默认实现。
  */
-class DoraListDatabaseCacheHolder<T : OrmTable>(var clazz: Class<out OrmTable>)
+class DoraListDatabaseCacheHolder<T : OrmTable>(var clazz: Class<T>)
     : ListDatabaseCacheHolder<T>() {
 
     private lateinit var dao: OrmDao<T>
@@ -19,7 +19,7 @@ class DoraListDatabaseCacheHolder<T : OrmTable>(var clazz: Class<out OrmTable>)
     override fun init() {
         // Create an OrmDao of the specified type.
         // 简体中文：创建指定类型的OrmDao
-        dao = DaoFactory.getDao(clazz) as OrmDao<T>
+        dao = DaoFactory.getDao(clazz)
     }
 
     override fun queryCache(condition: Condition): MutableList<T>? {

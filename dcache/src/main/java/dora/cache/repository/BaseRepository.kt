@@ -13,7 +13,6 @@ import dora.cache.data.fetcher.OnLoadStateListenerImpl
 import dora.cache.data.page.IDataPager
 import dora.cache.holder.CacheHolder
 import dora.cache.factory.CacheHolderFactory
-import dora.cache.holder.DatabaseCacheHolder
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import io.reactivex.Observable
@@ -88,10 +87,6 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
     protected abstract fun createDataFetcher(): IDataFetcher<M>
 
     protected abstract fun createListDataFetcher(): IListDataFetcher<M>
-
-    protected abstract fun createCacheHolder(clazz: Class<M>): DatabaseCacheHolder<M>
-
-    protected abstract fun createListCacheHolder(clazz: Class<M>): DatabaseCacheHolder<MutableList<M>>
 
     override fun callback(): DoraCallback<M> {
         return object : DoraCallback<M>() {
@@ -357,11 +352,11 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
         // Implement either CacheHolder or DataFetcher and use it.
         // 简体中文：二选一实现CacheHolder和DataFetcher并使用
         if (isListMode) {
-            listCacheHolder = cacheHolderFactory.createListCacheHolder()
+            listCacheHolder = cacheHolderFactory.createListCacheHolder(MClass)
             listCacheHolder.init()
             listDataFetcher = createListDataFetcher()
         } else {
-            cacheHolder = cacheHolderFactory.createCacheHolder()
+            cacheHolder = cacheHolderFactory.createCacheHolder(MClass)
             cacheHolder.init()
             dataFetcher = createDataFetcher()
         }

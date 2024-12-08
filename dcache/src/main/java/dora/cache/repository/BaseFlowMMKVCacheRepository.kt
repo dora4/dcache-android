@@ -18,8 +18,7 @@ import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.flow.MutableStateFlow
 
-abstract class BaseFlowMMKVCacheRepository<M>
-constructor(context: Context) : BaseFlowRepository<M, MMKVCacheHolderFactory<M>>(context) {
+abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowRepository<M, MMKVCacheHolderFactory<M>>(context) {
 
     override fun selectData(ds: DataSource): Boolean {
         val isLoaded = ds.loadFromCache(DataSource.CacheType.MMKV)

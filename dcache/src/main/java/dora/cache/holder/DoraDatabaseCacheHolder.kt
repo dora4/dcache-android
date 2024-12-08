@@ -7,18 +7,18 @@ import dora.db.builder.WhereBuilder
 import dora.db.dao.DaoFactory
 import dora.db.dao.OrmDao
 
-class DoraDatabaseCacheHolder<T : OrmTable>(val clazz: Class<out OrmTable>) : DatabaseCacheHolder<T> {
+class DoraDatabaseCacheHolder<T : OrmTable>(val clazz: Class<T>) : DatabaseCacheHolder<T> {
 
     private lateinit var dao: OrmDao<T>
 
     override fun init() {
         // Create an OrmDao of the specified type.
         // 简体中文：创建指定类型的OrmDao
-        dao = DaoFactory.getDao(clazz) as OrmDao<T>
+        dao = DaoFactory.getDao(clazz)
     }
 
     override fun queryCache(condition: Condition): T? {
-        return dao.selectOne(QueryBuilder.create(condition)) as T?
+        return dao.selectOne(QueryBuilder.create(condition))
     }
 
     override fun removeOldCache(condition: Condition) {

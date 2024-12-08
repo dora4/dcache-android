@@ -12,11 +12,11 @@ interface CacheHolderFactory<M> {
      * Create a non-collection mode [CacheHolder].
      * 简体中文：创建一个非集合模式的[CacheHolder]。
      */
-    fun createCacheHolder() : CacheHolder<M>
+    fun createCacheHolder(clazz: Class<M>) : CacheHolder<M>
 
     /**
      * Create a collection mode [CacheHolder].
      * 简体中文：创建一个集合模式的[CacheHolder]。
      */
-    fun createListCacheHolder() : CacheHolder<MutableList<M>>
+    fun createListCacheHolder(clazz: Class<M>) : CacheHolder<MutableList<M>>
 }

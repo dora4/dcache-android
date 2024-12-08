@@ -15,14 +15,14 @@ object RxTransformer {
 
     @SuppressLint("CheckResult")
     fun <T> doApiConsumer(observable: Observable<T>, consumer: Consumer<T>) {
-        observable.observeOn(Schedulers.io())
+        observable.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .onErrorResumeNext(Observable.empty())
             .subscribe(consumer)
     }
 
     fun <T> doApiObserver(observable: Observable<T>, observer: Observer<T>) {
-        observable.observeOn(Schedulers.io())
+        observable.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .onErrorResumeNext(Observable.empty())
             .subscribe(observer)

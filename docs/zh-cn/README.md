@@ -93,7 +93,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
 3. **CRUD操作**
 
-   我们使用OrmDao对象来操作一张表的增删改查操作，通过DaoFactory.getDao()获取OrmDao对象，通常我们会将OrmDao保存为成员变量以复用。
+   我们使用OrmDao对象来操作一张表的增删改查操作，通过DaoFactory.getDao()获取OrmDao对象，通常我们会将OrmDao保存为成员变量以复用。如果需要使用异步操作，请使用方法名以Async结尾的方法。
 
    * 插入数据
 

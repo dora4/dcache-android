@@ -67,7 +67,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
 3. **CRUD Operations**
 
-   Use the `OrmDao` object to perform CRUD operations on a table. The `OrmDao` object can be obtained via `DaoFactory.getDao()`. Typically, `OrmDao` is saved as a member variable for reuse.
+   Use the `OrmDao` object to perform CRUD operations on a table. The `OrmDao` object can be obtained via `DaoFactory.getDao()`. Typically, `OrmDao` is saved as a member variable for reuse. If asynchronous operations are needed, please use methods with names ending in "Async".
 
    - **Inserting Data**
 

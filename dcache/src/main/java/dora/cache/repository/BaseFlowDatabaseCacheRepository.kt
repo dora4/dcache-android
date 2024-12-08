@@ -35,8 +35,6 @@ abstract class BaseFlowDatabaseCacheRepository<T>(context: Context) : BaseFlowRe
      * filtering conditions for offline data in case of network disconnection.
      * 简体中文：根据查询条件进行初步的过滤从数据库加载的数据，过滤不完全则再调用onInterceptData。通常在断网情况下，
      * 指定离线数据的过滤条件。
-     *
-     * @return
      */
     @Deprecated(message = "Use query() instead.",
             replaceWith = ReplaceWith("query"),

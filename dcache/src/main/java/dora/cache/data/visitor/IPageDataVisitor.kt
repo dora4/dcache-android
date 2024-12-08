@@ -3,9 +3,8 @@ package dora.cache.data.visitor
 import dora.cache.data.page.IDataPager
 
 /**
+ * A paginated data accessor that accesses the data without disrupting its original structure.
  * 简体中文：分页数据的访问者，不破坏数据的原有结构，访问数据。
- *
- * @param <M>
  */
 interface IPageDataVisitor<M> {
 

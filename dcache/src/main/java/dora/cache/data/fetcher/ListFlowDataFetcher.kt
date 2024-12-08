@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 abstract class ListFlowDataFetcher<M> : IListFlowDataFetcher<M> {
 
-    internal var flowData: MutableStateFlow<MutableList<M>> = MutableStateFlow(arrayListOf())
+    protected var flowData: MutableStateFlow<MutableList<M>> = MutableStateFlow(arrayListOf())
 
     private var pager: IDataPager<M> = DataPager(flowData.value)
 

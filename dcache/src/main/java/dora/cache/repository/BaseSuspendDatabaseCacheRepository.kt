@@ -1,9 +1,10 @@
-package dora.cache.repository
+package dora.cache.repository;
 
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import dora.cache.data.fetcher.DataFetcher
 import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.fetcher.OnLoadStateListener
@@ -12,6 +13,8 @@ import dora.cache.data.page.IDataPager
 import dora.cache.factory.DatabaseCacheHolderFactory
 import dora.cache.holder.DatabaseCacheHolder
 import dora.cache.holder.ListDatabaseCacheHolder
+import dora.cache.holder.SuspendDatabaseCacheHolder
+import dora.cache.holder.SuspendListDatabaseCacheHolder
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import dora.db.builder.WhereBuilder
@@ -21,13 +24,15 @@ import dora.http.rx.RxTransformer
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
-import java.lang.IllegalArgumentException
+import kotlinx.coroutines.launch
 
 /**
  * Repository using the built-in SQLite database for caching.
  * 简体中文：使用内置SQLite数据库进行缓存的仓库。
+ *
+ * @since 3.1.1
  */
-abstract class BaseDatabaseCacheRepository<T : Any>(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>(context) {
+abstract class BaseSuspendDatabaseCacheRepository<T : Any>(context: Context) : BaseRepository<T, DatabaseCacheHolderFactory<T>>(context) {
 
     /**
      * Perform initial filtering of the data loaded from the database based on query conditions;
@@ -135,11 +140,16 @@ abstract class BaseDatabaseCacheRepository<T : Any>(context: Context) : BaseRepo
             override fun fetchData(description: String?, listener: OnLoadStateListener?): LiveData<T?> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
+                        var result: Boolean = false
                         if (type === DataSource.CacheType.DATABASE) {
-                            return onLoadFromCache(liveData)
+                            if (type === DataSource.CacheType.DATABASE) {
+                                onLoadFromCache(liveData) {
+                                    result = it
+                                }
+                            }
                         }
                         liveData.postValue(null)
-                        return false
+                        return result
                     }
 
                     override fun loadFromNetwork() {
@@ -178,11 +188,14 @@ abstract class BaseDatabaseCacheRepository<T : Any>(context: Context) : BaseRepo
             override fun fetchListData(description: String?, listener: OnLoadStateListener?): LiveData<MutableList<T>> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
+                        var result: Boolean = false
                         if (type === DataSource.CacheType.DATABASE) {
-                            return onLoadFromCacheList(liveData)
+                            onLoadFromCacheList(liveData) {
+                                result = it
+                            }
                         }
                         liveData.postValue(arrayListOf())
-                        return false
+                        return result
                     }
 
                     override fun loadFromNetwork() {
@@ -219,32 +232,36 @@ abstract class BaseDatabaseCacheRepository<T : Any>(context: Context) : BaseRepo
         }
     }
 
-    protected open fun onLoadFromCache(liveData: MutableLiveData<T?>) : Boolean {
+    protected open fun onLoadFromCache(liveData: MutableLiveData<T?>, returnVal: (Boolean) -> Unit) {
         if (!checkParamsValid()) throw IllegalArgumentException(
             "Please check parameters, checkParamsValid returned false.")
-        val model = (cacheHolder as DatabaseCacheHolder<T>).queryCache(query())
-        model?.let {
-            onInterceptData(DataSource.Type.CACHE, it)
-            liveData.postValue(it)
-            listener?.onLoad(OnLoadStateListener.SUCCESS)
-            return true
+        viewModelScope.launch {
+            val model = (cacheHolder as SuspendDatabaseCacheHolder<T>).queryCache(query())
+            model?.let {
+                onInterceptData(DataSource.Type.CACHE, it)
+                liveData.postValue(it)
+                listener?.onLoad(OnLoadStateListener.SUCCESS)
+                returnVal(true)
+            }
+            listener?.onLoad(OnLoadStateListener.FAILURE)
+            returnVal(false)
         }
-        listener?.onLoad(OnLoadStateListener.FAILURE)
-        return false
     }
 
-    protected open fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<T>>) : Boolean {
+    protected open fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<T>>, returnVal: (Boolean) -> Unit) {
         if (!checkParamsValid()) throw IllegalArgumentException(
             "Please check parameters, checkParamsValid returned false.")
-        val models = (listCacheHolder as ListDatabaseCacheHolder<T>).queryCache(query())
-        models?.let {
-            onInterceptData(DataSource.Type.CACHE, it)
-            liveData.postValue(it)
-            listener?.onLoad(OnLoadStateListener.SUCCESS)
-            return true
+        viewModelScope.launch {
+            val models = (listCacheHolder as SuspendListDatabaseCacheHolder<T>).queryCache(query())
+            models?.let {
+                onInterceptData(DataSource.Type.CACHE, it)
+                liveData.postValue(it)
+                listener?.onLoad(OnLoadStateListener.SUCCESS)
+                returnVal(true)
+            }
+            listener?.onLoad(OnLoadStateListener.FAILURE)
+            returnVal(false)
         }
-        listener?.onLoad(OnLoadStateListener.FAILURE)
-        return false
     }
 
     /**
@@ -333,8 +350,10 @@ abstract class BaseDatabaseCacheRepository<T : Any>(context: Context) : BaseRepo
             onInterceptData(DataSource.Type.NETWORK, it)
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")
-            (cacheHolder as DatabaseCacheHolder<T>).removeOldCache(query())
-            (cacheHolder as DatabaseCacheHolder<T>).addNewCache(it)
+            viewModelScope.launch {
+                (cacheHolder as SuspendDatabaseCacheHolder<T>).removeOldCache(query())
+                (cacheHolder as SuspendDatabaseCacheHolder<T>).addNewCache(it)
+            }
             listener?.onLoad(OnLoadStateListener.SUCCESS)
             liveData.postValue(it)
         }
@@ -351,8 +370,10 @@ abstract class BaseDatabaseCacheRepository<T : Any>(context: Context) : BaseRepo
             onInterceptData(DataSource.Type.NETWORK, it)
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")
-            (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
-            (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(it)
+            viewModelScope.launch {
+                (listCacheHolder as SuspendListDatabaseCacheHolder<T>).removeOldCache(query())
+                (listCacheHolder as SuspendListDatabaseCacheHolder<T>).addNewCache(it)
+            }
             listener?.onLoad(OnLoadStateListener.SUCCESS)
             if (disallowForceUpdate()) {
                 val oldValue = liveData.value
@@ -392,7 +413,9 @@ abstract class BaseDatabaseCacheRepository<T : Any>(context: Context) : BaseRepo
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")
             clearListData()
-            (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
+            viewModelScope.launch {
+                (listCacheHolder as SuspendListDatabaseCacheHolder<T>).removeOldCache(query())
+            }
         }
     }
 }

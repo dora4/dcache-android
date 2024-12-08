@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 
 abstract class DataFetcher<M> : IDataFetcher<M> {
 
-    internal var liveData: MutableLiveData<M?> = MutableLiveData()
+    protected var liveData: MutableLiveData<M?> = MutableLiveData()
 
     override fun getLiveData(): LiveData<M?> {
         return liveData

@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 abstract class FlowDataFetcher<M> : IFlowDataFetcher<M> {
 
-    internal var flowData: MutableStateFlow<M?> = MutableStateFlow<M?>(null)
+    protected var flowData: MutableStateFlow<M?> = MutableStateFlow<M?>(null)
 
     override fun getFlowData(): StateFlow<M?> {
         return flowData

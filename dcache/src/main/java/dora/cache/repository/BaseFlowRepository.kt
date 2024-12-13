@@ -325,6 +325,10 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
         return connectivityManager.activeNetworkInfo
     }
 
+    protected open fun getModelType() : Class<M> {
+        return getGenericType(this) as Class<M>
+    }
+
     private fun getGenericType(obj: Any): Class<*> {
         return if (obj.javaClass.genericSuperclass is ParameterizedType &&
                 (obj.javaClass.genericSuperclass as ParameterizedType).actualTypeArguments.isNotEmpty()) {
@@ -350,7 +354,7 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
         } else {
             isLogPrint = repository.isLogPrint
         }
-        MClass = getGenericType(this) as Class<M>
+        MClass = getModelType()
         Log.d(TAG, "MClass:$MClass,isListMode:$isListMode")
         cacheHolderFactory = createCacheHolderFactory()
         // 二选一实现CacheHolder和DataFetcher并使用

@@ -166,7 +166,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
             override fun onSubscribe(d: Disposable) {
             }
 
-            override fun onNext(model: M) {
+            override fun onNext(model: M & Any) {
                 parseModel(model, flowData)
             }
 

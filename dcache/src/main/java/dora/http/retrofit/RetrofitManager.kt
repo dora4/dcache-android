@@ -62,7 +62,7 @@ object RetrofitManager {
      * Check whether the API service is available.
      * 简体中文：检测API服务是否可用。
      */
-    fun <T : ApiService> checkService(clazz: Class<T>) : Boolean {
+    fun <S : ApiService> checkService(clazz: Class<S>) : Boolean {
         return urlMap.containsKey(clazz)
     }
 
@@ -70,7 +70,7 @@ object RetrofitManager {
      * Remove the API service object.
      * 简体中文：移除API服务对象。
      */
-    fun <T : ApiService> removeService(clazz: Class<T>) {
+    fun <S : ApiService> removeService(clazz: Class<S>) {
         if (retrofitMap.containsKey(clazz)) {
             retrofitMap.remove(clazz)
         }
@@ -83,7 +83,7 @@ object RetrofitManager {
      * Retrieve the API service object.
      * 简体中文：获取API服务对象。
      */
-    fun <T : ApiService> getService(clazz: Class<T>): T {
+    fun <S : ApiService> getService(clazz: Class<S>): S {
         val retrofit: Retrofit
         if (retrofitMap.containsKey(clazz)) {
             retrofit = retrofitMap[clazz]!!

@@ -15,6 +15,7 @@ import dora.cache.DoraPageListCallback
 import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
+import dora.cache.factory.DoraDatabaseCacheHolderFactory
 import dora.cache.holder.ListDatabaseCacheHolder
 import dora.db.builder.WhereBuilder
 import io.reactivex.Observable
@@ -70,6 +71,10 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
 
     final override fun onParseModelFailure(msg: String) {
         super.onParseModelFailure(msg)
+    }
+
+    override fun createCacheHolderFactory(): DoraDatabaseCacheHolderFactory<T> {
+        return DoraDatabaseCacheHolderFactory<T>()
     }
 
     fun getPageNo(): Int {

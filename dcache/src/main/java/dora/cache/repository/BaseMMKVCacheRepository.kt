@@ -167,7 +167,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
             override fun onSubscribe(d: Disposable) {
             }
 
-            override fun onNext(model: M) {
+            override fun onNext(model: M & Any) {
                 parseModel(model, liveData)
             }
 

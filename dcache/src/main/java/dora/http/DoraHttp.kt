@@ -51,7 +51,7 @@ import kotlin.reflect.KClass
 object DoraHttp {
 
     @JvmSynthetic
-    operator fun <T : ApiService> DoraHttp.get(clazz: KClass<T>): T {
+    operator fun <S : ApiService> DoraHttp.get(clazz: KClass<S>): S {
         return RetrofitManager.getService(clazz.java)
     }
 
@@ -97,12 +97,12 @@ object DoraHttp {
      * Can be used within the net scope to convert the request result into a `[DoraCallback]`.
      * 简体中文：在net作用域下使用，可将请求结果[DoraCallback]进行转换。
      */
-    suspend fun <T, R : dora.cache.data.adapter.Result<T>> callback(
-        call: Call<T>, success: (model: T) -> Unit, failure: ((msg: String)
+    suspend fun <M, R : dora.cache.data.adapter.Result<M>> callback(
+        call: Call<M>, success: (model: M) -> Unit, failure: ((msg: String)
             -> Unit)? = null, realType: Class<R>? = null) = suspendCoroutine {
         if (realType != null) {
-            call.enqueue(ResultAdapter<T, R>(object : DoraCallback<T>() {
-                override fun onSuccess(model: T) {
+            call.enqueue(ResultAdapter<M, R>(object : DoraCallback<M>() {
+                override fun onSuccess(model: M) {
                     success(model)
                     it.resume(model)
                 }
@@ -111,10 +111,10 @@ object DoraHttp {
                     failure?.invoke(msg)
                     it.resume(null)
                 }
-            }) as DoraCallback<T>)
+            }) as DoraCallback<M>)
         } else {
-            call.enqueue(object : DoraCallback<T>() {
-                override fun onSuccess(model: T) {
+            call.enqueue(object : DoraCallback<M>() {
+                override fun onSuccess(model: M) {
                     success(model)
                     it.resume(model)
                 }
@@ -131,11 +131,11 @@ object DoraHttp {
      * Can be used within the net scope to convert the request result into a `[DoraListCallback]`.
      * 简体中文：在net作用域下使用，可将请求结果[DoraListCallback]进行转换。
      */
-    suspend fun <T> listCallback(call: Call<MutableList<T>>, success: (model: MutableList<T>)
-        -> Unit, failure: ((msg: String) -> Unit)? = null) = suspendCoroutine<MutableList<T>> {
-        call.enqueue(object : DoraListCallback<T>() {
+    suspend fun <M> listCallback(call: Call<MutableList<M>>, success: (model: MutableList<M>)
+        -> Unit, failure: ((msg: String) -> Unit)? = null) = suspendCoroutine<MutableList<M>> {
+        call.enqueue(object : DoraListCallback<M>() {
 
-            override fun onSuccess(models: MutableList<T>) {
+            override fun onSuccess(models: MutableList<M>) {
                 success(models)
                 it.resume(models)
             }
@@ -153,10 +153,10 @@ object DoraHttp {
      * required.
      * 简体中文：在net作用域下使用，请求失败抛出异常，出块则自动释放锁，和request不同的是，无需手动释放。
      */
-    suspend fun <T> api(apiMethod: ()-> Call<T>) = suspendCoroutine<T> {
+    suspend fun <M> api(apiMethod: ()-> Call<M>) = suspendCoroutine<M> {
         val data = apiMethod()
-        data.enqueue(object : DoraCallback<T>() {
-            override fun onSuccess(model: T) {
+        data.enqueue(object : DoraCallback<M>() {
+            override fun onSuccess(model: M) {
                 it.resume(model)
             }
 
@@ -172,7 +172,7 @@ object DoraHttp {
      * required.
      * 简体中文：在net作用域下使用，请求失败抛出异常，出块则自动释放锁，和request不同的是，无需手动释放。
      */
-    suspend inline fun <reified T : ApiService, M> api(clazz: KClass<T>, crossinline apiMethod: T.() -> Call<M>): M? {
+    suspend inline fun <reified S : ApiService, M> api(clazz: KClass<S>, crossinline apiMethod: S.() -> Call<M>): M? {
         val service = DoraHttp[clazz]
         return suspendCoroutine<M?> {
             val data = service.apiMethod()
@@ -194,14 +194,14 @@ object DoraHttp {
      * not required.
      * 简体中文：RxJava的写法，在net作用域下使用，请求失败抛出异常，出块则自动释放锁，和request不同的是，无需手动释放。
      */
-    suspend fun <T : Any> rxApi(apiMethod: ()-> Observable<T>) = suspendCoroutine<T> {
+    suspend fun <M> rxApi(apiMethod: ()-> Observable<M>) = suspendCoroutine<M> {
         val data = apiMethod()
-        RxTransformer.doApiObserver(data, object : Observer<T> {
+        RxTransformer.doApiObserver(data, object : Observer<M> {
             override fun onSubscribe(d: Disposable) {
             }
 
-            override fun onNext(t: T) {
-                it.resume(t)
+            override fun onNext(model: M & Any) {
+                it.resume(model)
             }
 
             override fun onError(e: Throwable) {
@@ -219,7 +219,7 @@ object DoraHttp {
      * not required.
      * 简体中文：RxJava的写法，在net作用域下使用，请求失败抛出异常，出块则自动释放锁，和request不同的是，无需手动释放。
      */
-    suspend inline fun <reified T : ApiService, M : Any> rxApi(clazz: KClass<T>, crossinline apiMethod: T.() -> Observable<M>): M? {
+    suspend inline fun <reified S : ApiService, M> rxApi(clazz: KClass<S>, crossinline apiMethod: S.() -> Observable<M>): M? {
         val service = DoraHttp[clazz]
         return suspendCoroutine<M?> {
             val data = service.apiMethod()
@@ -227,7 +227,7 @@ object DoraHttp {
                 override fun onSubscribe(d: Disposable) {
                 }
 
-                override fun onNext(model: M) {
+                override fun onNext(model: M & Any) {
                     it.resume(model)
                 }
 
@@ -247,10 +247,10 @@ object DoraHttp {
      * required.
      * 简体中文：在net作用域下使用，请求失败返回空值，出块则自动释放锁，和request不同的是，无需手动释放。
      */
-    suspend fun <T> result(apiMethod: ()-> Call<T>) = suspendCoroutine<T?> {
+    suspend fun <M> result(apiMethod: ()-> Call<M>) = suspendCoroutine<M?> {
         val data = apiMethod()
-        data.enqueue(object : DoraCallback<T?>() {
-            override fun onSuccess(model: T?) {
+        data.enqueue(object : DoraCallback<M?>() {
+            override fun onSuccess(model: M?) {
                 it.resume(model)
             }
 
@@ -266,7 +266,7 @@ object DoraHttp {
      * required.
      * 简体中文：在net作用域下使用，请求失败返回空值，出块则自动释放锁，和request不同的是，无需手动释放。
      */
-    suspend inline fun <reified T : ApiService, M> result(clazz: KClass<T>, crossinline apiMethod: T.() -> Call<M>): M? {
+    suspend inline fun <reified S : ApiService, M> result(clazz: KClass<S>, crossinline apiMethod: S.() -> Call<M>): M? {
         val service = DoraHttp[clazz]
         return suspendCoroutine<M?> {
             val data = service.apiMethod()
@@ -288,14 +288,14 @@ object DoraHttp {
      * not required.
      * 简体中文：RxJava的写法，在net作用域下使用，请求失败返回空值，出块则自动释放锁，和request不同的是，无需手动释放。
      */
-    suspend fun <T : Any> rxResult(apiMethod: ()-> Observable<T>) = suspendCoroutine<T?> {
+    suspend fun <M> rxResult(apiMethod: ()-> Observable<M>) = suspendCoroutine<M?> {
         val data = apiMethod()
-        RxTransformer.doApiObserver(data, object : Observer<T> {
+        RxTransformer.doApiObserver(data, object : Observer<M> {
             override fun onSubscribe(d: Disposable) {
             }
 
-            override fun onNext(t: T) {
-                it.resume(t)
+            override fun onNext(model: M & Any) {
+                it.resume(model)
             }
 
             override fun onError(e: Throwable) {
@@ -313,7 +313,7 @@ object DoraHttp {
      * not required.
      * 简体中文：RxJava的写法，在net作用域下使用，请求失败返回空值，出块则自动释放锁，和request不同的是，无需手动释放。
      */
-    suspend inline fun <reified T : ApiService, M : Any> rxResult(clazz: KClass<T>, crossinline apiMethod: T.() -> Observable<M>): M? {
+    suspend inline fun <reified S : ApiService, M> rxResult(clazz: KClass<S>, crossinline apiMethod: S.() -> Observable<M>): M? {
         return suspendCoroutine<M?> {
             val service = DoraHttp[clazz]
             val data = service.apiMethod()
@@ -321,8 +321,8 @@ object DoraHttp {
                 override fun onSubscribe(d: Disposable) {
                 }
 
-                override fun onNext(t: M) {
-                    it.resume(t)
+                override fun onNext(model: M & Any) {
+                    it.resume(model)
                 }
 
                 override fun onError(e: Throwable) {
@@ -339,17 +339,17 @@ object DoraHttp {
      * Simulate the concept of locks in threads within the DoraHttp coroutine.
      * 简体中文：模拟DoraHttp协程中类似线程中锁的概念。
      */
-    interface Lock<T> {
-        fun releaseLock(returnVal : T)
+    interface Lock<V> {
+        fun releaseLock(returnVal : V)
     }
 
     /**
      * Net lock, used to unblock the `request` function within the net scope.
      * 简体中文：net锁，用于解除net作用域下request函数的阻塞。
      */
-    class NetLock<T>(private val continuation: Continuation<T>) : Lock<T> {
+    class NetLock<V>(private val continuation: Continuation<V>) : Lock<V> {
 
-        override fun releaseLock(returnVal: T) {
+        override fun releaseLock(returnVal: V) {
             continuation.resume(returnVal)
         }
     }
@@ -367,7 +367,7 @@ object DoraHttp {
      * 将可以作为request函数的执行结果赋值给变量。包装协程方法，以一种兼容的方式，无需手动定义协程方法
      * 去请求网络数据。
      */
-    suspend fun <T> request(block: (lock: NetLock<T>) -> Unit) = suspendCoroutine<T> {
+    suspend fun <V> request(block: (lock: NetLock<V>) -> Unit) = suspendCoroutine<V> {
         try {
             val lock = NetLock(it)
             block(lock)

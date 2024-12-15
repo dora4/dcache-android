@@ -1,3 +1,3 @@
 package dora.cache.factory
 
-abstract class DatabaseCacheHolderFactory<T> : CacheHolderFactory<T>
+abstract class DatabaseCacheHolderFactory<M> : CacheHolderFactory<M>

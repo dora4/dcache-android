@@ -12,6 +12,7 @@ import dora.cache.DoraPageListCallback
 import dora.cache.data.fetcher.ListFlowDataFetcher
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
+import dora.cache.factory.DoraDatabaseCacheHolderFactory
 import dora.cache.holder.ListDatabaseCacheHolder
 import dora.db.builder.WhereBuilder
 import io.reactivex.Observable
@@ -20,7 +21,7 @@ import kotlinx.coroutines.flow.StateFlow
 import java.lang.IllegalArgumentException
 
 @ListRepository
-abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Context)
+abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Context)
     : DoraFlowDatabaseCacheRepository<T>(context) {
 
     /**
@@ -69,6 +70,10 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
 
     final override fun onParseModelFailure(msg: String) {
         super.onParseModelFailure(msg)
+    }
+
+    override fun createCacheHolderFactory(): DoraDatabaseCacheHolderFactory<T> {
+        return DoraDatabaseCacheHolderFactory<T>()
     }
 
     fun getPageNo(): Int {
@@ -171,12 +176,12 @@ abstract class DoraPageFlowDatabaseCacheRepository<M, T : OrmTable>(context: Con
         }
     }
 
-    open fun setPageSize(pageSize: Int): DoraPageFlowDatabaseCacheRepository<M, T> {
+    open fun setPageSize(pageSize: Int): DoraPageFlowDatabaseCacheRepository<T> {
         this.pageSize = pageSize
         return this
     }
 
-    open fun setCurrentPage(pageNo: Int, pageSize: Int): DoraPageFlowDatabaseCacheRepository<M, T> {
+    open fun setCurrentPage(pageNo: Int, pageSize: Int): DoraPageFlowDatabaseCacheRepository<T> {
         this.pageNo = pageNo
         this.pageSize = pageSize
         return this

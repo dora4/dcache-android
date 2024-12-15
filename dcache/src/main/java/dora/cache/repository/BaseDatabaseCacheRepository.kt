@@ -27,7 +27,7 @@ import java.lang.IllegalArgumentException
  * Repository using the built-in SQLite database for caching.
  * 简体中文：使用内置SQLite数据库进行缓存的仓库。
  */
-abstract class BaseDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFactory<T>>(context: Context) : BaseRepository<T, F>(context) {
+abstract class BaseDatabaseCacheRepository<M, F : DatabaseCacheHolderFactory<M>>(context: Context) : BaseRepository<M, F>(context) {
 
     /**
      * Perform initial filtering of the data loaded from the database based on query conditions;
@@ -92,7 +92,7 @@ abstract class BaseDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFacto
      * 简体中文：手动放入缓存数据，仅listMode为true时使用，注意只会追加到缓存里面去，请调用接口将新数据也更新到服务
      * 端，以致于下次请求api接口时也会有这部分数据。
      */
-    fun addData(data: T, listener: OnSyncListener<T>?) {
+    fun addData(data: M, listener: OnSyncListener<M>?) {
         if (isListMode) {
             addData(arrayListOf(data), listener)
         }
@@ -105,12 +105,12 @@ abstract class BaseDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFacto
      * 简体中文：手动放入一堆缓存数据，仅listMode为true时使用，注意只会追加到缓存里面去，请调用接口将新数据也更新到
      * 服务端，以致于下次请求api接口时也会有这部分数据。
      */
-    fun addData(data: MutableList<T>, listener: OnSyncListener<T>?) {
+    fun addData(data: MutableList<M>, listener: OnSyncListener<M>?) {
         if (data.size == 0) return
         if (isListMode) {
             getListLiveData().value?.let {
                 it.addAll(data)
-                (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(data)
+                (listCacheHolder as ListDatabaseCacheHolder<M>).addNewCache(data)
                 listener?.onSyncData(data.size == 1, data)
             }
         }
@@ -129,10 +129,10 @@ abstract class BaseDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFacto
         } else isLoaded
     }
 
-    override fun createDataFetcher(): DataFetcher<T> {
-        return object : DataFetcher<T>() {
+    override fun createDataFetcher(): DataFetcher<M> {
+        return object : DataFetcher<M>() {
 
-            override fun fetchData(description: String?, listener: OnLoadStateListener?): LiveData<T?> {
+            override fun fetchData(description: String?, listener: OnLoadStateListener?): LiveData<M?> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
@@ -154,9 +154,9 @@ abstract class BaseDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFacto
                 return liveData
             }
 
-            override fun callback(): DoraCallback<T> {
-                return object : DoraCallback<T>() {
-                    override fun onSuccess(model: T) {
+            override fun callback(): DoraCallback<M> {
+                return object : DoraCallback<M>() {
+                    override fun onSuccess(model: M) {
                         parseModel(model, liveData)
                     }
 
@@ -172,10 +172,10 @@ abstract class BaseDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFacto
         }
     }
 
-    override fun createListDataFetcher(): ListDataFetcher<T> {
-        return object : ListDataFetcher<T>() {
+    override fun createListDataFetcher(): ListDataFetcher<M> {
+        return object : ListDataFetcher<M>() {
 
-            override fun fetchListData(description: String?, listener: OnLoadStateListener?): LiveData<MutableList<T>> {
+            override fun fetchListData(description: String?, listener: OnLoadStateListener?): LiveData<MutableList<M>> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
@@ -197,9 +197,9 @@ abstract class BaseDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFacto
                 return liveData
             }
 
-            override fun listCallback(): DoraListCallback<T> {
-                return object : DoraListCallback<T>() {
-                    override fun onSuccess(models: MutableList<T>) {
+            override fun listCallback(): DoraListCallback<M> {
+                return object : DoraListCallback<M>() {
+                    override fun onSuccess(models: MutableList<M>) {
                         parseModels(models, liveData)
                     }
 
@@ -209,7 +209,7 @@ abstract class BaseDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFacto
                 }
             }
 
-            override fun obtainPager(): IDataPager<T> {
+            override fun obtainPager(): IDataPager<M> {
                 return DataPager(liveData.value ?: arrayListOf())
             }
 
@@ -219,10 +219,10 @@ abstract class BaseDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFacto
         }
     }
 
-    protected open fun onLoadFromCache(liveData: MutableLiveData<T?>) : Boolean {
+    protected open fun onLoadFromCache(liveData: MutableLiveData<M?>) : Boolean {
         if (!checkParamsValid()) throw IllegalArgumentException(
             "Please check parameters, checkParamsValid returned false.")
-        val model = (cacheHolder as DatabaseCacheHolder<T>).queryCache(query())
+        val model = (cacheHolder as DatabaseCacheHolder<M>).queryCache(query())
         model?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             liveData.postValue(it)
@@ -233,10 +233,10 @@ abstract class BaseDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFacto
         return false
     }
 
-    protected open fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<T>>) : Boolean {
+    protected open fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<M>>) : Boolean {
         if (!checkParamsValid()) throw IllegalArgumentException(
             "Please check parameters, checkParamsValid returned false.")
-        val models = (listCacheHolder as ListDatabaseCacheHolder<T>).queryCache(query())
+        val models = (listCacheHolder as ListDatabaseCacheHolder<M>).queryCache(query())
         models?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             liveData.postValue(it)
@@ -252,7 +252,7 @@ abstract class BaseDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFacto
      * can be used.
      * 简体中文：非集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetwork(callback: DoraCallback<T>, listener: OnLoadStateListener?) {
+    override fun onLoadFromNetwork(callback: DoraCallback<M>, listener: OnLoadStateListener?) {
     }
 
     /**
@@ -260,7 +260,7 @@ abstract class BaseDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFacto
      * used.
      * 简体中文：集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetwork(callback: DoraListCallback<T>, listener: OnLoadStateListener?) {
+    override fun onLoadFromNetwork(callback: DoraListCallback<M>, listener: OnLoadStateListener?) {
     }
 
     /**
@@ -268,7 +268,7 @@ abstract class BaseDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFacto
      * must be used.
      * 简体中文：非集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetworkObservable(listener: OnLoadStateListener?) : Observable<T> {
+    override fun onLoadFromNetworkObservable(listener: OnLoadStateListener?) : Observable<M> {
         return Observable.empty()
     }
 
@@ -277,16 +277,16 @@ abstract class BaseDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFacto
      * be used.
      * 简体中文：集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetworkObservableList(listener: OnLoadStateListener?) : Observable<MutableList<T>> {
+    override fun onLoadFromNetworkObservableList(listener: OnLoadStateListener?) : Observable<MutableList<M>> {
         return Observable.empty()
     }
 
-    protected fun rxOnLoadFromNetwork(liveData: MutableLiveData<T?>, listener: OnLoadStateListener? = null) {
-        RxTransformer.doApiObserver(onLoadFromNetworkObservable(listener), object : Observer<T> {
+    protected fun rxOnLoadFromNetwork(liveData: MutableLiveData<M?>, listener: OnLoadStateListener? = null) {
+        RxTransformer.doApiObserver(onLoadFromNetworkObservable(listener), object : Observer<M> {
             override fun onSubscribe(d: Disposable) {
             }
 
-            override fun onNext(model: T) {
+            override fun onNext(model: M & Any) {
                 parseModel(model, liveData)
             }
 
@@ -299,12 +299,12 @@ abstract class BaseDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFacto
         })
     }
 
-    protected fun rxOnLoadFromNetworkForList(liveData: MutableLiveData<MutableList<T>>, listener: OnLoadStateListener? = null) {
-        RxTransformer.doApiObserver(onLoadFromNetworkObservableList(listener), object : Observer<MutableList<T>> {
+    protected fun rxOnLoadFromNetworkForList(liveData: MutableLiveData<MutableList<M>>, listener: OnLoadStateListener? = null) {
+        RxTransformer.doApiObserver(onLoadFromNetworkObservableList(listener), object : Observer<MutableList<M>> {
             override fun onSubscribe(d: Disposable) {
             }
 
-            override fun onNext(models: MutableList<T>) {
+            override fun onNext(models: MutableList<M>) {
                 parseModels(models, liveData)
             }
 
@@ -325,7 +325,7 @@ abstract class BaseDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFacto
         return false
     }
 
-    protected open fun parseModel(model: T, liveData: MutableLiveData<T?>) {
+    protected open fun parseModel(model: M, liveData: MutableLiveData<M?>) {
         model.let {
             if (isLogPrint) {
                 Log.d(TAG, "【$description】$it")
@@ -333,15 +333,15 @@ abstract class BaseDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFacto
             onInterceptData(DataSource.Type.NETWORK, it)
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")
-            (cacheHolder as DatabaseCacheHolder<T>).removeOldCache(query())
-            (cacheHolder as DatabaseCacheHolder<T>).addNewCache(it)
+            (cacheHolder as DatabaseCacheHolder<M>).removeOldCache(query())
+            (cacheHolder as DatabaseCacheHolder<M>).addNewCache(it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
             liveData.postValue(it)
         }
     }
 
-    protected open fun parseModels(models: MutableList<T>?,
-                            liveData: MutableLiveData<MutableList<T>>) {
+    protected open fun parseModels(models: MutableList<M>?,
+                            liveData: MutableLiveData<MutableList<M>>) {
         models?.let {
             if (isLogPrint) {
                 for (model in it) {
@@ -351,8 +351,8 @@ abstract class BaseDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFacto
             onInterceptData(DataSource.Type.NETWORK, it)
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")
-            (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
-            (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(it)
+            (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(query())
+            (listCacheHolder as ListDatabaseCacheHolder<M>).addNewCache(it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
             if (disallowForceUpdate()) {
                 val oldValue = liveData.value
@@ -376,7 +376,7 @@ abstract class BaseDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFacto
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")
             clearData()
-            (cacheHolder as DatabaseCacheHolder<T>).removeOldCache(query())
+            (cacheHolder as DatabaseCacheHolder<M>).removeOldCache(query())
         }
     }
 
@@ -392,7 +392,7 @@ abstract class BaseDatabaseCacheRepository<T : Any, F : DatabaseCacheHolderFacto
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")
             clearListData()
-            (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(query())
+            (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(query())
         }
     }
 }

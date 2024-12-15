@@ -1,7 +1,13 @@
 package dora.cache.repository
 
 import android.content.Context
-import dora.db.table.OrmTable
+import dora.cache.factory.DoraMMKVCacheHolderFactory
+import dora.cache.factory.MMKVCacheHolderFactory
 
-abstract class DoraFlowMMKVCacheRepository<T: OrmTable>(context: Context)
-    : BaseFlowMMKVCacheRepository<T>(context)
+abstract class DoraFlowMMKVCacheRepository<M>(context: Context)
+    : BaseFlowMMKVCacheRepository<M>(context) {
+
+    override fun createCacheHolderFactory(): MMKVCacheHolderFactory<M> {
+        return DoraMMKVCacheHolderFactory<M>()
+    }
+}

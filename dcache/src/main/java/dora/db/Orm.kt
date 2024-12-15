@@ -42,10 +42,8 @@ object Orm {
     private fun prepare(helper: OrmSQLiteOpenHelper) {
         dbHelper = helper
         database = helper.writableDatabase
-        database?.let {
-            helper.onCreate(it)
-            dbState = STATE_DATABASE_EXISTS
-        }
+        dbState = STATE_DATABASE_EXISTS
+        dbHelper!!.onCreate(database)
     }
 
     private fun prepare(

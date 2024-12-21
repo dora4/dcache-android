@@ -5,4 +5,9 @@ import dora.cache.factory.DoraDatabaseCacheHolderFactory
 import dora.db.table.OrmTable
 
 abstract class DoraDatabaseCacheRepository<T : OrmTable>(context: Context)
-    : BaseDatabaseCacheRepository<T, DoraDatabaseCacheHolderFactory<T>>(context)
+    : BaseDatabaseCacheRepository<T, DoraDatabaseCacheHolderFactory<T>>(context) {
+
+    override fun createCacheHolderFactory(): DoraDatabaseCacheHolderFactory<T> {
+        return DoraDatabaseCacheHolderFactory<T>()
+    }
+}

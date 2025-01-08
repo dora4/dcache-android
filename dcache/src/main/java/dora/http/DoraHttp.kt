@@ -1,16 +1,11 @@
 package dora.http
 
-import android.app.Activity
-import android.app.Dialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import dora.cache.data.adapter.ResultAdapter
-import dora.cache.factory.CacheHolderFactory
-import dora.cache.repository.BaseRepository
 import dora.http.coroutine.ContextContinuation
 import dora.http.coroutine.DoraCoroutineContext
 import dora.http.exception.DoraHttpException
@@ -20,7 +15,6 @@ import dora.http.rx.RxTransformer
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
-import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.flow
@@ -55,42 +49,9 @@ object DoraHttp {
         return RetrofitManager.getService(clazz.java)
     }
 
-    fun netScope(activity: Activity, block: suspend () -> Unit) {
-        block.startCoroutine(ContextContinuation(DoraCoroutineContext(activity)))
-    }
-
-    fun netScope(fragment: Fragment, block: suspend () -> Unit) {
-        block.startCoroutine(ContextContinuation(DoraCoroutineContext(fragment.requireActivity())))
-    }
-
-    fun netScope(dialog: Dialog, block: suspend () -> Unit) {
-        if (dialog.ownerActivity != null) {
-            block.startCoroutine(ContextContinuation(DoraCoroutineContext(dialog.ownerActivity!!)))
-        }
-    }
-
-    fun <M, F : CacheHolderFactory<M>> netScope(repository: BaseRepository<M, F>,
-                                                block: suspend () -> Unit) {
-        repository.viewModelScope.launch(DoraCoroutineContext(repository.context),
-            CoroutineStart.DEFAULT) { block() }
-    }
-
-    fun Activity.net(block: suspend () -> Unit) {
-        block.startCoroutine(ContextContinuation(DoraCoroutineContext(this)))
-    }
-
-    fun Fragment.net(block: suspend () -> Unit) {
-        block.startCoroutine(ContextContinuation(DoraCoroutineContext(requireActivity())))
-    }
-
-    fun Dialog.net(block: suspend () -> Unit) {
-        if (ownerActivity != null) {
-            block.startCoroutine(ContextContinuation(DoraCoroutineContext(ownerActivity!!)))
-        }
-    }
-
-    fun <M, F : CacheHolderFactory<M>> BaseRepository<M, F>.net(block: suspend () -> Unit) {
-        viewModelScope.launch(DoraCoroutineContext(context), CoroutineStart.DEFAULT) { block() }
+    @JvmSynthetic
+    fun net(block: suspend () -> Unit) {
+        block.startCoroutine(ContextContinuation(DoraCoroutineContext()))
     }
 
     /**

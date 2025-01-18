@@ -172,9 +172,7 @@ open class OrmTask<T : OrmTable> internal constructor(
                     throw OrmTaskException("Interrupted while waiting for operation to complete.\n${e.message}")
                 }
             }
-            if (throwable != null) {
-                throw OrmTaskException(this, throwable!!)
-            }
+            throwable?.let { throw OrmTaskException(this, it) }
             return result
         } finally {
             lock.unlock()

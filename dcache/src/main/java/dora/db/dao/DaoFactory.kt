@@ -1,13 +1,13 @@
 package dora.db.dao
 
 import android.database.sqlite.SQLiteDatabase
+import androidx.collection.ArrayMap
 import dora.db.table.OrmTable
 import java.lang.IllegalArgumentException
-import java.util.*
 
 object DaoFactory {
 
-    private val DAO_MAP: MutableMap<Class<out OrmTable>, OrmDao<*>> = HashMap()
+    private val DAO_MAP: MutableMap<Class<out OrmTable>, OrmDao<*>> = ArrayMap()
     private val LOCK = Any()
 
     fun <T : OrmTable> removeDao(beanClass: Class<T>) {
@@ -43,6 +43,6 @@ object DaoFactory {
     }
 
     fun <T : OrmTable> getDao(bean: T): OrmDao<T> {
-        synchronized(LOCK) { return getDao(bean.javaClass) as OrmDao<T> }
+        synchronized(LOCK) { return getDao(bean.javaClass) }
     }
 }

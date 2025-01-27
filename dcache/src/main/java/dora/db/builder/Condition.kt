@@ -57,29 +57,29 @@ private fun appendClause(name: String, clause: String?) : String {
  * Convert the query conditions into SQL statements.
  * 简体中文：将查询条件那部分转化为sql语句。
  */
-fun Condition.toSQL() : String {
+fun Condition.toSQL(): String {
         val sb = StringBuilder()
-        if (selection != "") {
+        if (selection.isNotEmpty()) {
                 if (!selection.contains("?")) {
-                        sb.append("WHERE").append(" ").append(selection)
+                        sb.append("WHERE ").append(selection.trim())
                 } else {
-                        val hasPrefixHolder = selection.startsWith("?")
-                        if (hasPrefixHolder) {
-                                throw IllegalArgumentException("selection can't start with ?")
+                        val placeholdersCount = selection.count { it == '?' }
+                        if (placeholdersCount != selectionArgs.size) {
+                                throw IllegalArgumentException("Number of placeholders '?' does not" +
+                                        " match selectionArgs.")
                         }
-                        val hasSuffixHolder = selection.endsWith("?")
                         val specs = selection.split("?")
-                        specs.forEachIndexed {
-                                        index, element ->
-                                if (index <= specs.size - 2) {
-                                        sb.append(element).append(selectionArgs[index])
-                                }
-                                if (hasSuffixHolder && index == specs.size - 1) {
-                                        sb.append(element).append(selectionArgs[index])
+                        specs.forEachIndexed { index, element ->
+                                sb.append(element)
+                                if (index < selectionArgs.size) {
+                                        sb.append(selectionArgs[index])
                                 }
                         }
                 }
-                sb.append(groupBy() + having() + orderBy() + limit())
+                sb.append(groupBy())
+                sb.append(having())
+                sb.append(orderBy())
+                sb.append(limit())
         }
         return sb.toString()
 }

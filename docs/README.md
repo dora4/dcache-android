@@ -24,8 +24,8 @@ SQL, Retrofit, Kotlin Coroutines, etc.
 
 ```groovy
 maven { url 'https://jitpack.io' }
-// Stable version 3.1.11, for the latest version use the version successfully compiled on Jitpack (marked in green).
-def stable_version = '3.1.11'
+// Stable version 3.1.12, for the latest version use the version successfully compiled on Jitpack (marked in green).
+def stable_version = '3.1.12'
 implementation "com.github.dora4:dcache-android:$stable_version"
 ```
 
@@ -451,8 +451,8 @@ implementation "com.github.dora4:dcache-android:$stable_version"
   Additionally, you can use the official dcache extension package to replace the database ORM framework. If you have any suggestions for improvements or have an integrated extension package, you are welcome to contribute!
 
   ```groovy
-  implementation 'com.github.dora4:dcache-room-support:1.4'
-  implementation 'com.github.dora4:dcache-greendao-support:1.1'
+  implementation 'com.github.dora4:dcache-room-support:1.8'
+  implementation 'com.github.dora4:dcache-greendao-support:1.2'
   ```
 
 - **Paged Caching**

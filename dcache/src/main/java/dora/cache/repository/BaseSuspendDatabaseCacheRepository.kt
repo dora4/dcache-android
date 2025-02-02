@@ -252,8 +252,9 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
         viewModelScope.launch {
             val models = (listCacheHolder as SuspendListDatabaseCacheHolder<M>).queryCache(query())
             models?.let {
-                onInterceptData(DataSource.Type.CACHE, it)
-                liveData.postValue(it)
+                val data = onFilterData(DataSource.Type.CACHE, it)
+                onInterceptData(DataSource.Type.CACHE, data)
+                liveData.postValue(data)
                 listener?.onLoad(OnLoadStateListener.SUCCESS)
                 returnVal(true)
             }
@@ -365,22 +366,23 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                     Log.d(TAG, "【$description】$model")
                 }
             }
-            onInterceptData(DataSource.Type.NETWORK, it)
+            val data = onFilterData(DataSource.Type.NETWORK, it)
+            onInterceptData(DataSource.Type.NETWORK, data)
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")
             viewModelScope.launch {
                 if (!disallowForceUpdate()) {
                     (listCacheHolder as SuspendListDatabaseCacheHolder<M>).removeOldCache(query())
                 }
-                (listCacheHolder as SuspendListDatabaseCacheHolder<M>).addNewCache(it)
+                (listCacheHolder as SuspendListDatabaseCacheHolder<M>).addNewCache(data)
             }
             listener?.onLoad(OnLoadStateListener.SUCCESS)
             if (disallowForceUpdate()) {
                 val oldValue = liveData.value
-                oldValue?.addAll(it)
+                oldValue?.addAll(data)
                 liveData.value = oldValue
             } else {
-                liveData.postValue(it)
+                liveData.postValue(data)
             }
         }
     }

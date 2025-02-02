@@ -139,7 +139,8 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
     private fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<M>>) : Boolean {
         val models = (listCacheHolder as DoraListMMKVCacheHolder).readCache(TAG)
         models?.let {
-            onInterceptData(DataSource.Type.CACHE, it)
+            val data = onFilterData(DataSource.Type.CACHE, it)
+            onInterceptData(DataSource.Type.CACHE, data)
             liveData.postValue(it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
             return true
@@ -218,11 +219,12 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
                     Log.d(TAG, "【$description】${model.toString()}")
                 }
             }
-            onInterceptData(DataSource.Type.NETWORK, it)
+            val data = onFilterData(DataSource.Type.NETWORK, it)
+            onInterceptData(DataSource.Type.NETWORK, data)
             (listCacheHolder as DoraListMMKVCacheHolder).removeOldCache(TAG)
-            (listCacheHolder as DoraListMMKVCacheHolder).addNewCache(TAG, it)
+            (listCacheHolder as DoraListMMKVCacheHolder).addNewCache(TAG, data)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
-            liveData.postValue(it)
+            liveData.postValue(data)
         }
     }
 

@@ -235,8 +235,9 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
         val models = (listCacheHolder as ListDatabaseCacheHolder<T>).queryCache(query())
         models?.let {
             if (it.size > 0) {
-                onInterceptData(DataSource.Type.CACHE, it)
-                flowData.value = it
+                val data = onFilterData(DataSource.Type.CACHE, it)
+                onInterceptData(DataSource.Type.CACHE, data)
+                flowData.value = data
                 listener?.onLoad(OnLoadStateListener.SUCCESS)
                 return true
             } else {
@@ -256,7 +257,8 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
                     Log.d(TAG, "【$description】${model.toString()}")
                 }
             }
-            onInterceptData(DataSource.Type.NETWORK, it)
+            val data = onFilterData(DataSource.Type.NETWORK, it)
+            onInterceptData(DataSource.Type.NETWORK, data)
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")
             // 简体中文：追加分页的条件
@@ -265,18 +267,18 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
             if (!disallowForceUpdate()) {
                 (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(condition)
             }
-            (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(it)
-            if (it.size > 0) {
+            (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(data)
+            if (data.size > 0) {
                 listener?.onLoad(OnLoadStateListener.SUCCESS)
             } else {
                 listener?.onLoad(OnLoadStateListener.FAILURE)
             }
             if (disallowForceUpdate()) {
                 val oldValue = flowData.value
-                oldValue.addAll(it)
+                oldValue.addAll(data)
                 flowData.value = oldValue
             } else {
-                flowData.value = it
+                flowData.value = data
             }
         }
     }

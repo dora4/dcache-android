@@ -236,8 +236,9 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
         val models = (listCacheHolder as ListDatabaseCacheHolder<T>).queryCache(query())
         models?.let {
             if (it.size > 0) {
-                onInterceptData(DataSource.Type.CACHE, it)
-                liveData.postValue(it)
+                val data = onFilterData(DataSource.Type.CACHE, it)
+                onInterceptData(DataSource.Type.CACHE, data)
+                liveData.postValue(data)
                 listener?.onLoad(OnLoadStateListener.SUCCESS)
                 return true
             } else {
@@ -257,7 +258,8 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                     Log.d(TAG, "【$description】$model")
                 }
             }
-            onInterceptData(DataSource.Type.NETWORK, it)
+            val data = onFilterData(DataSource.Type.NETWORK, it)
+            onInterceptData(DataSource.Type.NETWORK, data)
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")
             // Append pagination conditions.
@@ -267,18 +269,18 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
             if (!disallowForceUpdate()) {
                 (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(condition)
             }
-            (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(it)
-            if (it.size > 0) {
+            (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(data)
+            if (data.size > 0) {
                 listener?.onLoad(OnLoadStateListener.SUCCESS)
             } else {
                 listener?.onLoad(OnLoadStateListener.FAILURE)
             }
             if (disallowForceUpdate()) {
                 val oldValue = liveData.value
-                oldValue?.addAll(it)
+                oldValue?.addAll(data)
                 liveData.value = oldValue
             } else {
-                liveData.postValue(it)
+                liveData.postValue(data)
             }
         }
     }

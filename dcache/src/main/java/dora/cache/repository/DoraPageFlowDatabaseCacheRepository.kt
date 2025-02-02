@@ -262,7 +262,9 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
             // 简体中文：追加分页的条件
             val whereBuilder = WhereBuilder.create(query()).andWhereEqualTo(getPaginationKey(), pageNo)
             val condition = QueryBuilder.create(query()).where(whereBuilder).toCondition()
-            (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(condition)
+            if (!disallowForceUpdate()) {
+                (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(condition)
+            }
             (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(it)
             if (it.size > 0) {
                 listener?.onLoad(OnLoadStateListener.SUCCESS)

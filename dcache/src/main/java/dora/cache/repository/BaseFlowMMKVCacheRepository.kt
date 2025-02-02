@@ -227,7 +227,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
 
     protected open fun onParseModelFailure(msg: String) {
         if (isLogPrint) {
-            if (description == null) {
+            if (description == null || description == "") {
                 description = javaClass.simpleName
             }
             Log.d(TAG, "【${description}】$msg")
@@ -241,7 +241,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
 
     protected open fun onParseModelsFailure(msg: String) {
         if (isLogPrint) {
-            if (description == null) {
+            if (description == null || description == "") {
                 description = javaClass.simpleName
             }
             Log.d(TAG, "【${description}】$msg")

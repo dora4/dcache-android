@@ -369,7 +369,9 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")
             viewModelScope.launch {
-                (listCacheHolder as SuspendListDatabaseCacheHolder<M>).removeOldCache(query())
+                if (!disallowForceUpdate()) {
+                    (listCacheHolder as SuspendListDatabaseCacheHolder<M>).removeOldCache(query())
+                }
                 (listCacheHolder as SuspendListDatabaseCacheHolder<M>).addNewCache(it)
             }
             listener?.onLoad(OnLoadStateListener.SUCCESS)

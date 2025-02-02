@@ -351,7 +351,9 @@ abstract class BaseDatabaseCacheRepository<M, F : DatabaseCacheHolderFactory<M>>
             onInterceptData(DataSource.Type.NETWORK, it)
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")
-            (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(query())
+            if (!disallowForceUpdate()) {
+                (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(query())
+            }
             (listCacheHolder as ListDatabaseCacheHolder<M>).addNewCache(it)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
             if (disallowForceUpdate()) {

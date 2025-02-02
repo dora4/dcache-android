@@ -14,6 +14,7 @@ import dora.cache.data.fetcher.OnLoadStateListenerImpl
 import dora.cache.data.page.IDataPager
 import dora.cache.factory.CacheHolderFactory
 import dora.cache.holder.CacheHolder
+import dora.cache.repository.BaseRepository.DataSource
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import io.reactivex.Observable
@@ -382,4 +383,11 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
      * 简体中文：拦截网络请求和缓存加载出来的数据，并做一些修改，集合模式使用。
      */
     protected open fun onInterceptData(type: DataSource.Type, models: MutableList<M>) {}
+
+    /**
+     * Before intercepting the data, preliminary filtering is performed to reduce the complexity of
+     * editing and modifying the data. This is only applicable to collection mode.
+     * 简体中文：在拦截数据之前会对数据进行初步的过滤，以降低编辑修改数据的复杂度，仅用于集合模式。
+     */
+    protected open fun onFilterData(type: DataSource.Type, models: MutableList<M>) : MutableList<M>{ return models }
 }

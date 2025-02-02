@@ -238,8 +238,9 @@ abstract class BaseDatabaseCacheRepository<M, F : DatabaseCacheHolderFactory<M>>
             "Please check parameters, checkParamsValid returned false.")
         val models = (listCacheHolder as ListDatabaseCacheHolder<M>).queryCache(query())
         models?.let {
-            onInterceptData(DataSource.Type.CACHE, it)
-            liveData.postValue(it)
+            val data = onFilterData(DataSource.Type.CACHE, it)
+            onInterceptData(DataSource.Type.CACHE, data)
+            liveData.postValue(data)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
             return true
         }
@@ -348,20 +349,21 @@ abstract class BaseDatabaseCacheRepository<M, F : DatabaseCacheHolderFactory<M>>
                     Log.d(TAG, "【$description】$model")
                 }
             }
-            onInterceptData(DataSource.Type.NETWORK, it)
+            val data = onFilterData(DataSource.Type.NETWORK, it)
+            onInterceptData(DataSource.Type.NETWORK, data)
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")
             if (!disallowForceUpdate()) {
                 (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(query())
             }
-            (listCacheHolder as ListDatabaseCacheHolder<M>).addNewCache(it)
+            (listCacheHolder as ListDatabaseCacheHolder<M>).addNewCache(data)
             listener?.onLoad(OnLoadStateListener.SUCCESS)
             if (disallowForceUpdate()) {
                 val oldValue = liveData.value
-                oldValue?.addAll(it)
+                oldValue?.addAll(data)
                 liveData.value = oldValue
             } else {
-                liveData.postValue(it)
+                liveData.postValue(data)
             }
         }
     }

@@ -143,11 +143,12 @@ abstract class BaseDatabaseCacheRepository<M, F : DatabaseCacheHolderFactory<M>>
                     }
 
                     override fun loadFromNetwork() {
+                        val time = System.currentTimeMillis()
                         try {
                             rxOnLoadFromNetwork(liveData, listener)
                             onLoadFromNetwork(callback(), listener)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE)
+                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE, System.currentTimeMillis() - time)
                         }
                     }
                 })
@@ -186,11 +187,12 @@ abstract class BaseDatabaseCacheRepository<M, F : DatabaseCacheHolderFactory<M>>
                     }
 
                     override fun loadFromNetwork() {
+                        val time = System.currentTimeMillis()
                         try {
                             rxOnLoadFromNetworkForList(liveData, listener)
                             onLoadFromNetwork(listCallback(), listener)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE)
+                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE, System.currentTimeMillis() - time)
                         }
                     }
                 })
@@ -222,29 +224,31 @@ abstract class BaseDatabaseCacheRepository<M, F : DatabaseCacheHolderFactory<M>>
     protected open fun onLoadFromCache(liveData: MutableLiveData<M?>) : Boolean {
         if (!checkParamsValid()) throw IllegalArgumentException(
             "Please check parameters, checkParamsValid returned false.")
+        val time = System.currentTimeMillis()
         val model = (cacheHolder as DatabaseCacheHolder<M>).queryCache(query())
         model?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             liveData.postValue(it)
-            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS)
+            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS, System.currentTimeMillis() - time)
             return true
         }
-        listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE)
+        listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE, System.currentTimeMillis() - time)
         return false
     }
 
     protected open fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<M>>) : Boolean {
         if (!checkParamsValid()) throw IllegalArgumentException(
             "Please check parameters, checkParamsValid returned false.")
+        val time = System.currentTimeMillis()
         val models = (listCacheHolder as ListDatabaseCacheHolder<M>).queryCache(query())
         models?.let {
             val data = onFilterData(DataSource.Type.CACHE, it)
             onInterceptData(DataSource.Type.CACHE, data)
             liveData.postValue(data)
-            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS)
+            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS, System.currentTimeMillis() -time)
             return true
         }
-        listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE)
+        listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE, System.currentTimeMillis() - time)
         return false
     }
 
@@ -327,6 +331,7 @@ abstract class BaseDatabaseCacheRepository<M, F : DatabaseCacheHolderFactory<M>>
     }
 
     protected open fun parseModel(model: M, liveData: MutableLiveData<M?>) {
+        val time = System.currentTimeMillis()
         model.let {
             if (isLogPrint) {
                 Log.d(TAG, "【$description】$it")
@@ -336,13 +341,14 @@ abstract class BaseDatabaseCacheRepository<M, F : DatabaseCacheHolderFactory<M>>
                 "Please check parameters, checkParamsValid returned false.")
             (cacheHolder as DatabaseCacheHolder<M>).removeOldCache(query())
             (cacheHolder as DatabaseCacheHolder<M>).addNewCache(it)
-            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS)
+            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS, System.currentTimeMillis() - time)
             liveData.postValue(it)
         }
     }
 
     protected open fun parseModels(models: MutableList<M>?,
                             liveData: MutableLiveData<MutableList<M>>) {
+        val time = System.currentTimeMillis()
         models?.let {
             if (isLogPrint) {
                 for (model in it) {
@@ -357,7 +363,7 @@ abstract class BaseDatabaseCacheRepository<M, F : DatabaseCacheHolderFactory<M>>
                 (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(query())
             }
             (listCacheHolder as ListDatabaseCacheHolder<M>).addNewCache(data)
-            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS)
+            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS, System.currentTimeMillis() - time)
             if (disallowForceUpdate()) {
                 val oldValue = liveData.value
                 oldValue?.addAll(data)
@@ -369,13 +375,14 @@ abstract class BaseDatabaseCacheRepository<M, F : DatabaseCacheHolderFactory<M>>
     }
 
     protected open fun onParseModelFailure(msg: String) {
+        val time = System.currentTimeMillis()
         if (isLogPrint) {
             if (description == null || description == "") {
                 description = javaClass.simpleName
             }
             Log.d(TAG, "【${description}】$msg")
         }
-        listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE)
+        listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE, System.currentTimeMillis() - time)
         if (isClearDataOnNetworkError) {
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")
@@ -385,13 +392,14 @@ abstract class BaseDatabaseCacheRepository<M, F : DatabaseCacheHolderFactory<M>>
     }
 
     protected open fun onParseModelsFailure(msg: String) {
+        val time = System.currentTimeMillis()
         if (isLogPrint) {
             if (description == null || description == "") {
                 description = javaClass.simpleName
             }
             Log.d(TAG, "【${description}】$msg")
         }
-        listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE)
+        listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE, System.currentTimeMillis() - time)
         if (isClearDataOnNetworkError) {
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")

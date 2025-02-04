@@ -33,5 +33,5 @@ interface OnLoadStateListener {
      * 0 represents success, and 1 represents failure.
      * 简体中文：0代表成功，1代表失败。
      */
-    fun onLoad(from: Source, state: Int)
+    fun onLoad(from: Source, state: Int, tookTime: Long)
 }

@@ -47,11 +47,13 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
                     }
 
                     override fun loadFromNetwork() {
+                        val time = System.currentTimeMillis()
                         try {
                             rxOnLoadFromNetwork(flowData, listener)
                             onLoadFromNetwork(callback(), listener)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE)
+                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE,
+                                System.currentTimeMillis() - time)
                         }
                     }
                 })
@@ -90,11 +92,13 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
                     }
 
                     override fun loadFromNetwork() {
+                        val time = System.currentTimeMillis()
                         try {
                             rxOnLoadFromNetworkForList(flowData, listener)
                             onLoadFromNetwork(listCallback(), listener)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE)
+                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE,
+                        System.currentTimeMillis() - time)
                         }
                     }
                 })
@@ -124,27 +128,33 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
     }
 
     private fun onLoadFromCache(flowData: MutableStateFlow<M?>) : Boolean {
+        val time = System.currentTimeMillis()
         val model = (cacheHolder as DoraMMKVCacheHolder).readCache(TAG)
         model?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             flowData.value = it
-            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS)
+            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS, System.currentTimeMillis()
+             - time)
             return true
         }
-        listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE)
+        listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE, System.currentTimeMillis()
+         - time)
         return false
     }
 
     private fun onLoadFromCacheList(liveData: MutableStateFlow<MutableList<M>>) : Boolean {
+        val time = System.currentTimeMillis()
         val models = (listCacheHolder as DoraListMMKVCacheHolder).readCache(TAG)
         models?.let {
             val  data = onFilterData(DataSource.Type.CACHE, it)
             onInterceptData(DataSource.Type.CACHE, data)
             liveData.value = data
-            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS)
+            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS,
+                System.currentTimeMillis() - time)
             return true
         }
-        listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE)
+        listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE,
+            System.currentTimeMillis() - time)
         return false
     }
 
@@ -200,12 +210,14 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
 
     protected open fun parseModel(model: M, flowData: MutableStateFlow<M?>) {
         model?.let {
+            val time = System.currentTimeMillis()
             if (isLogPrint) {
                 Log.d(TAG, "【$description】$it")
             }
             onInterceptData(DataSource.Type.NETWORK, it)
             (cacheHolder as DoraMMKVCacheHolder).addNewCache(TAG, it)
-            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS)
+            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS,
+        System.currentTimeMillis() - time)
             flowData.value = it
         }
     }
@@ -213,6 +225,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
     protected open fun parseModels(models: MutableList<M>?,
                                    flowData: MutableStateFlow<MutableList<M>>) {
         models?.let {
+            val time = System.currentTimeMillis()
             if (isLogPrint) {
                 for (model in it) {
                     Log.d(TAG, "【$description】${model.toString()}")
@@ -222,19 +235,22 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
             onInterceptData(DataSource.Type.NETWORK, data)
             (listCacheHolder as DoraListMMKVCacheHolder).removeOldCache(TAG)
             (listCacheHolder as DoraListMMKVCacheHolder).addNewCache(TAG, data)
-            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS)
+            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS,
+        System.currentTimeMillis() - time)
             flowData.value = data
         }
     }
 
     protected open fun onParseModelFailure(msg: String) {
+        val time = System.currentTimeMillis()
         if (isLogPrint) {
             if (description == null || description == "") {
                 description = javaClass.simpleName
             }
             Log.d(TAG, "【${description}】$msg")
         }
-        listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE)
+        listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE,
+    System.currentTimeMillis() - time)
         if (isClearDataOnNetworkError) {
             clearData()
             (cacheHolder as DoraMMKVCacheHolder).removeOldCache(TAG)
@@ -242,13 +258,15 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
     }
 
     protected open fun onParseModelsFailure(msg: String) {
+        val time = System.currentTimeMillis()
         if (isLogPrint) {
             if (description == null || description == "") {
                 description = javaClass.simpleName
             }
             Log.d(TAG, "【${description}】$msg")
         }
-        listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE)
+        listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE,
+    System.currentTimeMillis() - time)
         if (isClearDataOnNetworkError) {
             clearListData()
             (listCacheHolder as DoraListMMKVCacheHolder).readCache(TAG)

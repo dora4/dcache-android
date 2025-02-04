@@ -135,7 +135,7 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
     fun onRefresh(block: ((Boolean) -> Unit)? = null) {
         pageNo = 0
         fetchListData(listener = object : OnLoadStateListener {
-            override fun onLoad(from: OnLoadStateListener.Source, state: Int) {
+            override fun onLoad(from: OnLoadStateListener.Source, state: Int, tookTime: Long) {
                 block?.invoke(state == OnLoadStateListener.SUCCESS)
             }
         })
@@ -146,11 +146,13 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
      * 简体中文：上拉加载回调，可结合[setPageSize]使用。
      */
     fun onLoadMore(listener: OnLoadStateListener) {
+        val time = System.currentTimeMillis()
         if (canLoadMore()) {
             pageNo++
             fetchListData(listener = listener)
         } else {
-            listener.onLoad(OnLoadStateListener.Source.OTHER, OnLoadStateListener.FAILURE)
+            listener.onLoad(OnLoadStateListener.Source.OTHER, OnLoadStateListener.FAILURE,
+                System.currentTimeMillis() - time)
         }
     }
 
@@ -163,7 +165,7 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
         if (canLoadMore()) {
             pageNo++
             fetchListData(listener = object : OnLoadStateListener {
-                override fun onLoad(from: OnLoadStateListener.Source, state: Int) {
+                override fun onLoad(from: OnLoadStateListener.Source, state: Int, tookTime: Long) {
                     block?.invoke(state == OnLoadStateListener.SUCCESS)
                 }
             })
@@ -222,10 +224,12 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
     override fun onLoadFromCacheList(flowData: MutableStateFlow<MutableList<T>>) : Boolean {
         if (!checkParamsValid()) throw IllegalArgumentException(
             "Please check parameters, checkParamsValid returned false.")
+        val time = System.currentTimeMillis()
         totalSize = (listCacheHolder as ListDatabaseCacheHolder<T>)
             .queryCacheSize(query()).toInt()
         if (isOutOfPageRange()) {
-            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE)
+            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE,
+                System.currentTimeMillis() - time)
             return false
         }
         val models = (listCacheHolder as ListDatabaseCacheHolder<T>).queryCache(query())
@@ -234,20 +238,24 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
                 val data = onFilterData(DataSource.Type.CACHE, it)
                 onInterceptData(DataSource.Type.CACHE, data)
                 flowData.value = data
-                listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS)
+                listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS,
+                    System.currentTimeMillis() - time)
                 return true
             } else {
-                listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE)
+                listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE,
+                    System.currentTimeMillis() - time)
                 return false
             }
         }
-        listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE)
+        listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE,
+            System.currentTimeMillis() - time)
         return false
     }
 
     override fun parseModels(models: MutableList<T>?,
                                    flowData: MutableStateFlow<MutableList<T>>) {
         models?.let {
+            val time = System.currentTimeMillis()
             if (isLogPrint) {
                 for (model in it) {
                     Log.d(TAG, "【$description】${model.toString()}")
@@ -265,9 +273,11 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
             }
             (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(data)
             if (data.size > 0) {
-                listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS)
+                listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS,
+                    System.currentTimeMillis() - time)
             } else {
-                listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE)
+                listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE,
+                    System.currentTimeMillis() - time)
             }
             if (disallowForceUpdate()) {
                 val oldValue = flowData.value
@@ -293,11 +303,13 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
                     }
 
                     override fun loadFromNetwork() {
+                        val time = System.currentTimeMillis()
                         try {
                             rxOnLoadFromNetworkForList(flowData, listener)
                             onLoadFromNetwork(listCallback(), listener)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE)
+                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE,
+                                System.currentTimeMillis() - time)
                         }
                     }
                 })

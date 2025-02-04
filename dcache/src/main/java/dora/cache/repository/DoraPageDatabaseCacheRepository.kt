@@ -65,10 +65,6 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
         return super.onLoadFromNetworkObservableList(listener)
     }
 
-    final override fun onInterceptData(type: DataSource.Type, model: T) {
-        super.onInterceptData(type, model)
-    }
-
     final override fun onParseModelFailure(msg: String) {
         super.onParseModelFailure(msg)
     }
@@ -140,7 +136,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     fun onRefresh(block: ((Boolean) -> Unit)? = null) {
         pageNo = 0
         fetchListData(listener = object : OnLoadStateListener {
-            override fun onLoad(state: Int) {
+            override fun onLoad(from: OnLoadStateListener.Source, state: Int) {
                 block?.invoke(state == OnLoadStateListener.SUCCESS)
             }
         })
@@ -155,7 +151,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
             pageNo++
             fetchListData(listener = listener)
         } else {
-            listener.onLoad(OnLoadStateListener.FAILURE)
+            listener.onLoad(OnLoadStateListener.Source.OTHER, OnLoadStateListener.FAILURE)
         }
     }
 
@@ -168,7 +164,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
         if (canLoadMore()) {
             pageNo++
             fetchListData(listener = object : OnLoadStateListener {
-                override fun onLoad(state: Int) {
+                override fun onLoad(from: OnLoadStateListener.Source, state: Int) {
                     block?.invoke(state == OnLoadStateListener.SUCCESS)
                 }
             })
@@ -230,7 +226,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
         totalSize = (listCacheHolder as ListDatabaseCacheHolder<T>)
             .queryCacheSize(query()).toInt()
         if (isOutOfPageRange()) {
-            listener?.onLoad(OnLoadStateListener.FAILURE)
+            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE)
             return false
         }
         val models = (listCacheHolder as ListDatabaseCacheHolder<T>).queryCache(query())
@@ -239,14 +235,14 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                 val data = onFilterData(DataSource.Type.CACHE, it)
                 onInterceptData(DataSource.Type.CACHE, data)
                 liveData.postValue(data)
-                listener?.onLoad(OnLoadStateListener.SUCCESS)
+                listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS)
                 return true
             } else {
-                listener?.onLoad(OnLoadStateListener.FAILURE)
+                listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE)
                 return false
             }
         }
-        listener?.onLoad(OnLoadStateListener.FAILURE)
+        listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE)
         return false
     }
 
@@ -271,9 +267,9 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
             }
             (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(data)
             if (data.size > 0) {
-                listener?.onLoad(OnLoadStateListener.SUCCESS)
+                listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS)
             } else {
-                listener?.onLoad(OnLoadStateListener.FAILURE)
+                listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE)
             }
             if (disallowForceUpdate()) {
                 val oldValue = liveData.value
@@ -303,7 +299,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                             rxOnLoadFromNetworkForList(liveData, listener)
                             onLoadFromNetwork(listCallback(), listener)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadStateListener.FAILURE)
+                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE)
                         }
                     }
                 })

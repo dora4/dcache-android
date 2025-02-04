@@ -155,7 +155,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                             rxOnLoadFromNetwork(liveData, listener)
                             onLoadFromNetwork(callback(), listener)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadStateListener.FAILURE)
+                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE)
                         }
                     }
                 })
@@ -201,7 +201,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                             rxOnLoadFromNetworkForList(liveData, listener)
                             onLoadFromNetwork(listCallback(), listener)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadStateListener.FAILURE)
+                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE)
                         }
                     }
                 })
@@ -238,10 +238,10 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
             model?.let {
                 onInterceptData(DataSource.Type.CACHE, it)
                 liveData.postValue(it)
-                listener?.onLoad(OnLoadStateListener.SUCCESS)
+                listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS)
                 returnVal(true)
             }
-            listener?.onLoad(OnLoadStateListener.FAILURE)
+            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE)
             returnVal(false)
         }
     }
@@ -255,10 +255,10 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                 val data = onFilterData(DataSource.Type.CACHE, it)
                 onInterceptData(DataSource.Type.CACHE, data)
                 liveData.postValue(data)
-                listener?.onLoad(OnLoadStateListener.SUCCESS)
+                listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS)
                 returnVal(true)
             }
-            listener?.onLoad(OnLoadStateListener.FAILURE)
+            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE)
             returnVal(false)
         }
     }
@@ -353,7 +353,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                 (cacheHolder as SuspendDatabaseCacheHolder<M>).removeOldCache(query())
                 (cacheHolder as SuspendDatabaseCacheHolder<M>).addNewCache(it)
             }
-            listener?.onLoad(OnLoadStateListener.SUCCESS)
+            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS)
             liveData.postValue(it)
         }
     }
@@ -376,7 +376,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                 }
                 (listCacheHolder as SuspendListDatabaseCacheHolder<M>).addNewCache(data)
             }
-            listener?.onLoad(OnLoadStateListener.SUCCESS)
+            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS)
             if (disallowForceUpdate()) {
                 val oldValue = liveData.value
                 oldValue?.addAll(data)
@@ -394,7 +394,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
             }
             Log.d(TAG, "【${description}】$msg")
         }
-        listener?.onLoad(OnLoadStateListener.FAILURE)
+        listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE)
         if (isClearDataOnNetworkError) {
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")
@@ -412,7 +412,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
             }
             Log.d(TAG, "【${description}】$msg")
         }
-        listener?.onLoad(OnLoadStateListener.FAILURE)
+        listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE)
         if (isClearDataOnNetworkError) {
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")

@@ -52,7 +52,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
                             rxOnLoadFromNetwork(liveData, listener)
                             onLoadFromNetwork(callback(), listener)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadStateListener.FAILURE)
+                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE)
                         }
                     }
                 })
@@ -95,7 +95,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
                             rxOnLoadFromNetworkForList(liveData, listener)
                             onLoadFromNetwork(listCallback(), listener)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadStateListener.FAILURE)
+                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE)
                         }
                     }
                 })
@@ -129,10 +129,10 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
         model?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             liveData.postValue(it)
-            listener?.onLoad(OnLoadStateListener.SUCCESS)
+            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS)
             return true
         }
-        listener?.onLoad(OnLoadStateListener.FAILURE)
+        listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE)
         return false
     }
 
@@ -142,10 +142,10 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
             val data = onFilterData(DataSource.Type.CACHE, it)
             onInterceptData(DataSource.Type.CACHE, data)
             liveData.postValue(it)
-            listener?.onLoad(OnLoadStateListener.SUCCESS)
+            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS)
             return true
         }
-        listener?.onLoad(OnLoadStateListener.FAILURE)
+        listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE)
         return false
     }
 
@@ -206,7 +206,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
             }
             onInterceptData(DataSource.Type.NETWORK, it)
             (cacheHolder as DoraMMKVCacheHolder).addNewCache(TAG, it)
-            listener?.onLoad(OnLoadStateListener.SUCCESS)
+            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS)
             liveData.postValue(it)
         }
     }
@@ -223,7 +223,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
             onInterceptData(DataSource.Type.NETWORK, data)
             (listCacheHolder as DoraListMMKVCacheHolder).removeOldCache(TAG)
             (listCacheHolder as DoraListMMKVCacheHolder).addNewCache(TAG, data)
-            listener?.onLoad(OnLoadStateListener.SUCCESS)
+            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS)
             liveData.postValue(data)
         }
     }
@@ -235,7 +235,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
             }
             Log.d(TAG, "【${description}】$msg")
         }
-        listener?.onLoad(OnLoadStateListener.FAILURE)
+        listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE)
         if (isClearDataOnNetworkError) {
             clearData()
             (cacheHolder as DoraMMKVCacheHolder).removeOldCache(TAG)
@@ -249,7 +249,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
             }
             Log.d(TAG, "【${description}】$msg")
         }
-        listener?.onLoad(OnLoadStateListener.FAILURE)
+        listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE)
         if (isClearDataOnNetworkError) {
             clearListData()
             (listCacheHolder as DoraListMMKVCacheHolder).readCache(TAG)

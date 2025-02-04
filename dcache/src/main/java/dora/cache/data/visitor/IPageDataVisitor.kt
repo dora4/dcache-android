@@ -20,7 +20,7 @@ interface IPageDataVisitor<M> {
      * Filter out a page of data that meets the requirements.
      * 简体中文：过滤出符合要求的一页数据。
      *
-     * @param model Sample data. 简体中文：样本数据
+     * @param models Sample data. 简体中文：样本数据
      * @param totalCount  Total number of data items. 简体中文：数据总条数
      * @param currentPage Current page number. 简体中文：当前第几页
      * @param pageSize    Number of data items per page. 简体中文：每页数据条数

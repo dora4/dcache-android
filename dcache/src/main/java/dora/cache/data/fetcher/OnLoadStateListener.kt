@@ -23,9 +23,15 @@ interface OnLoadStateListener {
         const val FAILURE = 1
     }
 
+    enum class Source {
+        CACHE,
+        NETWORK,
+        OTHER
+    }
+
     /**
      * 0 represents success, and 1 represents failure.
      * 简体中文：0代表成功，1代表失败。
      */
-    fun onLoad(state: Int)
+    fun onLoad(from: Source, state: Int)
 }

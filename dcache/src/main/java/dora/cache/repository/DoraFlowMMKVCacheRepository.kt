@@ -8,6 +8,6 @@ abstract class DoraFlowMMKVCacheRepository<M>(context: Context)
     : BaseFlowMMKVCacheRepository<M>(context) {
 
     override fun createCacheHolderFactory(): MMKVCacheHolderFactory<M> {
-        return DoraMMKVCacheHolderFactory<M>()
+        return DoraMMKVCacheHolderFactory<M>(context)
     }
 }

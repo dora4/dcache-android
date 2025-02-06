@@ -129,7 +129,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
 
     private fun onLoadFromCache(flowData: MutableStateFlow<M?>) : Boolean {
         val time = System.currentTimeMillis()
-        val model = (cacheHolder as DoraMMKVCacheHolder).readCache(TAG)
+        val model = (cacheHolder as DoraMMKVCacheHolder).readCache(getCacheKey())
         model?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             flowData.value = it
@@ -144,7 +144,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
 
     private fun onLoadFromCacheList(liveData: MutableStateFlow<MutableList<M>>) : Boolean {
         val time = System.currentTimeMillis()
-        val models = (listCacheHolder as DoraListMMKVCacheHolder).readCache(TAG)
+        val models = (listCacheHolder as DoraListMMKVCacheHolder).readCache(getCacheKey())
         models?.let {
             val  data = onFilterData(DataSource.Type.CACHE, it)
             onInterceptData(DataSource.Type.CACHE, data)
@@ -215,7 +215,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
                 Log.d(TAG, "【$description】$it")
             }
             onInterceptData(DataSource.Type.NETWORK, it)
-            (cacheHolder as DoraMMKVCacheHolder).addNewCache(TAG, it)
+            (cacheHolder as DoraMMKVCacheHolder).addNewCache(getCacheKey(), it)
             listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS,
         System.currentTimeMillis() - time)
             flowData.value = it
@@ -233,8 +233,8 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
             }
             val data = onFilterData(DataSource.Type.NETWORK, it)
             onInterceptData(DataSource.Type.NETWORK, data)
-            (listCacheHolder as DoraListMMKVCacheHolder).removeOldCache(TAG)
-            (listCacheHolder as DoraListMMKVCacheHolder).addNewCache(TAG, data)
+            (listCacheHolder as DoraListMMKVCacheHolder).removeOldCache(getCacheKey())
+            (listCacheHolder as DoraListMMKVCacheHolder).addNewCache(getCacheKey(), data)
             listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS,
         System.currentTimeMillis() - time)
             flowData.value = data
@@ -253,7 +253,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
     System.currentTimeMillis() - time)
         if (isClearDataOnNetworkError) {
             clearData()
-            (cacheHolder as DoraMMKVCacheHolder).removeOldCache(TAG)
+            (cacheHolder as DoraMMKVCacheHolder).removeOldCache(getCacheKey())
         }
     }
 
@@ -269,7 +269,9 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
     System.currentTimeMillis() - time)
         if (isClearDataOnNetworkError) {
             clearListData()
-            (listCacheHolder as DoraListMMKVCacheHolder).readCache(TAG)
+            (listCacheHolder as DoraListMMKVCacheHolder).readCache(getCacheKey())
         }
     }
+
+    abstract fun getCacheKey() : String
 }

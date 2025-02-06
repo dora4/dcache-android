@@ -14,7 +14,6 @@ import dora.cache.data.fetcher.OnLoadStateListenerImpl
 import dora.cache.data.page.IDataPager
 import dora.cache.factory.CacheHolderFactory
 import dora.cache.holder.CacheHolder
-import dora.cache.repository.BaseRepository.DataSource
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import io.reactivex.Observable

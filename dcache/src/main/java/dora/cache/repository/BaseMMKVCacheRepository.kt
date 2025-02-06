@@ -130,7 +130,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
 
     private fun onLoadFromCache(liveData: MutableLiveData<M?>) : Boolean {
         val time = System.currentTimeMillis()
-        val model = (cacheHolder as DoraMMKVCacheHolder).readCache(TAG)
+        val model = (cacheHolder as DoraMMKVCacheHolder).readCache(getCacheKey())
         model?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             liveData.postValue(it)
@@ -145,7 +145,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
 
     private fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<M>>) : Boolean {
         val time = System.currentTimeMillis()
-        val models = (listCacheHolder as DoraListMMKVCacheHolder).readCache(TAG)
+        val models = (listCacheHolder as DoraListMMKVCacheHolder).readCache(getCacheKey())
         models?.let {
             val data = onFilterData(DataSource.Type.CACHE, it)
             onInterceptData(DataSource.Type.CACHE, data)
@@ -216,7 +216,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
                 Log.d(TAG, "【$description】$it")
             }
             onInterceptData(DataSource.Type.NETWORK, it)
-            (cacheHolder as DoraMMKVCacheHolder).addNewCache(TAG, it)
+            (cacheHolder as DoraMMKVCacheHolder).addNewCache(getCacheKey(), it)
             listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS,
                 System.currentTimeMillis() - time)
             liveData.postValue(it)
@@ -234,8 +234,8 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
             }
             val data = onFilterData(DataSource.Type.NETWORK, it)
             onInterceptData(DataSource.Type.NETWORK, data)
-            (listCacheHolder as DoraListMMKVCacheHolder).removeOldCache(TAG)
-            (listCacheHolder as DoraListMMKVCacheHolder).addNewCache(TAG, data)
+            (listCacheHolder as DoraListMMKVCacheHolder).removeOldCache(getCacheKey())
+            (listCacheHolder as DoraListMMKVCacheHolder).addNewCache(getCacheKey(), data)
             listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS,
         System.currentTimeMillis() - time)
             liveData.postValue(data)
@@ -254,7 +254,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
             System.currentTimeMillis() - time)
         if (isClearDataOnNetworkError) {
             clearData()
-            (cacheHolder as DoraMMKVCacheHolder).removeOldCache(TAG)
+            (cacheHolder as DoraMMKVCacheHolder).removeOldCache(getCacheKey())
         }
     }
 
@@ -270,7 +270,9 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
             System.currentTimeMillis() - time)
         if (isClearDataOnNetworkError) {
             clearListData()
-            (listCacheHolder as DoraListMMKVCacheHolder).readCache(TAG)
+            (listCacheHolder as DoraListMMKVCacheHolder).readCache(getCacheKey())
         }
     }
+
+    abstract fun getCacheKey() : String
 }

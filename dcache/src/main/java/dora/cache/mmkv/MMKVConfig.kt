@@ -12,8 +12,9 @@ object MMKVConfig {
         return builder
     }
 
-    fun initConfig(block: Builder.() -> Unit) {
+    fun initConfig(context: Context, block: Builder.() -> Unit) {
         block
+        builder.build(context)
     }
 
     class Builder {

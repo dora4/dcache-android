@@ -1,16 +1,17 @@
 package dora.cache.holder;
 
 import android.content.Context
+import com.google.gson.reflect.TypeToken
 import dora.cache.mmkv.MMKVConfig
 import dora.cache.mmkv.MMKVUtils
 
 class DoraListMMKVCacheHolder<M>(private val context: Context,
                                  private val path: String,
-                                 private val clazz: Class<MutableList<M>>)
+                                 private val typeToken: TypeToken<MutableList<M>>)
     : ListMMKVCacheHolder<M>() {
 
     constructor(context: Context,
-                clazz: Class<MutableList<M>>) : this(context, "", clazz)
+                typeToken: TypeToken<MutableList<M>>) : this(context, "", typeToken)
 
     override fun init() {
         MMKVConfig.initConfig(context) {
@@ -23,10 +24,10 @@ class DoraListMMKVCacheHolder<M>(private val context: Context,
     }
 
     override fun readCache(key: String): MutableList<M>? {
-        return MMKVUtils.readObject(key, clazz)
+        return MMKVUtils.readListObject(key, typeToken.type)
     }
 
     override fun addNewCache(key: String, model: MutableList<M>) {
-        MMKVUtils.writeObject(key, model, clazz)
+        MMKVUtils.writeObject(key, model, typeToken.rawType)
     }
 }

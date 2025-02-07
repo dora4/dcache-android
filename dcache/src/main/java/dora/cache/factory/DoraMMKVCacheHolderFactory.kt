@@ -13,7 +13,6 @@ open class DoraMMKVCacheHolderFactory<M>(val context: Context) : MMKVCacheHolder
     }
 
     override fun createListCacheHolder(clazz: Class<M>): CacheHolder<MutableList<M>> {
-        return DoraListMMKVCacheHolder(context, (object : TypeToken<MutableList<M>>(){}.rawType)
-                as Class<MutableList<M>>)
+        return DoraListMMKVCacheHolder(context, object : TypeToken<MutableList<M>>(){})
     }
 }

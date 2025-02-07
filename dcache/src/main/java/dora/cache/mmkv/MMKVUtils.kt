@@ -3,6 +3,7 @@ package dora.cache.mmkv
 import android.util.Log
 import com.google.gson.Gson
 import com.tencent.mmkv.MMKV
+import java.lang.reflect.Type
 
 /**
  * Before using Kotlin, please initialize by calling MMKVConfig.initConfig{} or use
@@ -47,9 +48,20 @@ object MMKVUtils {
         writeString(key, objJson)
     }
 
+    fun <T> writeObject(key: String, value: T, type: Type) {
+        val objJson = Gson().toJson(value, type)
+        Log.d("MMKVUtils", objJson)
+        writeString(key, objJson)
+    }
+
     fun <T> readObject(key: String, clazz: Class<T>) : T? {
         val objJson = readString(key, "") ?: return null
         return Gson().fromJson(objJson, clazz)
+    }
+
+    fun <T> readListObject(key: String, type: Type) : MutableList<T>? {
+        val objJson = readString(key, "") ?: return null
+        return Gson().fromJson(objJson, type)
     }
 
     fun remove(key: String) {

@@ -6,7 +6,7 @@ package dora.cache.data.fetcher
  * 简体中文：如调用[dora.cache.repository.BaseRepository]的fetchData()或fetchListData()方法成功或失败的状
  * 态的监听接口。
  */
-interface OnLoadStateListener {
+interface OnLoadListener {
 
     companion object {
 

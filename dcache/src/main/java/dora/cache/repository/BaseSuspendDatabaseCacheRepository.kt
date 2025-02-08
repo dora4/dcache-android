@@ -7,7 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import dora.cache.data.fetcher.DataFetcher
 import dora.cache.data.fetcher.ListDataFetcher
-import dora.cache.data.fetcher.OnLoadStateListener
+import dora.cache.data.fetcher.OnLoadListener
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
 import dora.cache.factory.DatabaseCacheHolderFactory
@@ -137,7 +137,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
     override fun createDataFetcher(): DataFetcher<M> {
         return object : DataFetcher<M>() {
 
-            override fun fetchData(description: String?, listener: OnLoadStateListener?): LiveData<M?> {
+            override fun fetchData(description: String?, listener: OnLoadListener?): LiveData<M?> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         var result: Boolean = false
@@ -156,7 +156,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                             rxOnLoadFromNetwork(liveData, listener)
                             onLoadFromNetwork(callback(), listener)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE,
+                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
                         System.currentTimeMillis() - time)
                         }
                     }
@@ -185,7 +185,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
     override fun createListDataFetcher(): ListDataFetcher<M> {
         return object : ListDataFetcher<M>() {
 
-            override fun fetchListData(description: String?, listener: OnLoadStateListener?): LiveData<MutableList<M>> {
+            override fun fetchListData(description: String?, listener: OnLoadListener?): LiveData<MutableList<M>> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         var result: Boolean = false
@@ -204,7 +204,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                             rxOnLoadFromNetworkForList(liveData, listener)
                             onLoadFromNetwork(listCallback(), listener)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE,
+                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
                         System.currentTimeMillis() - time)
                         }
                     }
@@ -243,11 +243,11 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
             model?.let {
                 onInterceptData(DataSource.Type.CACHE, it)
                 liveData.postValue(it)
-                listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS,
+                listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS,
                     System.currentTimeMillis() - time)
                 returnVal(true)
             }
-            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE,
+            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE,
                 System.currentTimeMillis() - time)
             returnVal(false)
         }
@@ -263,11 +263,11 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                 val data = onFilterData(DataSource.Type.CACHE, it)
                 onInterceptData(DataSource.Type.CACHE, data)
                 liveData.postValue(data)
-                listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS,
+                listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS,
             System.currentTimeMillis() - time)
                 returnVal(true)
             }
-            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE,
+            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE,
         System.currentTimeMillis() - time)
             returnVal(false)
         }
@@ -278,7 +278,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
      * can be used.
      * 简体中文：非集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetwork(callback: DoraCallback<M>, listener: OnLoadStateListener?) {
+    override fun onLoadFromNetwork(callback: DoraCallback<M>, listener: OnLoadListener?) {
     }
 
     /**
@@ -286,7 +286,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
      * used.
      * 简体中文：集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetwork(callback: DoraListCallback<M>, listener: OnLoadStateListener?) {
+    override fun onLoadFromNetwork(callback: DoraListCallback<M>, listener: OnLoadListener?) {
     }
 
     /**
@@ -294,7 +294,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
      * must be used.
      * 简体中文：非集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetworkObservable(listener: OnLoadStateListener?) : Observable<M> {
+    override fun onLoadFromNetworkObservable(listener: OnLoadListener?) : Observable<M> {
         return Observable.empty()
     }
 
@@ -303,11 +303,11 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
      * be used.
      * 简体中文：集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetworkObservableList(listener: OnLoadStateListener?) : Observable<MutableList<M>> {
+    override fun onLoadFromNetworkObservableList(listener: OnLoadListener?) : Observable<MutableList<M>> {
         return Observable.empty()
     }
 
-    protected fun rxOnLoadFromNetwork(liveData: MutableLiveData<M?>, listener: OnLoadStateListener? = null) {
+    protected fun rxOnLoadFromNetwork(liveData: MutableLiveData<M?>, listener: OnLoadListener? = null) {
         RxTransformer.doApiObserver(onLoadFromNetworkObservable(listener), object : Observer<M> {
             override fun onSubscribe(d: Disposable) {
             }
@@ -325,7 +325,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
         })
     }
 
-    protected fun rxOnLoadFromNetworkForList(liveData: MutableLiveData<MutableList<M>>, listener: OnLoadStateListener? = null) {
+    protected fun rxOnLoadFromNetworkForList(liveData: MutableLiveData<MutableList<M>>, listener: OnLoadListener? = null) {
         RxTransformer.doApiObserver(onLoadFromNetworkObservableList(listener), object : Observer<MutableList<M>> {
             override fun onSubscribe(d: Disposable) {
             }
@@ -364,7 +364,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                 (cacheHolder as SuspendDatabaseCacheHolder<M>).removeOldCache(query())
                 (cacheHolder as SuspendDatabaseCacheHolder<M>).addNewCache(it)
             }
-            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS,
+            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS,
                 System.currentTimeMillis() - time)
             liveData.postValue(it)
         }
@@ -389,7 +389,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                 }
                 (listCacheHolder as SuspendListDatabaseCacheHolder<M>).addNewCache(data)
             }
-            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS,
+            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS,
         System.currentTimeMillis() - time)
             if (disallowForceUpdate()) {
                 val oldValue = liveData.value
@@ -409,7 +409,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
             }
             Log.d(TAG, "【${description}】$msg")
         }
-        listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE,
+        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
             System.currentTimeMillis() - time)
         if (isClearDataOnNetworkError) {
             if (!checkParamsValid()) throw IllegalArgumentException(
@@ -429,7 +429,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
             }
             Log.d(TAG, "【${description}】$msg")
         }
-        listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE,
+        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
             System.currentTimeMillis() - time)
         if (isClearDataOnNetworkError) {
             if (!checkParamsValid()) throw IllegalArgumentException(

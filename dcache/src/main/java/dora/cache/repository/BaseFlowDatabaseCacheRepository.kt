@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import dora.cache.data.fetcher.FlowDataFetcher
 import dora.cache.data.fetcher.ListFlowDataFetcher
-import dora.cache.data.fetcher.OnLoadStateListener
+import dora.cache.data.fetcher.OnLoadListener
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
 import dora.cache.factory.DatabaseCacheHolderFactory
@@ -22,7 +22,6 @@ import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.lang.IllegalArgumentException
-import kotlin.concurrent.timer
 
 /**
  * Repository using the built-in SQLite database for caching.
@@ -133,7 +132,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
     override fun createDataFetcher(): FlowDataFetcher<M> {
         return object : FlowDataFetcher<M>() {
 
-            override fun fetchData(description: String?, listener: OnLoadStateListener?): StateFlow<M?> {
+            override fun fetchData(description: String?, listener: OnLoadListener?): StateFlow<M?> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
@@ -149,7 +148,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
                             rxOnLoadFromNetwork(flowData, listener)
                             onLoadFromNetwork(callback(), listener)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE, System.currentTimeMillis() - time)
+                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE, System.currentTimeMillis() - time)
                         }
                     }
                 })
@@ -177,7 +176,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
     override fun createListDataFetcher(): ListFlowDataFetcher<M> {
         return object : ListFlowDataFetcher<M>() {
 
-            override fun fetchListData(description: String?, listener: OnLoadStateListener?): StateFlow<MutableList<M>> {
+            override fun fetchListData(description: String?, listener: OnLoadListener?): StateFlow<MutableList<M>> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
@@ -193,7 +192,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
                             rxOnLoadFromNetworkForList(flowData, listener)
                             onLoadFromNetwork(listCallback(), listener)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE, System.currentTimeMillis() - time)
+                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE, System.currentTimeMillis() - time)
                         }
                     }
                 })
@@ -230,10 +229,10 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
         model?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             flowData.value = it
-            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS, System.currentTimeMillis() - time)
+            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS, System.currentTimeMillis() - time)
             return true
         }
-        listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE, System.currentTimeMillis() - time)
+        listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE, System.currentTimeMillis() - time)
         return false
     }
 
@@ -246,10 +245,10 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
             val data = onFilterData(DataSource.Type.CACHE, it)
             onInterceptData(DataSource.Type.CACHE, data)
             flowData.value = data
-            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS, System.currentTimeMillis() - time)
+            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS, System.currentTimeMillis() - time)
             return true
         }
-        listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE, System.currentTimeMillis() - time)
+        listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE, System.currentTimeMillis() - time)
         return false
     }
 
@@ -258,7 +257,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
      * can be used.
      * 简体中文：非集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetwork(callback: DoraCallback<M>, listener: OnLoadStateListener?) {
+    override fun onLoadFromNetwork(callback: DoraCallback<M>, listener: OnLoadListener?) {
     }
 
     /**
@@ -266,7 +265,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
      * used.
      * 简体中文：集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetwork(callback: DoraListCallback<M>, listener: OnLoadStateListener?) {
+    override fun onLoadFromNetwork(callback: DoraListCallback<M>, listener: OnLoadListener?) {
     }
 
     /**
@@ -274,7 +273,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
      * must be used.
      * 简体中文：非集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetworkObservable(listener: OnLoadStateListener?) : Observable<M> {
+    override fun onLoadFromNetworkObservable(listener: OnLoadListener?) : Observable<M> {
         return Observable.empty()
     }
 
@@ -283,11 +282,11 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
      * be used.
      * 简体中文：集合数据模式需要重写它，callback和observable二选一。
      */
-    override fun onLoadFromNetworkObservableList(listener: OnLoadStateListener?) : Observable<MutableList<M>> {
+    override fun onLoadFromNetworkObservableList(listener: OnLoadListener?) : Observable<MutableList<M>> {
         return Observable.empty()
     }
 
-    protected fun rxOnLoadFromNetwork(flowData: MutableStateFlow<M?>, listener: OnLoadStateListener? = null) {
+    protected fun rxOnLoadFromNetwork(flowData: MutableStateFlow<M?>, listener: OnLoadListener? = null) {
         RxTransformer.doApiObserver(onLoadFromNetworkObservable(listener), object : Observer<M> {
             override fun onSubscribe(d: Disposable) {
             }
@@ -305,7 +304,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
         })
     }
 
-    protected fun rxOnLoadFromNetworkForList(flowData: MutableStateFlow<MutableList<M>>, listener: OnLoadStateListener? = null) {
+    protected fun rxOnLoadFromNetworkForList(flowData: MutableStateFlow<MutableList<M>>, listener: OnLoadListener? = null) {
         RxTransformer.doApiObserver(onLoadFromNetworkObservableList(listener), object : Observer<MutableList<M>> {
             override fun onSubscribe(d: Disposable) {
             }
@@ -334,7 +333,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
                 "Please check parameters, checkParamsValid returned false.")
             (cacheHolder as DatabaseCacheHolder<M>).removeOldCache(query())
             (cacheHolder as DatabaseCacheHolder<M>).addNewCache(it)
-            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS, System.currentTimeMillis() - time)
+            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS, System.currentTimeMillis() - time)
             flowData.value = it
         }
     }
@@ -364,7 +363,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
                 (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(query())
             }
             (listCacheHolder as ListDatabaseCacheHolder<M>).addNewCache(data)
-            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS, System.currentTimeMillis() - time)
+            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS, System.currentTimeMillis() - time)
             if (disallowForceUpdate()) {
                 val oldValue = flowData.value
                 oldValue.addAll(data)
@@ -383,7 +382,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
             }
             Log.d(TAG, "【${description}】$msg")
         }
-        listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE, System.currentTimeMillis() - time)
+        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE, System.currentTimeMillis() - time)
         if (isClearDataOnNetworkError) {
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")
@@ -400,7 +399,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
             }
             Log.d(TAG, "【${description}】$msg")
         }
-        listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE, System.currentTimeMillis() - time)
+        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE, System.currentTimeMillis() - time)
         if (isClearDataOnNetworkError) {
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")

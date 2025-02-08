@@ -8,8 +8,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import dora.cache.data.fetcher.IDataFetcher
 import dora.cache.data.fetcher.IListDataFetcher
-import dora.cache.data.fetcher.OnLoadStateListener
-import dora.cache.data.fetcher.OnLoadStateListenerImpl
+import dora.cache.data.fetcher.OnLoadListener
+import dora.cache.data.fetcher.OnLoadListenerImpl
 import dora.cache.data.page.IDataPager
 import dora.cache.holder.CacheHolder
 import dora.cache.factory.CacheHolderFactory
@@ -71,7 +71,7 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
         protected set
 
     protected var description: String? = javaClass.simpleName
-    protected var listener: OnLoadStateListener? = OnLoadStateListenerImpl()
+    protected var listener: OnLoadListener? = OnLoadListenerImpl()
 
     /**
      * Should the data be cleared when the network fails to load?
@@ -136,7 +136,7 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
      * callback the failure status so that you can receive the status callback when fetching data.
      * 简体中文：如果你自行处理掉网络请求的异常，不要忘了回调失败的状态，以便于在fetchData的时候能收到状态的回调
      */
-    protected abstract fun onLoadFromNetwork(callback: DoraCallback<M>, listener: OnLoadStateListener? = null)
+    protected abstract fun onLoadFromNetwork(callback: DoraCallback<M>, listener: OnLoadListener? = null)
 
     /**
      * API interface calls for collection data use Retrofit interface methods that return the
@@ -148,7 +148,7 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
      * callback the failure status so that you can receive the status callback when fetching list
      * data.简体中文：如果你自行处理掉网络请求的异常，不要忘了回调失败的状态，以便于在fetchListData的时候能收到状态的回调
      */
-    protected abstract fun onLoadFromNetwork(callback: DoraListCallback<M>, listener: OnLoadStateListener? = null)
+    protected abstract fun onLoadFromNetwork(callback: DoraListCallback<M>, listener: OnLoadListener? = null)
 
     /**
      * API interface calls for non-collection data use Retrofit interface methods that return the
@@ -160,7 +160,7 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
      * status so that you can receive the status callback when fetching list data. 简体中文：如果你自
      * 行处理掉网络请求的异常，不要忘了回调失败的状态，以便于在fetchData的时候能收到状态的回调
      */
-    protected abstract fun onLoadFromNetworkObservable(listener: OnLoadStateListener? = null) : Observable<M>
+    protected abstract fun onLoadFromNetworkObservable(listener: OnLoadListener? = null) : Observable<M>
 
     /**
      * API interface calls for collection data use Retrofit interface methods that return the
@@ -172,7 +172,7 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
      * data.简体中文：如果你自行处理掉网络请求的异常，不要忘了回调失败的状态，以便于在fetchListData的时候能收到状态
      * 的回调
      */
-    protected abstract fun onLoadFromNetworkObservableList(listener: OnLoadStateListener? = null) : Observable<MutableList<M>>
+    protected abstract fun onLoadFromNetworkObservableList(listener: OnLoadListener? = null) : Observable<MutableList<M>>
 
     /**
      * Select data from the repository and handle the priority of data sources.
@@ -241,7 +241,7 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
      * 简体中文：抓取非集合数据，返回给livedata，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过
      * [.getLiveData()]拿到。
      */
-    override fun fetchData(description: String?, listener: OnLoadStateListener?): LiveData<M?> {
+    override fun fetchData(description: String?, listener: OnLoadListener?): LiveData<M?> {
         if (description != null) {
             // 简体中文：不能让null覆盖了默认类名
             this.description = description
@@ -256,7 +256,7 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
      * 简体中文：抓取集合数据，返回给livedata，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过
      * [.getListLiveData()]拿到。
      */
-    override fun fetchListData(description: String?, listener: OnLoadStateListener?): LiveData<MutableList<M>> {
+    override fun fetchListData(description: String?, listener: OnLoadListener?): LiveData<MutableList<M>> {
         if (description != null) {
             // 简体中文：不能让null覆盖了默认类名
             this.description = description

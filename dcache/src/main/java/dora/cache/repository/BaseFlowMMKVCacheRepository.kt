@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import dora.cache.data.fetcher.FlowDataFetcher
 import dora.cache.data.fetcher.ListFlowDataFetcher
-import dora.cache.data.fetcher.OnLoadStateListener
+import dora.cache.data.fetcher.OnLoadListener
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
 import dora.cache.holder.DoraListMMKVCacheHolder
@@ -36,7 +36,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
     override fun createDataFetcher(): FlowDataFetcher<M> {
         return object : FlowDataFetcher<M>() {
 
-            override fun fetchData(description: String?, listener: OnLoadStateListener?): MutableStateFlow<M?> {
+            override fun fetchData(description: String?, listener: OnLoadListener?): MutableStateFlow<M?> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.MMKV) {
@@ -52,7 +52,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
                             rxOnLoadFromNetwork(flowData, listener)
                             onLoadFromNetwork(callback(), listener)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE,
+                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
                                 System.currentTimeMillis() - time)
                         }
                     }
@@ -81,7 +81,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
     override fun createListDataFetcher(): ListFlowDataFetcher<M> {
         return object : ListFlowDataFetcher<M>() {
 
-            override fun fetchListData(description: String?, listener: OnLoadStateListener?): MutableStateFlow<MutableList<M>> {
+            override fun fetchListData(description: String?, listener: OnLoadListener?): MutableStateFlow<MutableList<M>> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.MMKV) {
@@ -97,7 +97,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
                             rxOnLoadFromNetworkForList(flowData, listener)
                             onLoadFromNetwork(listCallback(), listener)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE,
+                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
                         System.currentTimeMillis() - time)
                         }
                     }
@@ -133,11 +133,11 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
         model?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             flowData.value = it
-            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS, System.currentTimeMillis()
+            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS, System.currentTimeMillis()
              - time)
             return true
         }
-        listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE, System.currentTimeMillis()
+        listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE, System.currentTimeMillis()
          - time)
         return false
     }
@@ -149,30 +149,30 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
             val  data = onFilterData(DataSource.Type.CACHE, it)
             onInterceptData(DataSource.Type.CACHE, data)
             liveData.value = data
-            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS,
+            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS,
                 System.currentTimeMillis() - time)
             return true
         }
-        listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE,
+        listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE,
             System.currentTimeMillis() - time)
         return false
     }
 
-    override fun onLoadFromNetwork(callback: DoraCallback<M>, listener: OnLoadStateListener?) {
+    override fun onLoadFromNetwork(callback: DoraCallback<M>, listener: OnLoadListener?) {
     }
 
-    override fun onLoadFromNetwork(callback: DoraListCallback<M>, listener: OnLoadStateListener?) {
+    override fun onLoadFromNetwork(callback: DoraListCallback<M>, listener: OnLoadListener?) {
     }
 
-    override fun onLoadFromNetworkObservable(listener: OnLoadStateListener?) : Observable<M> {
+    override fun onLoadFromNetworkObservable(listener: OnLoadListener?) : Observable<M> {
         return Observable.empty()
     }
 
-    override fun onLoadFromNetworkObservableList(listener: OnLoadStateListener?) : Observable<MutableList<M>> {
+    override fun onLoadFromNetworkObservableList(listener: OnLoadListener?) : Observable<MutableList<M>> {
         return Observable.empty()
     }
 
-    private fun rxOnLoadFromNetwork(flowData: MutableStateFlow<M?>, listener: OnLoadStateListener? = null) {
+    private fun rxOnLoadFromNetwork(flowData: MutableStateFlow<M?>, listener: OnLoadListener? = null) {
         RxTransformer.doApiObserver(onLoadFromNetworkObservable(listener), object : Observer<M> {
             override fun onSubscribe(d: Disposable) {
             }
@@ -190,7 +190,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
         })
     }
 
-    private fun rxOnLoadFromNetworkForList(flowData: MutableStateFlow<MutableList<M>>, listener: OnLoadStateListener? = null) {
+    private fun rxOnLoadFromNetworkForList(flowData: MutableStateFlow<MutableList<M>>, listener: OnLoadListener? = null) {
         RxTransformer.doApiObserver(onLoadFromNetworkObservableList(listener), object : Observer<MutableList<M>> {
             override fun onSubscribe(d: Disposable) {
             }
@@ -216,7 +216,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
             }
             onInterceptData(DataSource.Type.NETWORK, it)
             (cacheHolder as DoraMMKVCacheHolder).addNewCache(getCacheKey(), it)
-            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS,
+            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS,
         System.currentTimeMillis() - time)
             flowData.value = it
         }
@@ -235,7 +235,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
             onInterceptData(DataSource.Type.NETWORK, data)
             (listCacheHolder as DoraListMMKVCacheHolder).removeOldCache(getCacheKey())
             (listCacheHolder as DoraListMMKVCacheHolder).addNewCache(getCacheKey(), data)
-            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS,
+            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS,
         System.currentTimeMillis() - time)
             flowData.value = data
         }
@@ -249,7 +249,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
             }
             Log.d(TAG, "【${description}】$msg")
         }
-        listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE,
+        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
     System.currentTimeMillis() - time)
         if (isClearDataOnNetworkError) {
             clearData()
@@ -265,7 +265,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
             }
             Log.d(TAG, "【${description}】$msg")
         }
-        listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE,
+        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
     System.currentTimeMillis() - time)
         if (isClearDataOnNetworkError) {
             clearListData()

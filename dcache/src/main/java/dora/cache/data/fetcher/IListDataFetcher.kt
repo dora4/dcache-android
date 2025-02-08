@@ -27,8 +27,8 @@ interface IListDataFetcher<M> {
      * Start fetching data.
      * 简体中文：开始抓取数据。
      */
-    fun fetchListData(description: String? = "", listener: OnLoadStateListener? =
-        OnLoadStateListenerImpl()): LiveData<MutableList<M>>
+    fun fetchListData(description: String? = "", listener: OnLoadListener? =
+        OnLoadListenerImpl()): LiveData<MutableList<M>>
 
     /**
      * Get LiveData.

@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import dora.cache.data.fetcher.OnLoadStateListener
+import dora.cache.data.fetcher.OnLoadListener
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import dora.db.table.OrmTable
@@ -45,23 +45,23 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
      */
     private var totalSize: Int = 0
 
-    open fun onLoadFromNetwork(callback: DoraPageListCallback<T>, listener: OnLoadStateListener?) {
+    open fun onLoadFromNetwork(callback: DoraPageListCallback<T>, listener: OnLoadListener?) {
         this.totalSize = callback.getTotalSize()
     }
 
-    final override fun onLoadFromNetwork(callback: DoraCallback<T>, listener: OnLoadStateListener?) {
+    final override fun onLoadFromNetwork(callback: DoraCallback<T>, listener: OnLoadListener?) {
         super.onLoadFromNetwork(callback, listener)
     }
 
-    final override fun onLoadFromNetworkObservable(listener: OnLoadStateListener?): Observable<T> {
+    final override fun onLoadFromNetworkObservable(listener: OnLoadListener?): Observable<T> {
         return super.onLoadFromNetworkObservable(listener)
     }
 
-    final override fun onLoadFromNetwork(callback: DoraListCallback<T>, listener: OnLoadStateListener?) {
+    final override fun onLoadFromNetwork(callback: DoraListCallback<T>, listener: OnLoadListener?) {
         super.onLoadFromNetwork(callback, listener)
     }
 
-    final override fun onLoadFromNetworkObservableList(listener: OnLoadStateListener?): Observable<MutableList<T>> {
+    final override fun onLoadFromNetworkObservableList(listener: OnLoadListener?): Observable<MutableList<T>> {
         return super.onLoadFromNetworkObservableList(listener)
     }
 
@@ -123,7 +123,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
      * Pull-to-refresh callback, which can be used in conjunction with [setPageSize].
      * 简体中文：下拉刷新回调，可结合[setPageSize]使用。
      */
-    fun onRefresh(listener: OnLoadStateListener) {
+    fun onRefresh(listener: OnLoadListener) {
         pageNo = 0
         fetchListData(listener = listener)
     }
@@ -135,9 +135,9 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     @JvmOverloads
     fun onRefresh(block: ((Boolean) -> Unit)? = null) {
         pageNo = 0
-        fetchListData(listener = object : OnLoadStateListener {
-            override fun onLoad(from: OnLoadStateListener.Source, state: Int, tookTime: Long) {
-                block?.invoke(state == OnLoadStateListener.SUCCESS)
+        fetchListData(listener = object : OnLoadListener {
+            override fun onLoad(from: OnLoadListener.Source, state: Int, tookTime: Long) {
+                block?.invoke(state == OnLoadListener.SUCCESS)
             }
         })
     }
@@ -146,13 +146,13 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
      * Pull-to-load callback, which can be used in conjunction with [setPageSize].
      * 简体中文：上拉加载回调，可结合[setPageSize]使用。
      */
-    fun onLoadMore(listener: OnLoadStateListener) {
+    fun onLoadMore(listener: OnLoadListener) {
         val time = System.currentTimeMillis()
         if (canLoadMore()) {
             pageNo++
             fetchListData(listener = listener)
         } else {
-            listener.onLoad(OnLoadStateListener.Source.OTHER, OnLoadStateListener.FAILURE,
+            listener.onLoad(OnLoadListener.Source.OTHER, OnLoadListener.FAILURE,
                 System.currentTimeMillis() - time)
         }
     }
@@ -165,9 +165,9 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     fun onLoadMore(block: ((Boolean) -> Unit)? = null) {
         if (canLoadMore()) {
             pageNo++
-            fetchListData(listener = object : OnLoadStateListener {
-                override fun onLoad(from: OnLoadStateListener.Source, state: Int, tookTime: Long) {
-                    block?.invoke(state == OnLoadStateListener.SUCCESS)
+            fetchListData(listener = object : OnLoadListener {
+                override fun onLoad(from: OnLoadListener.Source, state: Int, tookTime: Long) {
+                    block?.invoke(state == OnLoadListener.SUCCESS)
                 }
             })
         } else {
@@ -229,7 +229,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
         totalSize = (listCacheHolder as ListDatabaseCacheHolder<T>)
             .queryCacheSize(query()).toInt()
         if (isOutOfPageRange()) {
-            listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE,
+            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE,
                 System.currentTimeMillis() - time)
             return false
         }
@@ -239,16 +239,16 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                 val data = onFilterData(DataSource.Type.CACHE, it)
                 onInterceptData(DataSource.Type.CACHE, data)
                 liveData.postValue(data)
-                listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.SUCCESS,
+                listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS,
                     System.currentTimeMillis() - time)
                 return true
             } else {
-                listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE,
+                listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE,
                     System.currentTimeMillis() - time)
                 return false
             }
         }
-        listener?.onLoad(OnLoadStateListener.Source.CACHE, OnLoadStateListener.FAILURE,
+        listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE,
             System.currentTimeMillis() - time)
         return false
     }
@@ -275,10 +275,10 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
             }
             (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(data)
             if (data.size > 0) {
-                listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.SUCCESS,
+                listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS,
                     System.currentTimeMillis() - time)
             } else {
-                listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE,
+                listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
                     System.currentTimeMillis() - time)
             }
             if (disallowForceUpdate()) {
@@ -294,7 +294,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     override fun createListDataFetcher(): ListDataFetcher<T> {
         return object : ListDataFetcher<T>() {
 
-            override fun fetchListData(description: String?, listener: OnLoadStateListener?): LiveData<MutableList<T>> {
+            override fun fetchListData(description: String?, listener: OnLoadListener?): LiveData<MutableList<T>> {
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
@@ -310,7 +310,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                             rxOnLoadFromNetworkForList(liveData, listener)
                             onLoadFromNetwork(listCallback(), listener)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadStateListener.Source.NETWORK, OnLoadStateListener.FAILURE,
+                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
                                 System.currentTimeMillis() - time)
                         }
                     }

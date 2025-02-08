@@ -26,8 +26,8 @@ interface IFlowDataFetcher<M> {
      * Start fetching data.
      * 简体中文：开始抓取数据。
      */
-    fun fetchData(description: String? = "", listener: OnLoadStateListener? =
-        OnLoadStateListenerImpl()): StateFlow<M?>
+    fun fetchData(description: String? = "", listener: OnLoadListener? =
+        OnLoadListenerImpl()): StateFlow<M?>
 
     /**
      * Get Flow data.

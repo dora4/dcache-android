@@ -442,4 +442,12 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
             }
         }
     }
+
+    suspend fun getCacheSize() : Long {
+        return if (isListMode) {
+            (listCacheHolder as SuspendListDatabaseCacheHolder<M>).queryCacheSize(query())
+        } else {
+            (cacheHolder as SuspendDatabaseCacheHolder<M>).queryCacheSize(query())
+        }
+    }
 }

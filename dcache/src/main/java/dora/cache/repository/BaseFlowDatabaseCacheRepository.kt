@@ -407,4 +407,12 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
             (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(query())
         }
     }
+
+    fun getCacheSize() : Long {
+        return if (isListMode) {
+            (listCacheHolder as ListDatabaseCacheHolder<M>).queryCacheSize(query())
+        } else {
+            (cacheHolder as DatabaseCacheHolder<M>).queryCacheSize(query())
+        }
+    }
 }

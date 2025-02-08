@@ -246,6 +246,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                 listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS,
                     System.currentTimeMillis() - time)
                 returnVal(true)
+                return@launch
             }
             listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE,
                 System.currentTimeMillis() - time)
@@ -266,6 +267,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                 listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS,
             System.currentTimeMillis() - time)
                 returnVal(true)
+                return@launch
             }
             listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE,
         System.currentTimeMillis() - time)

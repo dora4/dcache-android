@@ -241,8 +241,8 @@ abstract class BaseDatabaseCacheRepository<M, F : DatabaseCacheHolderFactory<M>>
             "Please check parameters, checkParamsValid returned false.")
         val time = System.currentTimeMillis()
         val models = (listCacheHolder as ListDatabaseCacheHolder<M>).queryCache(query())
-        models?.let {
-            val data = onFilterData(DataSource.Type.CACHE, it)
+        if (models != null && models.size > 0) {
+            val data = onFilterData(DataSource.Type.CACHE, models)
             onInterceptData(DataSource.Type.CACHE, data)
             liveData.postValue(data)
             listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS, System.currentTimeMillis() -time)

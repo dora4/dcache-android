@@ -116,12 +116,17 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
         }
     }
 
-    override fun selectData(ds: DataSource): Boolean {
+    override fun selectData(ds: DataSource, listener: OnLoadListener?): Boolean {
         val isLoaded = ds.loadFromCache(DataSource.CacheType.DATABASE)
         return if (isNetworkAvailable) {
             try {
-                ds.loadFromNetwork()
-                true
+                var success = false
+                ds.loadFromNetwork(object : OnLoadListener {
+                    override fun onLoad(from: OnLoadListener.Source, state: Int, tookTime: Long) {
+                        success = (state == OnLoadListener.SUCCESS)
+                    }
+                })
+                success
             } catch (e: Exception) {
                 Log.e(TAG, e.toString())
                 isLoaded
@@ -142,7 +147,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
                         return false
                     }
 
-                    override fun loadFromNetwork() {
+                    override fun loadFromNetwork(listener: OnLoadListener?) {
                         val time = System.currentTimeMillis()
                         try {
                             rxOnLoadFromNetwork(flowData, listener)
@@ -151,7 +156,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
                             listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE, System.currentTimeMillis() - time)
                         }
                     }
-                })
+                }, listener)
                 return flowData
             }
 
@@ -186,7 +191,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
                         return false
                     }
 
-                    override fun loadFromNetwork() {
+                    override fun loadFromNetwork(listener: OnLoadListener?) {
                         val time = System.currentTimeMillis()
                         try {
                             rxOnLoadFromNetworkForList(flowData, listener)
@@ -195,7 +200,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
                             listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE, System.currentTimeMillis() - time)
                         }
                     }
-                })
+                }, listener)
                 return flowData
             }
 

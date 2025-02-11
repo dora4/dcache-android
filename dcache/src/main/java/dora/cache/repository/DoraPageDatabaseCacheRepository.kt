@@ -206,15 +206,20 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
      * Load cached data directly in the absence of an internet connection.
      * 简体中文：没网的情况下直接加载缓存数据。
      */
-    override fun selectData(ds: DataSource): Boolean {
+    override fun selectData(ds: DataSource, listener: OnLoadListener?): Boolean {
         var isLoaded = false
         if (!isNetworkAvailable) {
             isLoaded = ds.loadFromCache(DataSource.CacheType.DATABASE)
         }
         return if (isNetworkAvailable) {
             try {
-                ds.loadFromNetwork()
-                true
+                var success = false
+                ds.loadFromNetwork(object : OnLoadListener {
+                    override fun onLoad(from: OnLoadListener.Source, state: Int, tookTime: Long) {
+                        success = (state == OnLoadListener.SUCCESS)
+                    }
+                })
+                success
             } catch (e: Exception) {
                 Log.e(TAG, e.toString())
                 isLoaded
@@ -304,7 +309,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                         return false
                     }
 
-                    override fun loadFromNetwork() {
+                    override fun loadFromNetwork(listener: OnLoadListener?) {
                         val time = System.currentTimeMillis()
                         try {
                             rxOnLoadFromNetworkForList(liveData, listener)

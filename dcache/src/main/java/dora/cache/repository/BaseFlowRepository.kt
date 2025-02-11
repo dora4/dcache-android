@@ -185,7 +185,7 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
      * @param ds Source of the data. 简体中文：数据的来源
      * @return Was the data retrieved successfully? 简体中文：数据是否获取成功
      */
-    protected abstract fun selectData(ds: DataSource): Boolean
+    protected abstract fun selectData(ds: DataSource, listener: OnLoadListener? = null): Boolean
 
     /**
      * Source of the data.
@@ -236,7 +236,7 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
          * Load data from the server/network.
          * 简体中文：从服务器/网络加载数据。
          */
-        fun loadFromNetwork()
+        fun loadFromNetwork(listener: OnLoadListener? = null)
     }
 
     /**

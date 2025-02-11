@@ -206,7 +206,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
      * Load cached data directly in the absence of an internet connection.
      * 简体中文：没网的情况下直接加载缓存数据。
      */
-    override fun selectData(ds: DataSource, listener: OnLoadListener?): Boolean {
+    override fun selectData(ds: DataSource): Boolean {
         var isLoaded = false
         if (!isNetworkAvailable) {
             isLoaded = ds.loadFromCache(DataSource.CacheType.DATABASE)

@@ -21,7 +21,7 @@ import io.reactivex.disposables.Disposable
 
 abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, MMKVCacheHolderFactory<M>>(context) {
 
-    override fun selectData(ds: DataSource, listener: OnLoadListener?): Boolean {
+    override fun selectData(ds: DataSource): Boolean {
         val isLoaded = ds.loadFromCache(DataSource.CacheType.MMKV)
         return if (isNetworkAvailable) {
             try {

@@ -181,7 +181,7 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
      * @param ds Source of the data. 简体中文：数据的来源
      * @return Was the data retrieved successfully? 简体中文：数据是否获取成功
      */
-    protected abstract fun selectData(ds: DataSource,listener: OnLoadListener? = null): Boolean
+    protected abstract fun selectData(ds: DataSource): Boolean
 
     /**
      * Source of the data.

@@ -116,7 +116,7 @@ abstract class BaseDatabaseCacheRepository<M, F : DatabaseCacheHolderFactory<M>>
         }
     }
 
-    override fun selectData(ds: DataSource, listener: OnLoadListener?): Boolean {
+    override fun selectData(ds: DataSource): Boolean {
         val isLoaded = ds.loadFromCache(DataSource.CacheType.DATABASE)
         return if (isNetworkAvailable) {
             try {

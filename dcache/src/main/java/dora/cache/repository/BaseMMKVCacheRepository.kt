@@ -21,12 +21,17 @@ import io.reactivex.disposables.Disposable
 
 abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, MMKVCacheHolderFactory<M>>(context) {
 
-    override fun selectData(ds: DataSource): Boolean {
+    override fun selectData(ds: DataSource, listener: OnLoadListener?): Boolean {
         val isLoaded = ds.loadFromCache(DataSource.CacheType.MMKV)
         return if (isNetworkAvailable) {
             try {
-                ds.loadFromNetwork()
-                true
+                var success = false
+                ds.loadFromNetwork(object : OnLoadListener {
+                    override fun onLoad(from: OnLoadListener.Source, state: Int, tookTime: Long) {
+                        success = (state == OnLoadListener.SUCCESS)
+                    }
+                })
+                success
             } catch (e: Exception) {
                 Log.e(TAG, e.toString())
                 isLoaded
@@ -47,7 +52,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
                         return false
                     }
 
-                    override fun loadFromNetwork() {
+                    override fun loadFromNetwork(listener: OnLoadListener?) {
                         val time = System.currentTimeMillis()
                         try {
                             rxOnLoadFromNetwork(liveData, listener)
@@ -92,7 +97,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
                         return false
                     }
 
-                    override fun loadFromNetwork() {
+                    override fun loadFromNetwork(listener: OnLoadListener?) {
                         val time = System.currentTimeMillis()
                         try {
                             rxOnLoadFromNetworkForList(liveData, listener)

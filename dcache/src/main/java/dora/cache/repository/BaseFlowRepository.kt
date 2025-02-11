@@ -14,6 +14,7 @@ import dora.cache.data.fetcher.OnLoadListenerImpl
 import dora.cache.data.page.IDataPager
 import dora.cache.factory.CacheHolderFactory
 import dora.cache.holder.CacheHolder
+import dora.cache.repository.BaseRepository.DataSource
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import io.reactivex.Observable
@@ -185,7 +186,7 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
      * @param ds Source of the data. 简体中文：数据的来源
      * @return Was the data retrieved successfully? 简体中文：数据是否获取成功
      */
-    protected abstract fun selectData(ds: DataSource, listener: OnLoadListener? = null): Boolean
+    protected abstract fun selectData(ds: DataSource, l: OnLoadListener)
 
     /**
      * Source of the data.
@@ -236,7 +237,7 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
          * Load data from the server/network.
          * 简体中文：从服务器/网络加载数据。
          */
-        fun loadFromNetwork(onLoadListener: OnLoadListener? = null)
+        fun loadFromNetwork()
     }
 
     /**

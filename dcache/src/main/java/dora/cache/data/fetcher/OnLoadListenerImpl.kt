@@ -7,6 +7,6 @@ package dora.cache.data.fetcher
  */
 class OnLoadListenerImpl : OnLoadListener {
 
-    override fun onLoad(from: OnLoadListener.Source, state: Int, tookTime: Long) {
+    override fun onLoad(from: OnLoadListener.Source, state: Int) {
     }
 }

@@ -21,28 +21,28 @@ import io.reactivex.disposables.Disposable
 
 abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, MMKVCacheHolderFactory<M>>(context) {
 
-    override fun selectData(ds: DataSource): Boolean {
+    override fun selectData(ds: DataSource, l: OnLoadListener) {
         val isLoaded = ds.loadFromCache(DataSource.CacheType.MMKV)
-        return if (isNetworkAvailable) {
-            try {
-                var success = false
-                ds.loadFromNetwork(object : OnLoadListener {
-                    override fun onLoad(from: OnLoadListener.Source, state: Int, tookTime: Long) {
-                        success = (state == OnLoadListener.SUCCESS)
-                    }
-                })
-                success
-            } catch (e: Exception) {
-                Log.e(TAG, e.toString())
-                isLoaded
-            }
-        } else isLoaded
+        l.onLoad(OnLoadListener.Source.CACHE, if (isLoaded) OnLoadListener.SUCCESS else OnLoadListener.FAILURE)
+        if (isNetworkAvailable) {
+            ds.loadFromNetwork()
+        }
     }
 
     override fun createDataFetcher(): DataFetcher<M> {
         return object : DataFetcher<M>() {
 
             override fun fetchData(description: String?, listener: OnLoadListener?): LiveData<M?> {
+                val startTime = System.currentTimeMillis()
+                val delegate = object : OnLoadListener {
+                    override fun onLoad(from: OnLoadListener.Source, state: Int) {
+                        val endTime = System.currentTimeMillis()
+                        if (isLogPrint) {
+                            Log.d(TAG, "【$description】${from.name}: finished at ${endTime - startTime} ms")
+                        }
+                        listener?.onLoad(from, state)
+                    }
+                }
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.MMKV) {
@@ -52,17 +52,15 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
                         return false
                     }
 
-                    override fun loadFromNetwork(listener: OnLoadListener?) {
-                        val time = System.currentTimeMillis()
+                    override fun loadFromNetwork() {
                         try {
-                            rxOnLoadFromNetwork(liveData, listener)
-                            onLoadFromNetwork(callback(), listener)
+                            rxOnLoadFromNetwork(liveData, delegate)
+                            onLoadFromNetwork(callback(), delegate)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
-                        System.currentTimeMillis() - time)
+                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
                         }
                     }
-                })
+                }, delegate)
                 return liveData
             }
 
@@ -88,6 +86,16 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
         return object : ListDataFetcher<M>() {
 
             override fun fetchListData(description: String?, listener: OnLoadListener?): LiveData<MutableList<M>> {
+                val startTime = System.currentTimeMillis()
+                val delegate = object : OnLoadListener {
+                    override fun onLoad(from: OnLoadListener.Source, state: Int) {
+                        val endTime = System.currentTimeMillis()
+                        if (isLogPrint) {
+                            Log.d(TAG, "【$description】${from.name}: finished at ${endTime - startTime} ms")
+                        }
+                        listener?.onLoad(from, state)
+                    }
+                }
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.MMKV) {
@@ -97,17 +105,15 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
                         return false
                     }
 
-                    override fun loadFromNetwork(listener: OnLoadListener?) {
-                        val time = System.currentTimeMillis()
+                    override fun loadFromNetwork() {
                         try {
                             rxOnLoadFromNetworkForList(liveData, listener)
                             onLoadFromNetwork(listCallback(), listener)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
-                        System.currentTimeMillis() - time)
+                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
                         }
                     }
-                })
+                }, delegate)
                 return liveData
             }
 
@@ -134,33 +140,27 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
     }
 
     private fun onLoadFromCache(liveData: MutableLiveData<M?>) : Boolean {
-        val time = System.currentTimeMillis()
         val model = (cacheHolder as DoraMMKVCacheHolder).readCache(getCacheKey())
         model?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             liveData.postValue(it)
-            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS,
-        System.currentTimeMillis() - time)
+            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
             return true
         }
-        listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE,
-    System.currentTimeMillis() - time)
+        listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE)
         return false
     }
 
     private fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<M>>) : Boolean {
-        val time = System.currentTimeMillis()
         val models = (listCacheHolder as DoraListMMKVCacheHolder).readCache(getCacheKey())
         if (models != null && models.size > 0) {
             val data = onFilterData(DataSource.Type.CACHE, models)
             onInterceptData(DataSource.Type.CACHE, data)
             liveData.postValue(data)
-            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS,
-                System.currentTimeMillis() - time)
+            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
             return true
         }
-        listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE,
-            System.currentTimeMillis() - time)
+        listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE)
         return false
     }
 
@@ -216,14 +216,12 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
 
     protected open fun parseModel(model: M, liveData: MutableLiveData<M?>) {
         model?.let {
-            val time = System.currentTimeMillis()
             if (isLogPrint) {
                 Log.d(TAG, "【$description】$it")
             }
             onInterceptData(DataSource.Type.NETWORK, it)
             (cacheHolder as DoraMMKVCacheHolder).addNewCache(getCacheKey(), it)
-            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS,
-                System.currentTimeMillis() - time)
+            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
             liveData.postValue(it)
         }
     }
@@ -231,7 +229,6 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
     protected open fun parseModels(models: MutableList<M>?,
                             liveData: MutableLiveData<MutableList<M>>) {
         models?.let {
-            val time = System.currentTimeMillis()
             if (isLogPrint) {
                 for (model in it) {
                     Log.d(TAG, "【$description】${model.toString()}")
@@ -241,22 +238,19 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
             onInterceptData(DataSource.Type.NETWORK, data)
             (listCacheHolder as DoraListMMKVCacheHolder).removeOldCache(getCacheKey())
             (listCacheHolder as DoraListMMKVCacheHolder).addNewCache(getCacheKey(), data)
-            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS,
-        System.currentTimeMillis() - time)
+            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
             liveData.postValue(data)
         }
     }
 
     protected open fun onParseModelFailure(msg: String) {
-        val time = System.currentTimeMillis()
         if (isLogPrint) {
             if (description == null || description == "") {
                 description = javaClass.simpleName
             }
             Log.d(TAG, "【${description}】$msg")
         }
-        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
-            System.currentTimeMillis() - time)
+        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
         if (isClearDataOnNetworkError) {
             clearData()
             (cacheHolder as DoraMMKVCacheHolder).removeOldCache(getCacheKey())
@@ -264,15 +258,13 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
     }
 
     protected open fun onParseModelsFailure(msg: String) {
-        val time = System.currentTimeMillis()
         if (isLogPrint) {
             if (description == null || description == "") {
                 description = javaClass.simpleName
             }
             Log.d(TAG, "【${description}】$msg")
         }
-        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
-            System.currentTimeMillis() - time)
+        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
         if (isClearDataOnNetworkError) {
             clearListData()
             (listCacheHolder as DoraListMMKVCacheHolder).readCache(getCacheKey())

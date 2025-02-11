@@ -136,7 +136,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
     fun onRefresh(block: ((Boolean) -> Unit)? = null) {
         pageNo = 0
         fetchListData(listener = object : OnLoadListener {
-            override fun onLoad(from: OnLoadListener.Source, state: Int, tookTime: Long) {
+            override fun onLoad(from: OnLoadListener.Source, state: Int) {
                 block?.invoke(state == OnLoadListener.SUCCESS)
             }
         })
@@ -147,13 +147,11 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
      * 简体中文：上拉加载回调，可结合[setPageSize]使用。
      */
     fun onLoadMore(listener: OnLoadListener) {
-        val time = System.currentTimeMillis()
         if (canLoadMore()) {
             pageNo++
             fetchListData(listener = listener)
         } else {
-            listener.onLoad(OnLoadListener.Source.OTHER, OnLoadListener.FAILURE,
-                System.currentTimeMillis() - time)
+            listener.onLoad(OnLoadListener.Source.OTHER, OnLoadListener.FAILURE)
         }
     }
 
@@ -166,7 +164,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
         if (canLoadMore()) {
             pageNo++
             fetchListData(listener = object : OnLoadListener {
-                override fun onLoad(from: OnLoadListener.Source, state: Int, tookTime: Long) {
+                override fun onLoad(from: OnLoadListener.Source, state: Int) {
                     block?.invoke(state == OnLoadListener.SUCCESS)
                 }
             })
@@ -206,36 +204,21 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
      * Load cached data directly in the absence of an internet connection.
      * 简体中文：没网的情况下直接加载缓存数据。
      */
-    override fun selectData(ds: DataSource): Boolean {
-        var isLoaded = false
-        if (!isNetworkAvailable) {
-            isLoaded = ds.loadFromCache(DataSource.CacheType.DATABASE)
+    override fun selectData(ds: DataSource, l: OnLoadListener) {
+        val isLoaded = ds.loadFromCache(DataSource.CacheType.DATABASE)
+        l.onLoad(OnLoadListener.Source.CACHE, if (isLoaded) OnLoadListener.SUCCESS else OnLoadListener.FAILURE)
+        if (isNetworkAvailable) {
+            ds.loadFromNetwork()
         }
-        return if (isNetworkAvailable) {
-            try {
-                var success = false
-                ds.loadFromNetwork(object : OnLoadListener {
-                    override fun onLoad(from: OnLoadListener.Source, state: Int, tookTime: Long) {
-                        success = (state == OnLoadListener.SUCCESS)
-                    }
-                })
-                success
-            } catch (e: Exception) {
-                Log.e(TAG, e.toString())
-                isLoaded
-            }
-        } else isLoaded
     }
 
     override fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<T>>) : Boolean {
         if (!checkParamsValid()) throw IllegalArgumentException(
             "Please check parameters, checkParamsValid returned false.")
-        val time = System.currentTimeMillis()
         totalSize = (listCacheHolder as ListDatabaseCacheHolder<T>)
             .queryCacheSize(query()).toInt()
         if (isOutOfPageRange()) {
-            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE,
-                System.currentTimeMillis() - time)
+            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE)
             return false
         }
         val models = (listCacheHolder as ListDatabaseCacheHolder<T>).queryCache(query())
@@ -244,24 +227,20 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                 val data = onFilterData(DataSource.Type.CACHE, it)
                 onInterceptData(DataSource.Type.CACHE, data)
                 liveData.postValue(data)
-                listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS,
-                    System.currentTimeMillis() - time)
+                listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
                 return true
             } else {
-                listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE,
-                    System.currentTimeMillis() - time)
+                listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE)
                 return false
             }
         }
-        listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE,
-            System.currentTimeMillis() - time)
+        listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE)
         return false
     }
 
     override fun parseModels(models: MutableList<T>?,
                                    liveData: MutableLiveData<MutableList<T>>) {
         models?.let {
-            val time = System.currentTimeMillis()
             if (isLogPrint) {
                 for (model in it) {
                     Log.d(TAG, "【$description】$model")
@@ -280,11 +259,9 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
             }
             (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(data)
             if (data.size > 0) {
-                listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS,
-                    System.currentTimeMillis() - time)
+                listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
             } else {
-                listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
-                    System.currentTimeMillis() - time)
+                listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
             }
             if (disallowForceUpdate()) {
                 val oldValue = liveData.value
@@ -300,6 +277,16 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
         return object : ListDataFetcher<T>() {
 
             override fun fetchListData(description: String?, listener: OnLoadListener?): LiveData<MutableList<T>> {
+                val startTime = System.currentTimeMillis()
+                val delegate = object : OnLoadListener {
+                    override fun onLoad(from: OnLoadListener.Source, state: Int) {
+                        val endTime = System.currentTimeMillis()
+                        if (isLogPrint) {
+                            Log.d(TAG, "【$description】${from.name}: finished at ${endTime - startTime} ms")
+                        }
+                        listener?.onLoad(from, state)
+                    }
+                }
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
@@ -309,17 +296,15 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                         return false
                     }
 
-                    override fun loadFromNetwork(listener: OnLoadListener?) {
-                        val time = System.currentTimeMillis()
+                    override fun loadFromNetwork() {
                         try {
-                            rxOnLoadFromNetworkForList(liveData, listener)
-                            onLoadFromNetwork(listCallback(), listener)
+                            rxOnLoadFromNetworkForList(liveData, delegate)
+                            onLoadFromNetwork(listCallback(), delegate)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
-                                System.currentTimeMillis() - time)
+                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
                         }
                     }
-                })
+                }, delegate)
                 return liveData
             }
 

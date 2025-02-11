@@ -14,6 +14,8 @@ import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
 import dora.cache.factory.DoraDatabaseCacheHolderFactory
 import dora.cache.holder.ListDatabaseCacheHolder
+import dora.cache.repository.BaseRepository.Companion
+import dora.cache.repository.BaseRepository.DataSource
 import dora.db.builder.WhereBuilder
 import io.reactivex.Observable
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -135,7 +137,7 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
     fun onRefresh(block: ((Boolean) -> Unit)? = null) {
         pageNo = 0
         fetchListData(listener = object : OnLoadListener {
-            override fun onLoad(from: OnLoadListener.Source, state: Int, tookTime: Long) {
+            override fun onLoad(from: OnLoadListener.Source, state: Int) {
                 block?.invoke(state == OnLoadListener.SUCCESS)
             }
         })
@@ -146,13 +148,11 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
      * 简体中文：上拉加载回调，可结合[setPageSize]使用。
      */
     fun onLoadMore(listener: OnLoadListener) {
-        val time = System.currentTimeMillis()
         if (canLoadMore()) {
             pageNo++
             fetchListData(listener = listener)
         } else {
-            listener.onLoad(OnLoadListener.Source.OTHER, OnLoadListener.FAILURE,
-                System.currentTimeMillis() - time)
+            listener.onLoad(OnLoadListener.Source.OTHER, OnLoadListener.FAILURE)
         }
     }
 
@@ -165,7 +165,7 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
         if (canLoadMore()) {
             pageNo++
             fetchListData(listener = object : OnLoadListener {
-                override fun onLoad(from: OnLoadListener.Source, state: Int, tookTime: Long) {
+                override fun onLoad(from: OnLoadListener.Source, state: Int) {
                     block?.invoke(state == OnLoadListener.SUCCESS)
                 }
             })
@@ -205,36 +205,21 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
      * Load cached data directly when there is no network connection.
      * 简体中文：没网的情况下直接加载缓存数据。
      */
-    override fun selectData(ds: DataSource, listener: OnLoadListener?): Boolean {
-        var isLoaded = false
-        if (!isNetworkAvailable) {
-            isLoaded = ds.loadFromCache(DataSource.CacheType.DATABASE)
+    override fun selectData(ds: DataSource, l: OnLoadListener) {
+        val isLoaded = ds.loadFromCache(DataSource.CacheType.DATABASE)
+        l.onLoad(OnLoadListener.Source.CACHE, if (isLoaded) OnLoadListener.SUCCESS else OnLoadListener.FAILURE)
+        if (isNetworkAvailable) {
+            ds.loadFromNetwork()
         }
-        return if (isNetworkAvailable) {
-            try {
-                var success = false
-                ds.loadFromNetwork(object : OnLoadListener {
-                    override fun onLoad(from: OnLoadListener.Source, state: Int, tookTime: Long) {
-                        success = (state == OnLoadListener.SUCCESS)
-                    }
-                })
-                success
-            } catch (e: Exception) {
-                Log.e(TAG, e.toString())
-                isLoaded
-            }
-        } else isLoaded
     }
 
     override fun onLoadFromCacheList(flowData: MutableStateFlow<MutableList<T>>) : Boolean {
         if (!checkParamsValid()) throw IllegalArgumentException(
             "Please check parameters, checkParamsValid returned false.")
-        val time = System.currentTimeMillis()
         totalSize = (listCacheHolder as ListDatabaseCacheHolder<T>)
             .queryCacheSize(query()).toInt()
         if (isOutOfPageRange()) {
-            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE,
-                System.currentTimeMillis() - time)
+            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE)
             return false
         }
         val models = (listCacheHolder as ListDatabaseCacheHolder<T>).queryCache(query())
@@ -243,24 +228,20 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
                 val data = onFilterData(DataSource.Type.CACHE, it)
                 onInterceptData(DataSource.Type.CACHE, data)
                 flowData.value = data
-                listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS,
-                    System.currentTimeMillis() - time)
+                listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
                 return true
             } else {
-                listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE,
-                    System.currentTimeMillis() - time)
+                listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE)
                 return false
             }
         }
-        listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE,
-            System.currentTimeMillis() - time)
+        listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE)
         return false
     }
 
     override fun parseModels(models: MutableList<T>?,
                                    flowData: MutableStateFlow<MutableList<T>>) {
         models?.let {
-            val time = System.currentTimeMillis()
             if (isLogPrint) {
                 for (model in it) {
                     Log.d(TAG, "【$description】${model.toString()}")
@@ -278,11 +259,9 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
             }
             (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(data)
             if (data.size > 0) {
-                listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS,
-                    System.currentTimeMillis() - time)
+                listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
             } else {
-                listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
-                    System.currentTimeMillis() - time)
+                listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
             }
             if (disallowForceUpdate()) {
                 val oldValue = flowData.value
@@ -298,6 +277,16 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
         return object : ListFlowDataFetcher<T>() {
 
             override fun fetchListData(description: String?, listener: OnLoadListener?): StateFlow<MutableList<T>> {
+                val startTime = System.currentTimeMillis()
+                val delegate = object : OnLoadListener {
+                    override fun onLoad(from: OnLoadListener.Source, state: Int) {
+                        val endTime = System.currentTimeMillis()
+                        if (isLogPrint) {
+                            Log.d(TAG, "【$description】${from.name}: finished at ${endTime - startTime} ms")
+                        }
+                        listener?.onLoad(from, state)
+                    }
+                }
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
@@ -307,17 +296,15 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
                         return false
                     }
 
-                    override fun loadFromNetwork(listener: OnLoadListener?) {
-                        val time = System.currentTimeMillis()
+                    override fun loadFromNetwork() {
                         try {
-                            rxOnLoadFromNetworkForList(flowData, listener)
-                            onLoadFromNetwork(listCallback(), listener)
+                            rxOnLoadFromNetworkForList(flowData, delegate)
+                            onLoadFromNetwork(listCallback(), delegate)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
-                                System.currentTimeMillis() - time)
+                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
                         }
                     }
-                }, listener)
+                }, delegate)
                 return flowData
             }
 

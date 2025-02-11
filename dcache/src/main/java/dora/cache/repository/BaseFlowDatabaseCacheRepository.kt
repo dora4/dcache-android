@@ -10,6 +10,8 @@ import dora.cache.data.page.IDataPager
 import dora.cache.factory.DatabaseCacheHolderFactory
 import dora.cache.holder.DatabaseCacheHolder
 import dora.cache.holder.ListDatabaseCacheHolder
+import dora.cache.repository.BaseRepository.Companion
+import dora.cache.repository.BaseRepository.DataSource
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import dora.db.builder.WhereBuilder
@@ -116,28 +118,28 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
         }
     }
 
-    override fun selectData(ds: DataSource, listener: OnLoadListener?): Boolean {
+    override fun selectData(ds: DataSource, l: OnLoadListener) {
         val isLoaded = ds.loadFromCache(DataSource.CacheType.DATABASE)
-        return if (isNetworkAvailable) {
-            try {
-                var success = false
-                ds.loadFromNetwork(object : OnLoadListener {
-                    override fun onLoad(from: OnLoadListener.Source, state: Int, tookTime: Long) {
-                        success = (state == OnLoadListener.SUCCESS)
-                    }
-                })
-                success
-            } catch (e: Exception) {
-                Log.e(TAG, e.toString())
-                isLoaded
-            }
-        } else isLoaded
+        l.onLoad(OnLoadListener.Source.CACHE, if (isLoaded) OnLoadListener.SUCCESS else OnLoadListener.FAILURE)
+        if (isNetworkAvailable) {
+            ds.loadFromNetwork()
+        }
     }
 
     override fun createDataFetcher(): FlowDataFetcher<M> {
         return object : FlowDataFetcher<M>() {
 
             override fun fetchData(description: String?, listener: OnLoadListener?): StateFlow<M?> {
+                val startTime = System.currentTimeMillis()
+                val delegate = object : OnLoadListener {
+                    override fun onLoad(from: OnLoadListener.Source, state: Int) {
+                        val endTime = System.currentTimeMillis()
+                        if (isLogPrint) {
+                            Log.d(TAG, "【$description】${from.name}: finished at ${endTime - startTime} ms")
+                        }
+                        listener?.onLoad(from, state)
+                    }
+                }
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
@@ -147,16 +149,15 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
                         return false
                     }
 
-                    override fun loadFromNetwork(listener: OnLoadListener?) {
-                        val time = System.currentTimeMillis()
+                    override fun loadFromNetwork() {
                         try {
-                            rxOnLoadFromNetwork(flowData, listener)
-                            onLoadFromNetwork(callback(), listener)
+                            rxOnLoadFromNetwork(flowData, delegate)
+                            onLoadFromNetwork(callback(), delegate)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE, System.currentTimeMillis() - time)
+                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
                         }
                     }
-                }, listener)
+                }, delegate)
                 return flowData
             }
 
@@ -182,6 +183,16 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
         return object : ListFlowDataFetcher<M>() {
 
             override fun fetchListData(description: String?, listener: OnLoadListener?): StateFlow<MutableList<M>> {
+                val startTime = System.currentTimeMillis()
+                val delegate = object : OnLoadListener {
+                    override fun onLoad(from: OnLoadListener.Source, state: Int) {
+                        val endTime = System.currentTimeMillis()
+                        if (isLogPrint) {
+                            Log.d(TAG, "【$description】${from.name}: finished at ${endTime - startTime} ms")
+                        }
+                        listener?.onLoad(from, state)
+                    }
+                }
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         if (type === DataSource.CacheType.DATABASE) {
@@ -191,16 +202,15 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
                         return false
                     }
 
-                    override fun loadFromNetwork(listener: OnLoadListener?) {
-                        val time = System.currentTimeMillis()
+                    override fun loadFromNetwork() {
                         try {
-                            rxOnLoadFromNetworkForList(flowData, listener)
-                            onLoadFromNetwork(listCallback(), listener)
+                            rxOnLoadFromNetworkForList(flowData, delegate)
+                            onLoadFromNetwork(listCallback(), delegate)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE, System.currentTimeMillis() - time)
+                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
                         }
                     }
-                }, listener)
+                }, delegate)
                 return flowData
             }
 
@@ -229,31 +239,29 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
     protected open fun onLoadFromCache(flowData: MutableStateFlow<M?>) : Boolean {
         if (!checkParamsValid()) throw IllegalArgumentException(
             "Please check parameters, checkParamsValid returned false.")
-        val time = System.currentTimeMillis()
         val model = (cacheHolder as DatabaseCacheHolder<M>).queryCache(query())
         model?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             flowData.value = it
-            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS, System.currentTimeMillis() - time)
+            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
             return true
         }
-        listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE, System.currentTimeMillis() - time)
+        listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE)
         return false
     }
 
     protected open fun onLoadFromCacheList(flowData: MutableStateFlow<MutableList<M>>) : Boolean {
         if (!checkParamsValid()) throw IllegalArgumentException(
             "Please check parameters, checkParamsValid returned false.")
-        val time = System.currentTimeMillis()
         val models = (listCacheHolder as ListDatabaseCacheHolder<M>).queryCache(query())
         if (models != null && models.size > 0) {
             val data = onFilterData(DataSource.Type.CACHE, models)
             onInterceptData(DataSource.Type.CACHE, data)
             flowData.value = data
-            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS, System.currentTimeMillis() - time)
+            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
             return true
         }
-        listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE, System.currentTimeMillis() - time)
+        listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE)
         return false
     }
 
@@ -329,7 +337,6 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
 
     protected open fun parseModel(model: M, flowData: MutableStateFlow<M?>) {
         model.let {
-            val time = System.currentTimeMillis()
             if (isLogPrint) {
                 Log.d(TAG, "【$description】$it")
             }
@@ -338,7 +345,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
                 "Please check parameters, checkParamsValid returned false.")
             (cacheHolder as DatabaseCacheHolder<M>).removeOldCache(query())
             (cacheHolder as DatabaseCacheHolder<M>).addNewCache(it)
-            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS, System.currentTimeMillis() - time)
+            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
             flowData.value = it
         }
     }
@@ -354,7 +361,6 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
     protected open fun parseModels(models: MutableList<M>?,
                                    flowData: MutableStateFlow<MutableList<M>>) {
         models?.let {
-            val time = System.currentTimeMillis()
             if (isLogPrint) {
                 for (model in it) {
                     Log.d(TAG, "【$description】${model.toString()}")
@@ -368,7 +374,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
                 (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(query())
             }
             (listCacheHolder as ListDatabaseCacheHolder<M>).addNewCache(data)
-            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS, System.currentTimeMillis() - time)
+            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
             if (disallowForceUpdate()) {
                 val oldValue = flowData.value
                 oldValue.addAll(data)
@@ -380,14 +386,13 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
     }
 
     protected open fun onParseModelFailure(msg: String) {
-        val time = System.currentTimeMillis()
         if (isLogPrint) {
             if (description == null || description == "") {
                 description = javaClass.simpleName
             }
             Log.d(TAG, "【${description}】$msg")
         }
-        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE, System.currentTimeMillis() - time)
+        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
         if (isClearDataOnNetworkError) {
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")
@@ -397,14 +402,13 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
     }
 
     protected open fun onParseModelsFailure(msg: String) {
-        val time = System.currentTimeMillis()
         if (isLogPrint) {
             if (description == null || description == "") {
                 description = javaClass.simpleName
             }
             Log.d(TAG, "【${description}】$msg")
         }
-        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE, System.currentTimeMillis() - time)
+        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
         if (isClearDataOnNetworkError) {
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")

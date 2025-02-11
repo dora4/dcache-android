@@ -121,28 +121,28 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
         }
     }
 
-    override fun selectData(ds: DataSource): Boolean {
+    override fun selectData(ds: DataSource, l: OnLoadListener) {
         val isLoaded = ds.loadFromCache(DataSource.CacheType.DATABASE)
-        return if (isNetworkAvailable) {
-            try {
-                var success = false
-                ds.loadFromNetwork(object : OnLoadListener {
-                    override fun onLoad(from: OnLoadListener.Source, state: Int, tookTime: Long) {
-                        success = (state == OnLoadListener.SUCCESS)
-                    }
-                })
-                success
-            } catch (e: Exception) {
-                Log.e(TAG, e.toString())
-                isLoaded
-            }
-        } else isLoaded
+        l.onLoad(OnLoadListener.Source.CACHE, if (isLoaded) OnLoadListener.SUCCESS else OnLoadListener.FAILURE)
+        if (isNetworkAvailable) {
+            ds.loadFromNetwork()
+        }
     }
 
     override fun createDataFetcher(): DataFetcher<M> {
         return object : DataFetcher<M>() {
 
             override fun fetchData(description: String?, listener: OnLoadListener?): LiveData<M?> {
+                val startTime = System.currentTimeMillis()
+                val delegate = object : OnLoadListener {
+                    override fun onLoad(from: OnLoadListener.Source, state: Int) {
+                        val endTime = System.currentTimeMillis()
+                        if (isLogPrint) {
+                            Log.d(TAG, "【$description】${from.name}: finished at ${endTime - startTime} ms")
+                        }
+                        listener?.onLoad(from, state)
+                    }
+                }
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         var result: Boolean = false
@@ -155,17 +155,15 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                         return result
                     }
 
-                    override fun loadFromNetwork(listener: OnLoadListener?) {
-                        val time = System.currentTimeMillis()
+                    override fun loadFromNetwork() {
                         try {
                             rxOnLoadFromNetwork(liveData, listener)
                             onLoadFromNetwork(callback(), listener)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
-                        System.currentTimeMillis() - time)
+                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
                         }
                     }
-                })
+                }, delegate)
                 return liveData
             }
 
@@ -191,6 +189,16 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
         return object : ListDataFetcher<M>() {
 
             override fun fetchListData(description: String?, listener: OnLoadListener?): LiveData<MutableList<M>> {
+                val startTime = System.currentTimeMillis()
+                val delegate = object : OnLoadListener {
+                    override fun onLoad(from: OnLoadListener.Source, state: Int) {
+                        val endTime = System.currentTimeMillis()
+                        if (isLogPrint) {
+                            Log.d(TAG, "【$description】${from.name}: finished at ${endTime - startTime} ms")
+                        }
+                        listener?.onLoad(from, state)
+                    }
+                }
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
                         var result: Boolean = false
@@ -203,17 +211,15 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                         return result
                     }
 
-                    override fun loadFromNetwork(listener: OnLoadListener?) {
-                        val time = System.currentTimeMillis()
+                    override fun loadFromNetwork() {
                         try {
-                            rxOnLoadFromNetworkForList(liveData, listener)
-                            onLoadFromNetwork(listCallback(), listener)
+                            rxOnLoadFromNetworkForList(liveData, delegate)
+                            onLoadFromNetwork(listCallback(), delegate)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
-                        System.currentTimeMillis() - time)
+                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
                         }
                     }
-                })
+                }, delegate)
                 return liveData
             }
 
@@ -243,18 +249,15 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
         if (!checkParamsValid()) throw IllegalArgumentException(
             "Please check parameters, checkParamsValid returned false.")
         viewModelScope.launch {
-            val time = System.currentTimeMillis()
             val model = (cacheHolder as SuspendDatabaseCacheHolder<M>).queryCache(query())
             model?.let {
                 onInterceptData(DataSource.Type.CACHE, it)
                 liveData.postValue(it)
-                listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS,
-                    System.currentTimeMillis() - time)
+                listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
                 returnVal(true)
                 return@launch
             }
-            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE,
-                System.currentTimeMillis() - time)
+            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE)
             returnVal(false)
         }
     }
@@ -263,19 +266,16 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
         if (!checkParamsValid()) throw IllegalArgumentException(
             "Please check parameters, checkParamsValid returned false.")
         viewModelScope.launch {
-            val time = System.currentTimeMillis()
             val models = (listCacheHolder as SuspendListDatabaseCacheHolder<M>).queryCache(query())
             if (models != null && models.size > 0) {
                 val data = onFilterData(DataSource.Type.CACHE, models)
                 onInterceptData(DataSource.Type.CACHE, data)
                 liveData.postValue(data)
-                listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS,
-            System.currentTimeMillis() - time)
+                listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
                 returnVal(true)
                 return@launch
             }
-            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE,
-        System.currentTimeMillis() - time)
+            listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE)
             returnVal(false)
         }
     }
@@ -360,7 +360,6 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
 
     protected open fun parseModel(model: M, liveData: MutableLiveData<M?>) {
         model.let {
-            val time = System.currentTimeMillis()
             if (isLogPrint) {
                 Log.d(TAG, "【$description】$it")
             }
@@ -371,8 +370,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                 (cacheHolder as SuspendDatabaseCacheHolder<M>).removeOldCache(query())
                 (cacheHolder as SuspendDatabaseCacheHolder<M>).addNewCache(it)
             }
-            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS,
-                System.currentTimeMillis() - time)
+            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
             liveData.postValue(it)
         }
     }
@@ -380,7 +378,6 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
     protected open fun parseModels(models: MutableList<M>?,
                             liveData: MutableLiveData<MutableList<M>>) {
         models?.let {
-            val time = System.currentTimeMillis()
             if (isLogPrint) {
                 for (model in it) {
                     Log.d(TAG, "【$description】$model")
@@ -396,8 +393,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                 }
                 (listCacheHolder as SuspendListDatabaseCacheHolder<M>).addNewCache(data)
             }
-            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS,
-        System.currentTimeMillis() - time)
+            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
             if (disallowForceUpdate()) {
                 val oldValue = liveData.value
                 oldValue?.addAll(data)
@@ -409,15 +405,13 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
     }
 
     protected open fun onParseModelFailure(msg: String) {
-        val time = System.currentTimeMillis()
         if (isLogPrint) {
             if (description == null || description == "") {
                 description = javaClass.simpleName
             }
             Log.d(TAG, "【${description}】$msg")
         }
-        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
-            System.currentTimeMillis() - time)
+        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
         if (isClearDataOnNetworkError) {
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")
@@ -429,15 +423,13 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
     }
 
     protected open fun onParseModelsFailure(msg: String) {
-        val time = System.currentTimeMillis()
         if (isLogPrint) {
             if (description == null || description == "") {
                 description = javaClass.simpleName
             }
             Log.d(TAG, "【${description}】$msg")
         }
-        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE,
-            System.currentTimeMillis() - time)
+        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
         if (isClearDataOnNetworkError) {
             if (!checkParamsValid()) throw IllegalArgumentException(
                 "Please check parameters, checkParamsValid returned false.")

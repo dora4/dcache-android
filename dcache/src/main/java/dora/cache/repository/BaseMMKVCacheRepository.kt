@@ -57,7 +57,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
                             rxOnLoadFromNetwork(liveData, delegate)
                             onLoadFromNetwork(callback(), delegate)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
+                            delegate.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
                         }
                     }
                 }, delegate)
@@ -107,10 +107,10 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
 
                     override fun loadFromNetwork() {
                         try {
-                            rxOnLoadFromNetworkForList(liveData, listener)
-                            onLoadFromNetwork(listCallback(), listener)
+                            rxOnLoadFromNetworkForList(liveData, delegate)
+                            onLoadFromNetwork(listCallback(), delegate)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
+                            delegate.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
                         }
                     }
                 }, delegate)

@@ -301,7 +301,7 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
                             rxOnLoadFromNetworkForList(flowData, delegate)
                             onLoadFromNetwork(listCallback(), delegate)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
+                            delegate.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
                         }
                     }
                 }, delegate)

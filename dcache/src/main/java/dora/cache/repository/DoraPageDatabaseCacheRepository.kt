@@ -301,7 +301,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                             rxOnLoadFromNetworkForList(liveData, delegate)
                             onLoadFromNetwork(listCallback(), delegate)
                         } catch (ignore: Exception) {
-                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
+                            delegate.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
                         }
                     }
                 }, delegate)

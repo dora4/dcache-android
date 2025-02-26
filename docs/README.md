@@ -155,6 +155,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
      ```pro
      -keep class * implements dora.db.table.OrmTable { *; }
+     -keep class * implements dora.db.converter.PropertyConverter { *; }
      ```
 
    - **Mapping Complex Data Types**

@@ -189,6 +189,12 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
 4. **其他注意事项**
 
+   * 添加混淆规则
+   
+     ```pro
+     -keep class * implements dora.db.table.OrmTable { *; }
+     ```
+     
    * 复杂数据类型字段映射
 
      ```java

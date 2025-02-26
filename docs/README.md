@@ -151,6 +151,12 @@ implementation "com.github.dora4:dcache-android:$stable_version"
 
 4. **Other Considerations**
 
+   - **Add Proguard Rules**
+
+     ```pro
+     -keep class * implements dora.db.table.OrmTable { *; }
+     ```
+
    - **Mapping Complex Data Types**
 
      ```java

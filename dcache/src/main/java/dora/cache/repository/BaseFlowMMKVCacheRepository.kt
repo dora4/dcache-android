@@ -5,13 +5,13 @@ import android.util.Log
 import dora.cache.data.fetcher.FlowDataFetcher
 import dora.cache.data.fetcher.ListFlowDataFetcher
 import dora.cache.data.fetcher.OnLoadListener
+import dora.cache.data.notify.IDataPublisher
+import dora.cache.data.notify.IListDataPublisher
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
 import dora.cache.holder.DoraListMMKVCacheHolder
 import dora.cache.holder.DoraMMKVCacheHolder
 import dora.cache.factory.MMKVCacheHolderFactory
-import dora.cache.repository.BaseRepository.Companion
-import dora.cache.repository.BaseRepository.DataSource
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import dora.http.rx.RxTransformer
@@ -50,6 +50,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
                             return onLoadFromCache(flowData)
                         }
                         flowData.value = null
+                        if (isNotify) IDataPublisher.DEFAULT.send(getModelType().name, null)
                         return false
                     }
 
@@ -79,6 +80,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
 
             override fun clearData() {
                 flowData.value = null
+                if (isNotify) IDataPublisher.DEFAULT.send(getModelType().name, null)
             }
         }
     }
@@ -103,6 +105,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
                             return onLoadFromCacheList(flowData)
                         }
                         flowData.value = arrayListOf()
+                        if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, arrayListOf())
                         return false
                     }
 
@@ -136,6 +139,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
 
             override fun clearListData() {
                 flowData.value = arrayListOf()
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, arrayListOf())
             }
         }
     }
@@ -145,6 +149,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
         model?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             flowData.value = it
+            if (isNotify) IDataPublisher.DEFAULT.send(getModelType().name, it)
             listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
             return true
         }
@@ -224,6 +229,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
             (cacheHolder as DoraMMKVCacheHolder).addNewCache(getCacheKey(), it)
             listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
             flowData.value = it
+            if (isNotify) IDataPublisher.DEFAULT.send(getModelType().name, it)
         }
     }
 
@@ -241,6 +247,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
             (listCacheHolder as DoraListMMKVCacheHolder).addNewCache(getCacheKey(), data)
             listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
             flowData.value = data
+            if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, data as MutableList<Any>)
         }
     }
 

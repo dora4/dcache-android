@@ -10,12 +10,11 @@ import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import dora.cache.DoraPageListCallback
 import dora.cache.data.fetcher.ListFlowDataFetcher
+import dora.cache.data.notify.IListDataPublisher
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
 import dora.cache.factory.DoraDatabaseCacheHolderFactory
 import dora.cache.holder.ListDatabaseCacheHolder
-import dora.cache.repository.BaseRepository.Companion
-import dora.cache.repository.BaseRepository.DataSource
 import dora.db.builder.WhereBuilder
 import io.reactivex.Observable
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -228,6 +227,7 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
                 val data = onFilterData(DataSource.Type.CACHE, it)
                 onInterceptData(DataSource.Type.CACHE, data)
                 flowData.value = data
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, data as MutableList<Any>)
                 listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
                 return true
             } else {
@@ -267,8 +267,10 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
                 val oldValue = flowData.value
                 oldValue.addAll(data)
                 flowData.value = oldValue
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, oldValue as MutableList<Any>)
             } else {
                 flowData.value = data
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, data as MutableList<Any>)
             }
         }
     }
@@ -293,6 +295,7 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
                             return onLoadFromCacheList(flowData)
                         }
                         flowData.value = arrayListOf()
+                        if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, arrayListOf())
                         return false
                     }
 
@@ -328,6 +331,7 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
 
             override fun clearListData() {
                 flowData.value = arrayListOf()
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, arrayListOf())
             }
         }
     }

@@ -46,7 +46,7 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
      * Abstract factory.
      * 简体中文：抽象工厂。
      */
-    protected lateinit var cacheHolderFactory: F
+    protected var cacheHolderFactory: F
 
     /**
      * Non-collection data cache interface.
@@ -68,6 +68,8 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
         protected set
 
     protected var isLogPrint = false
+        protected set
+    protected var isNotify = false
         protected set
 
     protected var description: String? = javaClass.simpleName
@@ -347,8 +349,10 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
         }
         if (isListMode) {
             isLogPrint = listRepository.isLogPrint
+            isNotify = listRepository.isNotify
         } else {
             isLogPrint = repository.isLogPrint
+            isNotify = repository.isNotify
         }
         MClass = getModelType()
         Log.d(TAG, "MClass:$MClass,isListMode:$isListMode")

@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import dora.cache.data.fetcher.DataFetcher
 import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.fetcher.OnLoadListener
+import dora.cache.data.notify.IDataPublisher
+import dora.cache.data.notify.IListDataPublisher
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
 import dora.cache.factory.DatabaseCacheHolderFactory
@@ -152,6 +154,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                             }
                         }
                         liveData.postValue(null)
+                        if (isNotify) IDataPublisher.DEFAULT.send(getModelType().name, null)
                         return result
                     }
 
@@ -181,6 +184,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
 
             override fun clearData() {
                 liveData.postValue(null)
+                if (isNotify) IDataPublisher.DEFAULT.send(getModelType().name, null)
             }
         }
     }
@@ -208,6 +212,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                             }
                         }
                         liveData.postValue(arrayListOf())
+                        if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, arrayListOf())
                         return result
                     }
 
@@ -241,6 +246,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
 
             override fun clearListData() {
                 liveData.postValue(arrayListOf())
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, arrayListOf())
             }
         }
     }
@@ -253,6 +259,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
             model?.let {
                 onInterceptData(DataSource.Type.CACHE, it)
                 liveData.postValue(it)
+                if (isNotify) IDataPublisher.DEFAULT.send(getModelType().name, it)
                 listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
                 returnVal(true)
                 return@launch
@@ -271,6 +278,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                 val data = onFilterData(DataSource.Type.CACHE, models)
                 onInterceptData(DataSource.Type.CACHE, data)
                 liveData.postValue(data)
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, data as MutableList<Any>)
                 listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
                 returnVal(true)
                 return@launch
@@ -372,6 +380,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
             }
             listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
             liveData.postValue(it)
+            if (isNotify) IDataPublisher.DEFAULT.send(getModelType().name, it)
         }
     }
 
@@ -398,8 +407,10 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                 val oldValue = liveData.value
                 oldValue?.addAll(data)
                 liveData.value = oldValue
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, oldValue as MutableList<Any>)
             } else {
                 liveData.postValue(data)
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, data as MutableList<Any>)
             }
         }
     }

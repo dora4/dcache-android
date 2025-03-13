@@ -13,6 +13,7 @@ import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import dora.cache.DoraPageListCallback
 import dora.cache.data.fetcher.ListDataFetcher
+import dora.cache.data.notify.IListDataPublisher
 import dora.cache.data.page.DataPager
 import dora.cache.data.page.IDataPager
 import dora.cache.factory.DoraDatabaseCacheHolderFactory
@@ -227,6 +228,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                 val data = onFilterData(DataSource.Type.CACHE, it)
                 onInterceptData(DataSource.Type.CACHE, data)
                 liveData.postValue(data)
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, data as MutableList<Any>)
                 listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
                 return true
             } else {
@@ -267,8 +269,10 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                 val oldValue = liveData.value
                 oldValue?.addAll(data)
                 liveData.value = oldValue
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, oldValue as MutableList<Any>)
             } else {
                 liveData.postValue(data)
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, data as MutableList<Any>)
             }
         }
     }
@@ -293,6 +297,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                             return onLoadFromCacheList(liveData)
                         }
                         liveData.postValue(arrayListOf())
+                        if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, arrayListOf())
                         return false
                     }
 
@@ -327,6 +332,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
 
             override fun clearListData() {
                 liveData.postValue(arrayListOf())
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, arrayListOf())
             }
         }
     }

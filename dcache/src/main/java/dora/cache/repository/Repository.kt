@@ -16,5 +16,7 @@ annotation class Repository(
      * 简体中文：是否打印调试日志，如设置为true，则[dora.cache.repository.BaseRepository]的fetchData()中的
      * description参数将被打印出来。
      */
-    val isLogPrint: Boolean = false
+    val isLogPrint: Boolean = false,
+
+    val isNotify: Boolean = false
 )

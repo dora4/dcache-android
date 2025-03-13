@@ -14,7 +14,6 @@ import dora.cache.data.fetcher.OnLoadListenerImpl
 import dora.cache.data.page.IDataPager
 import dora.cache.factory.CacheHolderFactory
 import dora.cache.holder.CacheHolder
-import dora.cache.repository.BaseRepository.DataSource
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import io.reactivex.Observable
@@ -50,7 +49,7 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
      * Abstract factory.
      * 简体中文：抽象工厂。
      */
-    protected lateinit var cacheHolderFactory: F
+    protected var cacheHolderFactory: F
 
     /**
      * Non-collection data cache interface.
@@ -72,6 +71,9 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
         protected set
 
     protected var isLogPrint = false
+        protected set
+
+    protected var isNotify = false
         protected set
 
     protected var description: String? = javaClass.simpleName
@@ -352,8 +354,10 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
         }
         if (isListMode) {
             isLogPrint = listRepository.isLogPrint
+            isNotify = listRepository.isNotify
         } else {
             isLogPrint = repository.isLogPrint
+            isNotify = repository.isNotify
         }
         MClass = getModelType()
         Log.d(TAG, "MClass:$MClass,isListMode:$isListMode")

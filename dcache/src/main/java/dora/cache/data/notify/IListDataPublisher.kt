@@ -17,7 +17,18 @@ interface IListDataPublisher<M> {
     companion object {
         @JvmStatic
         val DEFAULT = object : ListDataPublisher<Any>() {
+
+            private val map = HashMap<String, MutableList<*>>()
+
             override fun receive(type: String, liveData: MutableLiveData<MutableList<Any>>) {
+                if (map.contains(type)) {
+                    map.remove(type)
+                }
+                map[type] = liveData.value as MutableList<*>
+            }
+
+            fun getValue(type: String) : MutableList<*>? {
+                return map[type]
             }
         }
     }

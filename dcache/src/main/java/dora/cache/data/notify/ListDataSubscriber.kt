@@ -23,7 +23,7 @@ class ListDataSubscriber<M> private constructor() : IListDataSubscriber<M> {
         for (pub in publishers) {
             synchronized(this) {
                 if (pub != publisher) {
-                    pub.send(type, publisher.getListLiveData().value ?: arrayListOf())
+                    pub.receive(type, publisher.getListLiveData())
                 }
             }
         }

@@ -23,7 +23,7 @@ class DataSubscriber<M> private constructor() : IDataSubscriber<M> {
         for (pub in publishers) {
             synchronized(this) {
                 if (pub != publisher) {
-                    pub.send(type, publisher.getLiveData().value)
+                    pub.receive(type, publisher.getLiveData())
                 }
             }
         }

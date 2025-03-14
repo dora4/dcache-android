@@ -26,4 +26,8 @@ abstract class DataPublisher<M> : IDataPublisher<M> {
     override fun getLiveData(modelType: Class<*>): MutableLiveData<*>? {
         return liveDataMap[modelType]
     }
+
+    override fun getLastValue(modelType: Class<*>): Any? {
+        return getLiveData(modelType)?.value
+    }
 }

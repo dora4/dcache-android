@@ -26,4 +26,8 @@ abstract class ListDataPublisher<M> : IListDataPublisher<M> {
     override fun getListLiveData(modelType: Class<*>): MutableLiveData<MutableList<*>>? {
         return liveDataMap[modelType]
     }
+
+    override fun getLastValue(modelType: Class<*>): MutableList<*>? {
+        return getListLiveData(modelType)?.value
+    }
 }

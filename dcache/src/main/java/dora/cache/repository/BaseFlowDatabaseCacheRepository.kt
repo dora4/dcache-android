@@ -146,7 +146,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
                             return onLoadFromCache(flowData)
                         }
                         flowData.value = null
-                        if (isNotify) IDataPublisher.DEFAULT.send(getModelType().name, null)
+                        if (isNotify) IDataPublisher.DEFAULT.send(getModelType(), null)
                         return false
                     }
 
@@ -176,7 +176,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
 
             override fun clearData() {
                 flowData.value = null
-                if (isNotify) IDataPublisher.DEFAULT.send(getModelType().name, null)
+                if (isNotify) IDataPublisher.DEFAULT.send(getModelType(), null)
             }
         }
     }
@@ -201,7 +201,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
                             return onLoadFromCacheList(flowData)
                         }
                         flowData.value = arrayListOf()
-                        if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, arrayListOf())
+                        if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), arrayListOf())
                         return false
                     }
 
@@ -235,7 +235,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
 
             override fun clearListData() {
                 flowData.value = arrayListOf()
-                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, arrayListOf())
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), arrayListOf())
             }
         }
     }
@@ -247,7 +247,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
         model?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             flowData.value = it
-            if (isNotify) IDataPublisher.DEFAULT.send(getModelType().name, it)
+            if (isNotify) IDataPublisher.DEFAULT.send(getModelType(), it)
             listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
             return true
         }
@@ -263,7 +263,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
             val data = onFilterData(DataSource.Type.CACHE, models)
             onInterceptData(DataSource.Type.CACHE, data)
             flowData.value = data
-            if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, data as MutableList<Any>)
+            if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), data)
             listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
             return true
         }
@@ -353,7 +353,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
             (cacheHolder as DatabaseCacheHolder<M>).addNewCache(it)
             listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
             flowData.value = it
-            if (isNotify) IDataPublisher.DEFAULT.send(getModelType().name, it)
+            if (isNotify) IDataPublisher.DEFAULT.send(getModelType(), it)
         }
     }
 
@@ -386,10 +386,10 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
                 val oldValue = flowData.value
                 oldValue.addAll(data)
                 flowData.value = oldValue
-                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, oldValue as MutableList<Any>)
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), oldValue)
             } else {
                 flowData.value = data
-                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, data as MutableList<Any>)
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), data)
             }
         }
     }

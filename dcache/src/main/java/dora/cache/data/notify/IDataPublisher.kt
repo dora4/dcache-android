@@ -9,25 +9,27 @@ interface IDataPublisher<M> {
     fun setSubscriber(subscriber: IDataSubscriber<M>)
 
     @CallSuper
-    fun send(type: String, data: M?)
+    fun <T> send(modelType: Class<T>, data: T?)
 
-    fun receive(type: String, liveData: MutableLiveData<M?>)
+    fun receive(modelType: Class<*>, liveData: MutableLiveData<*>)
 
-    fun getLiveData() : MutableLiveData<M?>
+    fun getLiveData(modelType: Class<*>) : MutableLiveData<*>?
+
+    fun getLastValue(modelType: Class<*>) : Any?
 
     companion object {
+
         @JvmStatic
         val DEFAULT = object : DataPublisher<Any>() {
-            private val map = HashMap<String, Any?>()
-            override fun receive(type: String, liveData: MutableLiveData<Any?>) {
-                if (map.contains(type)) {
-                    map.remove(type)
-                }
-                map[type] = liveData.value
+
+            private val map = ConcurrentHashMap<Class<*>, Any?>()
+
+            override fun receive(modelType: Class<*>, liveData: MutableLiveData<*>) {
+                map[modelType] = liveData.value
             }
 
-            fun getValue(type: String) : Any? {
-                return map[type]
+            override fun getLastValue(modelType: Class<*>): Any? {
+                return map[modelType]
             }
         }
     }

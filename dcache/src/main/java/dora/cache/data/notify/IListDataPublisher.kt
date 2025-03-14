@@ -2,33 +2,34 @@ package dora.cache.data.notify
 
 import androidx.annotation.CallSuper
 import androidx.lifecycle.MutableLiveData
+import java.util.concurrent.ConcurrentHashMap
 
 interface IListDataPublisher<M> {
 
     fun setSubscriber(subscriber: IListDataSubscriber<M>)
 
     @CallSuper
-    fun send(type: String, data: MutableList<M>)
+    fun <T> send(modelType: Class<T>, data: MutableList<T>)
 
-    fun receive(type: String, liveData: MutableLiveData<MutableList<M>>)
+    fun receive(modelType: Class<*>, liveData: MutableLiveData<MutableList<*>>)
 
-    fun getListLiveData() : MutableLiveData<MutableList<M>>
+    fun getListLiveData(modelType: Class<*>) : MutableLiveData<MutableList<*>>?
+
+    fun getLastValue(modelType: Class<*>) : MutableList<*>?
 
     companion object {
+        
         @JvmStatic
         val DEFAULT = object : ListDataPublisher<Any>() {
 
-            private val map = HashMap<String, MutableList<*>>()
+            private val map = ConcurrentHashMap<Class<*>, MutableList<*>>()
 
-            override fun receive(type: String, liveData: MutableLiveData<MutableList<Any>>) {
-                if (map.contains(type)) {
-                    map.remove(type)
-                }
-                map[type] = liveData.value as MutableList<*>
+            override fun receive(modelType: Class<*>, liveData: MutableLiveData<MutableList<*>>) {
+                map[modelType] = liveData.value as MutableList<*>
             }
 
-            fun getValue(type: String) : MutableList<*>? {
-                return map[type]
+            override fun getLastValue(modelType: Class<*>): MutableList<*>? {
+                return map[modelType]
             }
         }
     }

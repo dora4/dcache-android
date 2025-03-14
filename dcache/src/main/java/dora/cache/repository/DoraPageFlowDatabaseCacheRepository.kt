@@ -227,7 +227,7 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
                 val data = onFilterData(DataSource.Type.CACHE, it)
                 onInterceptData(DataSource.Type.CACHE, data)
                 flowData.value = data
-                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, data as MutableList<Any>)
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), data)
                 listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
                 return true
             } else {
@@ -267,10 +267,10 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
                 val oldValue = flowData.value
                 oldValue.addAll(data)
                 flowData.value = oldValue
-                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, oldValue as MutableList<Any>)
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), oldValue)
             } else {
                 flowData.value = data
-                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, data as MutableList<Any>)
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), data)
             }
         }
     }
@@ -295,7 +295,7 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
                             return onLoadFromCacheList(flowData)
                         }
                         flowData.value = arrayListOf()
-                        if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, arrayListOf())
+                        if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), arrayListOf())
                         return false
                     }
 
@@ -331,7 +331,7 @@ abstract class DoraPageFlowDatabaseCacheRepository<T : OrmTable>(context: Contex
 
             override fun clearListData() {
                 flowData.value = arrayListOf()
-                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, arrayListOf())
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), arrayListOf())
             }
         }
     }

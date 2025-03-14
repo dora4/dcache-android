@@ -50,7 +50,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
                             return onLoadFromCache(flowData)
                         }
                         flowData.value = null
-                        if (isNotify) IDataPublisher.DEFAULT.send(getModelType().name, null)
+                        if (isNotify) IDataPublisher.DEFAULT.send(getModelType(), null)
                         return false
                     }
 
@@ -80,7 +80,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
 
             override fun clearData() {
                 flowData.value = null
-                if (isNotify) IDataPublisher.DEFAULT.send(getModelType().name, null)
+                if (isNotify) IDataPublisher.DEFAULT.send(getModelType(), null)
             }
         }
     }
@@ -105,7 +105,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
                             return onLoadFromCacheList(flowData)
                         }
                         flowData.value = arrayListOf()
-                        if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, arrayListOf())
+                        if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), arrayListOf())
                         return false
                     }
 
@@ -139,7 +139,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
 
             override fun clearListData() {
                 flowData.value = arrayListOf()
-                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, arrayListOf())
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), arrayListOf())
             }
         }
     }
@@ -149,7 +149,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
         model?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             flowData.value = it
-            if (isNotify) IDataPublisher.DEFAULT.send(getModelType().name, it)
+            if (isNotify) IDataPublisher.DEFAULT.send(getModelType(), it)
             listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
             return true
         }
@@ -229,7 +229,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
             (cacheHolder as DoraMMKVCacheHolder).addNewCache(getCacheKey(), it)
             listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
             flowData.value = it
-            if (isNotify) IDataPublisher.DEFAULT.send(getModelType().name, it)
+            if (isNotify) IDataPublisher.DEFAULT.send(getModelType(), it)
         }
     }
 
@@ -247,7 +247,7 @@ abstract class BaseFlowMMKVCacheRepository<M>(context: Context) : BaseFlowReposi
             (listCacheHolder as DoraListMMKVCacheHolder).addNewCache(getCacheKey(), data)
             listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
             flowData.value = data
-            if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, data as MutableList<Any>)
+            if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), data)
         }
     }
 

@@ -51,7 +51,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
                             return onLoadFromCache(liveData)
                         }
                         liveData.postValue(null)
-                        if (isNotify) IDataPublisher.DEFAULT.send(getModelType().name, null)
+                        if (isNotify) IDataPublisher.DEFAULT.send(getModelType(), null)
                         return false
                     }
 
@@ -81,7 +81,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
 
             override fun clearData() {
                 liveData.postValue(null)
-                if (isNotify) IDataPublisher.DEFAULT.send(getModelType().name, null)
+                if (isNotify) IDataPublisher.DEFAULT.send(getModelType(), null)
             }
         }
     }
@@ -106,7 +106,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
                             return onLoadFromCacheList(liveData)
                         }
                         liveData.postValue(arrayListOf())
-                        if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, arrayListOf())
+                        if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), arrayListOf())
                         return false
                     }
 
@@ -140,7 +140,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
 
             override fun clearListData() {
                 liveData.postValue(arrayListOf())
-                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, arrayListOf())
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), arrayListOf())
             }
         }
     }
@@ -150,7 +150,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
         model?.let {
             onInterceptData(DataSource.Type.CACHE, it)
             liveData.postValue(it)
-            if (isNotify) IDataPublisher.DEFAULT.send(getModelType().name, it)
+            if (isNotify) IDataPublisher.DEFAULT.send(getModelType(), it)
             listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
             return true
         }
@@ -164,7 +164,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
             val data = onFilterData(DataSource.Type.CACHE, models)
             onInterceptData(DataSource.Type.CACHE, data)
             liveData.postValue(data)
-            if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, data as MutableList<Any>)
+            if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), data)
             listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
             return true
         }
@@ -231,7 +231,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
             (cacheHolder as DoraMMKVCacheHolder).addNewCache(getCacheKey(), it)
             listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
             liveData.postValue(it)
-            if (isNotify) IDataPublisher.DEFAULT.send(getModelType().name, it)
+            if (isNotify) IDataPublisher.DEFAULT.send(getModelType(), it)
         }
     }
 
@@ -249,7 +249,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
             (listCacheHolder as DoraListMMKVCacheHolder).addNewCache(getCacheKey(), data)
             listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
             liveData.postValue(data)
-            if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, data as MutableList<Any>)
+            if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), data)
         }
     }
 

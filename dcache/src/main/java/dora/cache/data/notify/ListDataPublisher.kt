@@ -1,22 +1,29 @@
 package dora.cache.data.notify
 
 import androidx.lifecycle.MutableLiveData
+import java.util.concurrent.ConcurrentHashMap
 
 abstract class ListDataPublisher<M> : IListDataPublisher<M> {
 
     private var subscriber: IListDataSubscriber<M>? = null
-    private val liveData: MutableLiveData<MutableList<M>> = MutableLiveData()
+    private val liveDataMap = ConcurrentHashMap<Class<*>, MutableLiveData<MutableList<*>>?>()
 
     override fun setSubscriber(subscriber: IListDataSubscriber<M>) {
         this.subscriber = subscriber
     }
 
-    override fun send(type: String, data: MutableList<M>) {
-        liveData.postValue(data)
-        subscriber?.relay(type, this)
+    override fun <T> send(modelType: Class<T>, data: MutableList<T>) {
+        if (liveDataMap.contains(modelType)) {
+            liveDataMap[modelType]?.postValue(data)
+        } else {
+            val liveData = MutableLiveData<MutableList<*>>()
+            liveData.postValue(data)
+            liveDataMap[modelType] = liveData
+        }
+        subscriber?.relay(modelType, this)
     }
 
-    override fun getListLiveData(): MutableLiveData<MutableList<M>> {
-        return liveData
+    override fun getListLiveData(modelType: Class<*>): MutableLiveData<MutableList<*>>? {
+        return liveDataMap[modelType]
     }
 }

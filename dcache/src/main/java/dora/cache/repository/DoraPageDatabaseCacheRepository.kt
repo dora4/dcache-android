@@ -228,7 +228,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                 val data = onFilterData(DataSource.Type.CACHE, it)
                 onInterceptData(DataSource.Type.CACHE, data)
                 liveData.postValue(data)
-                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, data as MutableList<Any>)
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), data)
                 listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
                 return true
             } else {
@@ -269,10 +269,10 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                 val oldValue = liveData.value
                 oldValue?.addAll(data)
                 liveData.value = oldValue
-                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, oldValue as MutableList<Any>)
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), oldValue ?: arrayListOf())
             } else {
                 liveData.postValue(data)
-                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, data as MutableList<Any>)
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), data)
             }
         }
     }
@@ -297,7 +297,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                             return onLoadFromCacheList(liveData)
                         }
                         liveData.postValue(arrayListOf())
-                        if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, arrayListOf())
+                        if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), arrayListOf())
                         return false
                     }
 
@@ -332,7 +332,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
 
             override fun clearListData() {
                 liveData.postValue(arrayListOf())
-                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType().name, arrayListOf())
+                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), arrayListOf())
             }
         }
     }

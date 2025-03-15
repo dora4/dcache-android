@@ -4,7 +4,9 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.util.Log
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import dora.cache.data.fetcher.IDataFetcher
 import dora.cache.data.fetcher.IListDataFetcher
@@ -84,11 +86,26 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
     protected val isClearDataOnNetworkError: Boolean
         protected get() = false
     protected val MClass: Class<M>
+
     protected abstract fun createCacheHolderFactory() : F
 
     protected abstract fun createDataFetcher(): IDataFetcher<M>
 
     protected abstract fun createListDataFetcher(): IListDataFetcher<M>
+
+    protected fun observeData(lifecycleOwner: LifecycleOwner, description: String? = "", listener: OnLoadListener? =
+        OnLoadListenerImpl(), observer: Observer<M?>) {
+        if (!isListMode) {
+            fetchData(description, listener).observe(lifecycleOwner, observer)
+        }
+    }
+
+    protected fun observeListData(lifecycleOwner: LifecycleOwner, description: String? = "", listener: OnLoadListener? =
+        OnLoadListenerImpl(), observer: Observer<MutableList<M>>) {
+        if (isListMode) {
+            fetchListData(description, listener).observe(lifecycleOwner, observer)
+        }
+    }
 
     override fun callback(): DoraCallback<M> {
         return object : DoraCallback<M>() {

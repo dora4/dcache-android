@@ -4,7 +4,10 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.util.Log
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dora.cache.data.fetcher.IDataFetcher
 import dora.cache.data.fetcher.IFlowDataFetcher
 import dora.cache.data.fetcher.IListDataFetcher
@@ -17,7 +20,9 @@ import dora.cache.holder.CacheHolder
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
 import io.reactivex.Observable
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import java.lang.reflect.ParameterizedType
 
 /**
@@ -94,6 +99,24 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
     protected abstract fun createDataFetcher(): IFlowDataFetcher<M>
 
     protected abstract fun createListDataFetcher(): IListFlowDataFetcher<M>
+
+    protected fun observeData(description: String? = "", listener: OnLoadListener? =
+        OnLoadListenerImpl(), collector: FlowCollector<M?>) {
+        if (!isListMode) {
+            viewModelScope.launch {
+                fetchData(description, listener).collect(collector)
+            }
+        }
+    }
+
+    protected fun observeListData(description: String? = "", listener: OnLoadListener? =
+        OnLoadListenerImpl(), collector: FlowCollector<MutableList<M>>) {
+        if (isListMode) {
+            viewModelScope.launch {
+                fetchListData(description, listener).collect(collector)
+            }
+        }
+    }
 
     override fun callback(): DoraCallback<M> {
         return object : DoraCallback<M>() {

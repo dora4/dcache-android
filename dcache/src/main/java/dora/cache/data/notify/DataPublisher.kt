@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap
 abstract class DataPublisher<M> : IDataPublisher<M> {
 
     private var subscriber: IDataSubscriber<M>? = null
-    private val liveDataMap = ConcurrentHashMap<Class<*>, MutableLiveData<Any>?>()
+    protected val liveDataMap = ConcurrentHashMap<Class<*>, MutableLiveData<Any>>()
 
     override fun setSubscriber(subscriber: IDataSubscriber<M>) {
         this.subscriber = subscriber

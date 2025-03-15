@@ -13,19 +13,19 @@ class Condition(
         // Condition parameters, such as the specific values 0 and 100 for the two
         // placeholders ? in a > ? AND a < ?.
         // 简体中文：条件参数，如 a > ? and a < ?中两个?的具体值0和100
-                val selectionArgs: Array<String?>,
+        val selectionArgs: Array<String?>,
         // Similar to the usage of LIMIT in SQL statements.
         // 简体中文：同sql语句limit的用法
-                val limit: String? = "",
+        val limit: String? = "",
         // Similar to the usage of ORDER BY in SQL statements.
         // 简体中文：同sql语句order by的用法
-                val orderBy: String? = "",
+        val orderBy: String? = "",
         // Similar to the usage of GROUP BY in SQL statements.
         // 简体中文：同sql语句group by的用法
-                val groupBy: String? = "",
+        val groupBy: String? = "",
         // Similar to the usage of HAVING in SQL statements.
         // 简体中文：同sql语句having的用法
-                val having: String? = "")
+        val having: String? = "")
 
 
 fun Condition.having(): String {

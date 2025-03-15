@@ -2,7 +2,6 @@ package dora.cache.data.notify
 
 import androidx.annotation.CallSuper
 import androidx.lifecycle.MutableLiveData
-import java.util.concurrent.ConcurrentHashMap
 
 interface IDataPublisher<M> {
 
@@ -22,14 +21,8 @@ interface IDataPublisher<M> {
         @JvmStatic
         val DEFAULT = object : DataPublisher<Any>() {
 
-            private val map = ConcurrentHashMap<Class<*>, Any?>()
-
             override fun receive(modelType: Class<*>, liveData: MutableLiveData<*>) {
-                map[modelType] = liveData.value
-            }
-
-            override fun getLastValue(modelType: Class<*>): Any? {
-                return map[modelType]
+                liveDataMap[modelType] = liveData as MutableLiveData<Any>
             }
         }
     }

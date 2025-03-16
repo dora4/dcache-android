@@ -39,16 +39,9 @@ class ListDataSubscriber<M> private constructor() : IListDataSubscriber<M> {
 
         @JvmStatic
         fun <M> getInstance(clazz: Class<M>): ListDataSubscriber<M> {
-            return synchronized(this) {
-                val instance = instances[clazz]
-                if (instance is ListDataSubscriber<*>) {
-                    @Suppress("UNCHECKED_CAST")
-                    return instance as ListDataSubscriber<M>
-                }
-                val newInstance = ListDataSubscriber<M>()
-                instances[clazz] = newInstance
-                newInstance
-            }
+            return instances.getOrPut(clazz) {
+                ListDataSubscriber<M>()
+            } as ListDataSubscriber<M>
         }
     }
 }

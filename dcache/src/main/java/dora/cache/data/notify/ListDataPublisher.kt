@@ -30,4 +30,8 @@ abstract class ListDataPublisher<M> : IListDataPublisher<M> {
     override fun getLastValue(modelType: Class<*>): MutableList<*>? {
         return getListLiveData(modelType)?.value
     }
+
+    override fun clearLastValue(modelType: Class<*>) {
+        getListLiveData(modelType)?.postValue(arrayListOf<M>())
+    }
 }

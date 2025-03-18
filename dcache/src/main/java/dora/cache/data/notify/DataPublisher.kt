@@ -30,4 +30,8 @@ abstract class DataPublisher<M> : IDataPublisher<M> {
     override fun getLastValue(modelType: Class<*>): Any? {
         return getLiveData(modelType)?.value
     }
+
+    override fun clearLastValue(modelType: Class<*>) {
+        getLiveData(modelType)?.postValue(null)
+    }
 }

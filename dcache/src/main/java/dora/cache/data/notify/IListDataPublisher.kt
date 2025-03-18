@@ -4,7 +4,7 @@ import androidx.annotation.CallSuper
 import androidx.lifecycle.MutableLiveData
 
 /**
- * Data Publisher.
+ * Data publisher.
  * 简体中文：数据发布者。
  */
 interface IListDataPublisher<M> {
@@ -39,6 +39,12 @@ interface IListDataPublisher<M> {
      * 简体中文：用于获取默认发布者最后发布的值。
      */
     fun getLastValue(modelType: Class<*>) : MutableList<*>?
+
+    /**
+     * Used to clear the last published value of the default publisher.
+     * 简体中文：用于清除默认发布者最后发布的值。
+     */
+    fun clearLastValue(modelType: Class<*>)
 
     companion object {
         

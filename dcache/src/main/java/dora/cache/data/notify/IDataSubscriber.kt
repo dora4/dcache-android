@@ -13,6 +13,12 @@ interface IDataSubscriber<M> {
     fun subscribe(publisher: IDataPublisher<M>)
 
     /**
+     * Unsubscribe to the data publisher.
+     * 简体中文：取消订阅数据发布者。
+     */
+    fun unsubscribe(publisher: IDataPublisher<M>)
+
+    /**
      * Forward data.
      * 简体中文：转发数据。
      */

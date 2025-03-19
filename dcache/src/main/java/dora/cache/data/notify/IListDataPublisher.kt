@@ -51,7 +51,11 @@ interface IListDataPublisher<M> {
         @JvmStatic
         val DEFAULT = object : ListDataPublisher<Any>() {
 
-            override fun receive(modelType: Class<*>, liveData: MutableLiveData<MutableList<*>>) {
+            override fun receive(
+                isDeterminate: Boolean,
+                modelType: Class<*>,
+                liveData: MutableLiveData<MutableList<*>>
+            ) {
                 liveDataMap[modelType] = liveData
             }
         }

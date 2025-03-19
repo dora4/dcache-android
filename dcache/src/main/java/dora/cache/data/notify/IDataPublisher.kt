@@ -26,7 +26,7 @@ interface IDataPublisher<M> {
      * Receive updated data from the publisher.
      * 简体中文：接收发布者更新的数据。
      */
-    fun receive(modelType: Class<*>, liveData: MutableLiveData<*>)
+    fun receive(isDeterminate: Boolean, modelType: Class<*>, liveData: MutableLiveData<*>)
 
     /**
      * Get the [androidx.lifecycle.LiveData] object.

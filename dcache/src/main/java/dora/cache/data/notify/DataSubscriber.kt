@@ -30,7 +30,7 @@ class DataSubscriber<M> private constructor() : IDataSubscriber<M> {
 
     override fun unsubscribe(publisher: IDataPublisher<M>) {
         if (publisher != IDataPublisher.DEFAULT) {
-            publisher.receive(getGenericType(this), MutableLiveData<M>())
+            publisher.receive(true, getGenericType(this), MutableLiveData<M>())
             publishers.remove(publisher)
         }
     }
@@ -42,7 +42,7 @@ class DataSubscriber<M> private constructor() : IDataSubscriber<M> {
                     || pub != publisher) {
                     val liveData = publisher.getLiveData(modelType)
                     liveData?.let {
-                        pub.receive(modelType, it)
+                        pub.receive(false, modelType, it)
                     }
                 }
             }

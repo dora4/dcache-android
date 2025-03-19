@@ -29,8 +29,8 @@ class DataSubscriber<M> private constructor() : IDataSubscriber<M> {
     }
 
     override fun unsubscribe(publisher: IDataPublisher<M>) {
-        if (publisher != IDataPublisher.DEFAULT) {
-            publisher.receive(true, getGenericType(this), MutableLiveData<M>())
+        if (publishers.contains(publisher) && publisher != IDataPublisher.DEFAULT) {
+            publisher.receive(true, getGenericType(publisher), MutableLiveData<M>())
             publishers.remove(publisher)
         }
     }

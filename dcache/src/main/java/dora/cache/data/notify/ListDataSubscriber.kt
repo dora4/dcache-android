@@ -38,8 +38,7 @@ class ListDataSubscriber<M> private constructor() : IListDataSubscriber<M> {
     override fun relay(modelType: Class<*>, publisher: IListDataPublisher<M>) {
         for (pub in publishers) {
             synchronized(this) {
-                if ((pub == publisher && pub == IListDataPublisher.DEFAULT)
-                    || pub != publisher) {
+                if (pub != publisher) {
                     val liveData = publisher.getListLiveData(modelType)
                     liveData?.let {
                         pub.receive(false, modelType, it)

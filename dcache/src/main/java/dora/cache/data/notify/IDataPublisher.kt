@@ -16,8 +16,8 @@ interface IDataPublisher<M> {
     fun setSubscriber(subscriber: IDataSubscriber<M>)
 
     /**
-     * Send data to all subscribers except itself, with the DEFAULT publisher unaffected.
-     * 简体中文：发送数据给除自己以外的所有的订阅者，DEFAULT发布者不受影响。
+     * Send data to all subscribers except itself.
+     * 简体中文：发送数据给除自己以外的所有的订阅者。
      */
     @CallSuper
     fun <T> send(modelType: Class<T>, data: T?)
@@ -51,12 +51,22 @@ interface IDataPublisher<M> {
         @JvmStatic
         val DEFAULT = object : DataPublisher<Any>() {
 
+            override fun <T> send(modelType: Class<T>, data: T?) {
+                if (liveDataMap.contains(modelType)) {
+                    liveDataMap[modelType]?.postValue(data)
+                } else {
+                    val liveData = MutableLiveData<Any>()
+                    liveData.postValue(data as Any)
+                    liveDataMap[modelType] = liveData
+                }
+                super.send(modelType, data)
+            }
+
             override fun receive(
                 isDeterminate: Boolean,
                 modelType: Class<*>,
                 liveData: MutableLiveData<*>
             ) {
-                liveDataMap[modelType] = liveData as MutableLiveData<Any>
             }
         }
     }

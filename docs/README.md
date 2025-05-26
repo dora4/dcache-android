@@ -24,8 +24,8 @@ SQL, Retrofit, Kotlin Coroutines, etc.
 
 ```groovy
 maven { url 'https://jitpack.io' }
-// Stable version 3.2.9, for the latest version use the version successfully compiled on Jitpack (marked in green).
-def stable_version = '3.2.9s'
+// Stable version 3.3.12, for the latest version use the version successfully compiled on Jitpack (marked in green).
+def stable_version = '3.3.12'
 implementation "com.github.dora4:dcache-android:$stable_version"
 ```
 

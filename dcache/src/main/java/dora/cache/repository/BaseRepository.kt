@@ -260,6 +260,7 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
      * 简体中文：抓取非集合数据，返回给livedata，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过
      * [.getLiveData()]拿到。
      */
+    @JvmSynthetic
     override fun fetchData(description: String?, listener: OnLoadListener?): LiveData<M?> {
         if (description != null) {
             // 简体中文：不能让null覆盖了默认类名
@@ -270,11 +271,36 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
     }
 
     /**
+     * Provide for use in Java.
+     * 简体中文：提供给Java使用。
+     */
+    open fun fetchData(description: String): LiveData<M?> {
+        return fetchData(description, null)
+    }
+
+    /**
+     * Provide for use in Java.
+     * 简体中文：提供给Java使用。
+     */
+    open fun fetchData(listener: OnLoadListener): LiveData<M?> {
+        return fetchData(null, listener)
+    }
+
+    /**
+     * Provide for use in Java.
+     * 简体中文：提供给Java使用。
+     */
+    open fun fetchData(): LiveData<M?> {
+        return fetchData(null, null)
+    }
+
+    /**
      * Fetch collection data and return it to LiveData for display in the UI. Once fetched
      * successfully, it will remain in LiveData and can be accessed through [.getListLiveData()].
      * 简体中文：抓取集合数据，返回给livedata，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过
      * [.getListLiveData()]拿到。
      */
+    @JvmSynthetic
     override fun fetchListData(description: String?, listener: OnLoadListener?): LiveData<MutableList<M>> {
         if (description != null) {
             // 简体中文：不能让null覆盖了默认类名
@@ -282,6 +308,30 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
         }
         this.listener = listener
         return listDataFetcher.fetchListData(description)
+    }
+
+    /**
+     * Provide for use in Java.
+     * 简体中文：提供给Java使用。
+     */
+    open fun fetchListData(description: String): LiveData<MutableList<M>> {
+        return fetchListData(description, null)
+    }
+
+    /**
+     * Provide for use in Java.
+     * 简体中文：提供给Java使用。
+     */
+    open fun fetchListData(listener: OnLoadListener): LiveData<MutableList<M>> {
+        return fetchListData(null, listener)
+    }
+
+    /**
+     * Provide for use in Java.
+     * 简体中文：提供给Java使用。
+     */
+    open fun fetchListData(): LiveData<MutableList<M>> {
+        return fetchListData(null, null)
     }
 
     /**

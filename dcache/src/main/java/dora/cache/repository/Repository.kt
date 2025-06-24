@@ -18,5 +18,9 @@ annotation class Repository(
      */
     val isLogPrint: Boolean = false,
 
+    /**
+     * Whether to also send a notification for memory cache at the same time.
+     * 简体中文：是否同时也发送通知用于内存缓存。
+     */
     val isNotify: Boolean = false
 )

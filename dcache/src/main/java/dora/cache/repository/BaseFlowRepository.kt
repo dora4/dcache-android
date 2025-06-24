@@ -4,8 +4,6 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.util.Log
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dora.cache.data.fetcher.IDataFetcher
@@ -271,6 +269,7 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
      * 简体中文：抓取非集合数据，返回给livedata，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过
      * [.getLiveData()]拿到。
      */
+    @JvmSynthetic
     override fun fetchData(description: String?, listener: OnLoadListener?): StateFlow<M?> {
         if (description != null) {
             // 简体中文：不能让null覆盖了默认类名
@@ -281,11 +280,36 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
     }
 
     /**
+     * Provide for use in Java.
+     * 简体中文：提供给Java使用。
+     */
+    open fun fetchData(description: String): StateFlow<M?> {
+        return fetchData(description, null)
+    }
+
+    /**
+     * Provide for use in Java.
+     * 简体中文：提供给Java使用。
+     */
+    open fun fetchData(listener: OnLoadListener): StateFlow<M?> {
+        return fetchData(null, listener)
+    }
+
+    /**
+     * Provide for use in Java.
+     * 简体中文：提供给Java使用。
+     */
+    open fun fetchData(): StateFlow<M?> {
+        return fetchData(null, null)
+    }
+
+    /**
      * Fetch collection data and return it to LiveData for display in the UI. Once fetched
      * successfully, it will remain in LiveData and can be accessed through [.getListLiveData()].
      * 简体中文：抓取集合数据，返回给livedata，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过
      * [.getListLiveData()]拿到。
      */
+    @JvmSynthetic
     override fun fetchListData(description: String?, listener: OnLoadListener?): StateFlow<MutableList<M>> {
         if (description != null) {
             // 简体中文：不能让null覆盖了默认类名
@@ -293,6 +317,30 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
         }
         this.listener = listener
         return listDataFetcher.fetchListData(description)
+    }
+
+    /**
+     * Provide for use in Java.
+     * 简体中文：提供给Java使用。
+     */
+    open fun fetchListData(description: String): StateFlow<MutableList<M>> {
+        return fetchListData(description, null)
+    }
+
+    /**
+     * Provide for use in Java.
+     * 简体中文：提供给Java使用。
+     */
+    open fun fetchListData(listener: OnLoadListener): StateFlow<MutableList<M>> {
+        return fetchListData(null, listener)
+    }
+
+    /**
+     * Provide for use in Java.
+     * 简体中文：提供给Java使用。
+     */
+    open fun fetchListData(): StateFlow<MutableList<M>> {
+        return fetchListData(null, null)
     }
 
     /**

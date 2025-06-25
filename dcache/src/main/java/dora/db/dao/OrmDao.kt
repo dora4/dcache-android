@@ -16,6 +16,7 @@ import dora.db.builder.WhereBuilder
 import dora.db.constraint.Id
 import dora.db.constraint.PrimaryKey
 import dora.db.constraint.AssignType
+import dora.db.constraint.ForeignKey
 import dora.db.converter.PropertyConverter
 import dora.db.exception.OrmResultCreationException
 import dora.db.exception.UnsupportedDataTypeException
@@ -162,19 +163,31 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
     private fun getContentValues(bean: T): ContentValues {
         val values = ContentValues()
         val fields = beanClass.declaredFields
+        for (embeddedField in fields) {
+            val embedded = embeddedField.getAnnotation(Embedded::class.java) ?: continue
+            val refIdName = embedded.refId
+            val refField = fields.firstOrNull {
+                it.getAnnotation(ForeignKey::class.java)?.tableClass == embeddedField.type &&
+                        it.name == refIdName
+            } ?: throw IllegalArgumentException("No @ForeignKey field found matching Embedded refId $refIdName")
+            embeddedField.isAccessible = true
+            refField.isAccessible = true
+        }
         for (field in fields) {
             field.isAccessible = true
+            val embedded: Embedded? = field.getAnnotation(Embedded::class.java)
+            val foreignKey: ForeignKey? = field.getAnnotation(ForeignKey::class.java)
             val ignore: Ignore? = field.getAnnotation(Ignore::class.java)
             val id: Id? = field.getAnnotation(Id::class.java)
             val column: Column? = field.getAnnotation(Column::class.java)
             val primaryKey: PrimaryKey? = field.getAnnotation(PrimaryKey::class.java)
             val convert: Convert? = field.getAnnotation(Convert::class.java)
+            if (embedded != null) continue
+            if (foreignKey != null) continue
             if (ignore != null || field.modifiers and Modifier.STATIC != 0) {
                 continue
             }
-            if (id != null) {
-                continue
-            }
+            if (id != null) continue
             if (primaryKey != null && primaryKey.value === AssignType.AUTO_INCREMENT) {
                 continue
             }
@@ -359,11 +372,69 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         return insertInternal(bean, database)
     }
 
+    private fun insertUncheckedCast(bean: Any): Long {
+        if (!beanClass.isInstance(bean)) {
+            throw IllegalArgumentException("bean must be instance of ${beanClass.name}")
+        }
+        @Suppress("UNCHECKED_CAST")
+        return insertReturnId(bean as T)
+    }
+
+    private fun insertReturnId(bean: T): Long {
+        val contentValues = getContentValues(bean)
+        val tableName = TableManager.getTableName(beanClass)
+        val rowId = database.insert(tableName, null, contentValues)
+        if (rowId > 0) {
+            val idField = beanClass.declaredFields.firstOrNull { it.getAnnotation(Id::class.java) != null }
+            idField?.let {
+                it.isAccessible = true
+                it.set(bean, rowId)
+            }
+        }
+        return rowId
+    }
+
+    private fun processRelations(bean: T) {
+        val fields = beanClass.declaredFields
+        for (field in fields) {
+            field.isAccessible = true
+            val embedded = field.getAnnotation(Embedded::class.java)
+            if (embedded != null) {
+                if (!OrmTable::class.java.isAssignableFrom(field.type)) {
+                    throw IllegalArgumentException("Field '${field.name}' annotated with @Embedded must be a subtype of OrmTable")
+                }
+                val subTableBean = field.get(bean) ?: continue
+                val refIdName = embedded.refId
+                val refIdField = fields.firstOrNull { it.name == refIdName }
+                    ?: throw IllegalArgumentException("Missing foreign key field '$refIdName' for @Embedded on '${field.name}'")
+
+                refIdField.isAccessible = true
+                val foreignKey = refIdField.getAnnotation(ForeignKey::class.java)
+                    ?: throw IllegalArgumentException("Foreign key field '$refIdName' must be annotated with @Ref")
+                if (foreignKey.tableClass != field.type) {
+                    throw IllegalArgumentException("Foreign key field @ForeignKey.tableClass does not " +
+                            "match the type of the property annotated with @Embedded, field '${field.name}'.")
+                }
+                if (!isAssignableFromLong(refIdField.type)) {
+                    throw IllegalArgumentException("@ForeignKey field '$refIdName' must be of type Long")
+                }
+
+                val subTableClass: Class<out OrmTable> = field.type as Class<out OrmTable>
+                val dao = DaoFactory.getDao(subTableClass, database)
+                val generatedId = dao.insertUncheckedCast(subTableBean)
+                if (generatedId <= 0) throw IllegalArgumentException("Insert sub table failed")
+                refIdField.set(bean, generatedId)
+            }
+        }
+    }
+
+
     /**
      * Insert a record.
      * 简体中文：插入一条数据。
      */
     private fun insertInternal(bean: T, db: SQLiteDatabase): Boolean {
+        processRelations(bean)
         val tableName: String = TableManager.getTableName(beanClass)
         val contentValues = getContentValues(bean)
         return db.insert(tableName, columnHack, contentValues) > 0

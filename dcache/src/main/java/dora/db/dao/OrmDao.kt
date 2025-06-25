@@ -166,12 +166,12 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         for (embeddedField in fields) {
             val embedded = embeddedField.getAnnotation(Embedded::class.java) ?: continue
             val refIdName = embedded.refId
-            val refField = fields.firstOrNull {
+            val foreignKeyField = fields.firstOrNull {
                 it.getAnnotation(ForeignKey::class.java)?.tableClass == embeddedField.type &&
                         it.name == refIdName
             } ?: throw IllegalArgumentException("No @ForeignKey field found matching Embedded refId $refIdName")
             embeddedField.isAccessible = true
-            refField.isAccessible = true
+            foreignKeyField.isAccessible = true
         }
         for (field in fields) {
             field.isAccessible = true
@@ -372,12 +372,12 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         return insertInternal(bean, database)
     }
 
-    private fun insertUncheckedCast(bean: Any): Long {
+    private fun insertOrUpdateUncheckedCast(bean: Any): Long {
         if (!beanClass.isInstance(bean)) {
             throw IllegalArgumentException("bean must be instance of ${beanClass.name}")
         }
         @Suppress("UNCHECKED_CAST")
-        return insertReturnId(bean as T)
+        return insertOrUpdateReturnId(bean as T)
     }
 
     private fun insertReturnId(bean: T): Long {
@@ -394,10 +394,26 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
         return rowId
     }
 
-    private fun processRelations(bean: T) {
+    private fun insertOrUpdateReturnId(bean: T): Long {
+        val idField = beanClass.declaredFields.firstOrNull { it.getAnnotation(Id::class.java) != null }
+            ?: throw IllegalArgumentException("Bean class must have a field annotated with @Id")
+
+        idField.isAccessible = true
+        val currentId = idField.get(bean) as? Long ?: 0L
+
+        return if (currentId <= 0L) {
+            insertReturnId(bean)
+        } else {
+            val updated = update(bean)
+            if (updated) currentId else -1L
+        }
+    }
+
+    private fun processRelationsInsertOrUpdate(bean: T) {
         val fields = beanClass.declaredFields
         for (field in fields) {
             field.isAccessible = true
+
             val embedded = field.getAnnotation(Embedded::class.java)
             if (embedded != null) {
                 if (!OrmTable::class.java.isAssignableFrom(field.type)) {
@@ -410,7 +426,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
 
                 refIdField.isAccessible = true
                 val foreignKey = refIdField.getAnnotation(ForeignKey::class.java)
-                    ?: throw IllegalArgumentException("Foreign key field '$refIdName' must be annotated with @Ref")
+                    ?: throw IllegalArgumentException("Foreign key field '$refIdName' must be annotated with @ForeignKey")
                 if (foreignKey.tableClass != field.type) {
                     throw IllegalArgumentException("Foreign key field @ForeignKey.tableClass does not " +
                             "match the type of the property annotated with @Embedded, field '${field.name}'.")
@@ -421,20 +437,57 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
 
                 val subTableClass: Class<out OrmTable> = field.type as Class<out OrmTable>
                 val dao = DaoFactory.getDao(subTableClass, database)
-                val generatedId = dao.insertUncheckedCast(subTableBean)
-                if (generatedId <= 0) throw IllegalArgumentException("Insert sub table failed")
+
+                val subIdField = subTableClass.declaredFields.firstOrNull {
+                    it.getAnnotation(Id::class.java) != null
+                } ?: throw IllegalArgumentException("Sub-table class ${subTableClass.simpleName}" +
+                        " must have a field annotated with @Id")
+                subIdField.isAccessible = true
+
+                val generatedId = dao.insertOrUpdateUncheckedCast(subTableBean)
+                if (generatedId <= 0) {
+                    throw IllegalArgumentException("Insert or update sub table failed for field '${field.name}'")
+                }
                 refIdField.set(bean, generatedId)
+                continue
+            }
+
+            val embeddedList = field.getAnnotation(EmbeddedList::class.java)
+            if (embeddedList != null) {
+                if (!List::class.java.isAssignableFrom(field.type) && !MutableList::class.java.isAssignableFrom(field.type)) {
+                    throw IllegalArgumentException("Field '${field.name}' annotated with @EmbeddedList must be of type List<*> or MutableList<*>")
+                }
+                val genericType = (field.genericType as? ParameterizedType)
+                    ?.actualTypeArguments?.firstOrNull() as? Class<*>
+                    ?: throw IllegalArgumentException("Field '${field.name}' must specify a generic type for List<*>")
+                if (!OrmTable::class.java.isAssignableFrom(genericType)) {
+                    throw IllegalArgumentException("Type parameter of List in '${field.name}' must be subtype of OrmTable")
+                }
+
+                val subTableClass = genericType as Class<out OrmTable>
+                val dao = DaoFactory.getDao(subTableClass, database)
+
+                val list = field.get(bean) as? List<*> ?: continue
+                for (item in list) {
+                    if (item == null) continue
+                    val itemClass = item.javaClass
+                    val idField = itemClass.declaredFields.firstOrNull {
+                        it.getAnnotation(Id::class.java) != null
+                    } ?: throw IllegalArgumentException("Sub-table class ${itemClass.simpleName}" +
+                            " must have a field annotated with @Id")
+                    idField.isAccessible = true
+                    dao.insertOrUpdateUncheckedCast(item)
+                }
             }
         }
     }
-
 
     /**
      * Insert a record.
      * 简体中文：插入一条数据。
      */
     private fun insertInternal(bean: T, db: SQLiteDatabase): Boolean {
-        processRelations(bean)
+        processRelationsInsertOrUpdate(bean)
         val tableName: String = TableManager.getTableName(beanClass)
         val contentValues = getContentValues(bean)
         return db.insert(tableName, columnHack, contentValues) > 0
@@ -649,6 +702,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * 简体中文：插入或更新数据。如果有，则更新，没有，则插入。
      */
     private fun insertOrUpdateInternal(bean: T): Boolean {
+        processRelationsInsertOrUpdate(bean)
         val field = bean.javaClass.getDeclaredField(getPrimaryKeyFieldName(bean))
         field.isAccessible = true
         val name = TableManager.getColumnName(field)
@@ -695,6 +749,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * 简体中文：查询该表中的所有数据。
      */
     private fun updateAllInternal(newBean: T, db: SQLiteDatabase): Boolean {
+        processRelationsInsertOrUpdate(newBean)
         val tableName: String = TableManager.getTableName(beanClass)
         val contentValues = getContentValues(newBean)
         return db.update(tableName, contentValues, null, null) > 0
@@ -705,6 +760,7 @@ class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
      * 简体中文：更新一条数据。
      */
     private fun updateInternal(builder: WhereBuilder, newBean: T, db: SQLiteDatabase): Boolean {
+        processRelationsInsertOrUpdate(newBean)
         val tableName: String = TableManager.getTableName(beanClass)
         val contentValues = getContentValues(newBean)
         return db.update(tableName, contentValues, builder.selection, builder.selectionArgs) > 0

@@ -409,14 +409,17 @@ class WhereBuilder {
         private const val PARENTHESES_RIGHT = ")"
         private const val SPACE = " "
 
+        @JvmStatic
         fun create(): WhereBuilder {
             return WhereBuilder()
         }
 
+        @JvmStatic
         fun create(whereClause: String, whereArgs: Array<String?>?): WhereBuilder {
             return WhereBuilder(whereClause, whereArgs)
         }
 
+        @JvmStatic
         fun create(condition: Condition): WhereBuilder {
             return WhereBuilder(condition)
         }

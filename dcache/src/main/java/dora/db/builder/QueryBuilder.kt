@@ -140,10 +140,12 @@ class QueryBuilder private constructor() {
         private const val COMMA = ","
         private const val SPACE = ""
 
+        @JvmStatic
         fun create(): QueryBuilder {
             return QueryBuilder()
         }
 
+        @JvmStatic
         fun create(condition: Condition): QueryBuilder {
             val query = create()
             query.whereBuilder = WhereBuilder.create(condition)

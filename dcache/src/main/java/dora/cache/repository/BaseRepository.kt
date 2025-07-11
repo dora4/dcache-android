@@ -260,7 +260,6 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
      * 简体中文：抓取非集合数据，返回给livedata，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过
      * [.getLiveData()]拿到。
      */
-    @JvmSynthetic
     override fun fetchData(description: String?, listener: OnLoadListener?): LiveData<M?> {
         if (description != null) {
             // 简体中文：不能让null覆盖了默认类名
@@ -300,7 +299,6 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
      * 简体中文：抓取集合数据，返回给livedata，以便于展示在UI上。抓取成功后会一直在livedata中，可以通过
      * [.getListLiveData()]拿到。
      */
-    @JvmSynthetic
     override fun fetchListData(description: String?, listener: OnLoadListener?): LiveData<MutableList<M>> {
         if (description != null) {
             // 简体中文：不能让null覆盖了默认类名

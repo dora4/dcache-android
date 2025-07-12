@@ -30,7 +30,7 @@ import java.util.concurrent.Callable
  * class, used to operate a table.
  * 简体中文：一个面向对象的数据库操作的封装类，基于一个OrmTable的实现类，用来操作一张表。
  */
-class OrmDao<T : OrmTable> internal @JvmOverloads constructor(
+class OrmDao<T : OrmTable> @JvmOverloads internal constructor(
     private val beanClass: Class<T>,
     db: SQLiteDatabase? = null
 ) : Dao<T> {

@@ -11,7 +11,7 @@ import dora.http.coroutine.DoraCoroutineContext
 import dora.http.exception.DoraHttpException
 import dora.http.retrofit.ApiService
 import dora.http.retrofit.RetrofitManager
-import dora.http.rx.RxTransformer
+import dora.http.rx.RxUtils
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
@@ -157,7 +157,7 @@ object DoraHttp {
      */
     suspend fun <M> rxApi(apiMethod: ()-> Observable<M>) = suspendCoroutine<M> {
         val data = apiMethod()
-        RxTransformer.doApiObserver(data, object : Observer<M> {
+        RxUtils.doApiObserver(data, object : Observer<M> {
             override fun onSubscribe(d: Disposable) {
             }
 
@@ -184,7 +184,7 @@ object DoraHttp {
         val service = DoraHttp[clazz]
         return suspendCoroutine<M?> {
             val data = service.apiMethod()
-            RxTransformer.doApiObserver(data, object : Observer<M> {
+            RxUtils.doApiObserver(data, object : Observer<M> {
                 override fun onSubscribe(d: Disposable) {
                 }
 
@@ -251,7 +251,7 @@ object DoraHttp {
      */
     suspend fun <M> rxResult(apiMethod: ()-> Observable<M>) = suspendCoroutine<M?> {
         val data = apiMethod()
-        RxTransformer.doApiObserver(data, object : Observer<M> {
+        RxUtils.doApiObserver(data, object : Observer<M> {
             override fun onSubscribe(d: Disposable) {
             }
 
@@ -278,7 +278,7 @@ object DoraHttp {
         return suspendCoroutine<M?> {
             val service = DoraHttp[clazz]
             val data = service.apiMethod()
-            RxTransformer.doApiObserver(data, object : Observer<M> {
+            RxUtils.doApiObserver(data, object : Observer<M> {
                 override fun onSubscribe(d: Disposable) {
                 }
 

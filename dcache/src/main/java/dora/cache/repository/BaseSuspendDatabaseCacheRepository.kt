@@ -20,7 +20,7 @@ import dora.db.builder.QueryBuilder
 import dora.db.builder.WhereBuilder
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
-import dora.http.rx.RxTransformer
+import dora.http.rx.RxUtils
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
@@ -323,7 +323,8 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
     }
 
     protected fun rxOnLoadFromNetwork(liveData: MutableLiveData<M?>, listener: OnLoadListener? = null) {
-        RxTransformer.doApiObserver(onLoadFromNetworkObservable(listener), object : Observer<M> {
+        val flowable = backPressure(onLoadFromNetworkObservable(listener))
+        RxUtils.doApiObserver(flowable.toObservable(), object : Observer<M> {
             override fun onSubscribe(d: Disposable) {
             }
 
@@ -341,7 +342,8 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
     }
 
     protected fun rxOnLoadFromNetworkForList(liveData: MutableLiveData<MutableList<M>>, listener: OnLoadListener? = null) {
-        RxTransformer.doApiObserver(onLoadFromNetworkObservableList(listener), object : Observer<MutableList<M>> {
+        val flowable = backPressureList(onLoadFromNetworkObservableList(listener))
+        RxUtils.doApiObserver(flowable.toObservable(), object : Observer<MutableList<M>> {
             override fun onSubscribe(d: Disposable) {
             }
 

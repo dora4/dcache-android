@@ -8,6 +8,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
+import dora.cache.IRequestParam
 import dora.cache.data.fetcher.IDataFetcher
 import dora.cache.data.fetcher.IListDataFetcher
 import dora.cache.data.fetcher.OnLoadListener
@@ -17,6 +18,8 @@ import dora.cache.holder.CacheHolder
 import dora.cache.factory.CacheHolderFactory
 import dora.http.DoraCallback
 import dora.http.DoraListCallback
+import io.reactivex.BackpressureStrategy
+import io.reactivex.Flowable
 import io.reactivex.Observable
 import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
@@ -87,6 +90,8 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
     protected val isClearDataOnNetworkError: Boolean
         protected get() = false
     protected val MClass: Class<M>
+
+    protected var lastRequestKey: Any? = null
 
     protected abstract fun createCacheHolderFactory() : F
 
@@ -473,5 +478,55 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
                 field.get(this)
             }
             .toTypedArray()
+    }
+
+    protected fun backPressure(observable: Observable<M>) : Flowable<M> {
+        val currentKey: Any = (this as? IRequestParam)?.comparisonKey()
+            ?: getRequestParams().joinToString("|") { it.toString() }
+        val repo = this.javaClass.getAnnotation(Repository::class.java)
+        return observable
+            .distinctUntilChanged { old, new ->
+                val oldKey = (old as? IRequestParam)?.comparisonKey() ?: old.toString()
+                val newKey = (new as? IRequestParam)?.comparisonKey() ?: new.toString()
+                oldKey == newKey
+            }
+            .toFlowable(BackpressureStrategy.BUFFER)
+            .let { fb ->
+                if (currentKey == lastRequestKey && repo?.dropLatestOnSameParams == true) {
+                    lastRequestKey = currentKey
+                    fb.onBackpressureDrop()
+                } else if (currentKey != lastRequestKey && repo?.dropPreviousOnDifferentParams == true) {
+                    lastRequestKey = currentKey
+                    fb.onBackpressureLatest()
+                } else {
+                    lastRequestKey = currentKey
+                    fb
+                }
+            }
+    }
+
+    protected fun backPressureList(observable: Observable<MutableList<M>>): Flowable<MutableList<M>> {
+        val currentKey: Any = (this as? IRequestParam)?.comparisonKey()
+            ?: getRequestParams().joinToString("|") { it.toString() }
+        val repo = this.javaClass.getAnnotation(ListRepository::class.java)
+        return observable
+            .distinctUntilChanged { old, new ->
+                val oldKey = (old as? IRequestParam)?.comparisonKey() ?: old.toString()
+                val newKey = (new as? IRequestParam)?.comparisonKey() ?: new.toString()
+                oldKey == newKey
+            }
+            .toFlowable(BackpressureStrategy.BUFFER)
+            .let { fb ->
+                if (currentKey == lastRequestKey && repo?.dropLatestOnSameParams == true) {
+                    lastRequestKey = currentKey
+                    fb.onBackpressureDrop()
+                } else if (currentKey != lastRequestKey && repo?.dropPreviousOnDifferentParams == true) {
+                    lastRequestKey = currentKey
+                    fb.onBackpressureLatest()
+                } else {
+                    lastRequestKey = currentKey
+                    fb
+                }
+            }
     }
 }

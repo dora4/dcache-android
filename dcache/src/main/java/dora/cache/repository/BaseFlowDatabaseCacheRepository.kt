@@ -307,6 +307,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
 
     protected fun rxOnLoadFromNetwork(flowData: MutableStateFlow<M?>, listener: OnLoadListener? = null) {
         val flowable = backPressure(onLoadFromNetworkObservable(listener))
+        requestQueue.add(flowable)
         RxUtils.doApiObserver(flowable.toObservable(), object : Observer<M> {
             override fun onSubscribe(d: Disposable) {
             }
@@ -326,6 +327,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
 
     protected fun rxOnLoadFromNetworkForList(flowData: MutableStateFlow<MutableList<M>>, listener: OnLoadListener? = null) {
         val flowable = backPressureList(onLoadFromNetworkObservableList(listener))
+        requestQueue.addList(flowable)
         RxUtils.doApiObserver(flowable.toObservable(), object : Observer<MutableList<M>> {
             override fun onSubscribe(d: Disposable) {
             }

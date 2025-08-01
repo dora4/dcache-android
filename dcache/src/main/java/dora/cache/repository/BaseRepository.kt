@@ -8,6 +8,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
+import dora.cache.FlowableChain
 import dora.cache.IRequestParam
 import dora.cache.data.fetcher.IDataFetcher
 import dora.cache.data.fetcher.IListDataFetcher
@@ -92,6 +93,8 @@ abstract class BaseRepository<M, F : CacheHolderFactory<M>>(val context: Context
     protected val MClass: Class<M>
 
     protected var lastRequestKey: Any? = null
+
+    protected var requestQueue: FlowableChain<M> = FlowableChain<M>()
 
     protected abstract fun createCacheHolderFactory() : F
 

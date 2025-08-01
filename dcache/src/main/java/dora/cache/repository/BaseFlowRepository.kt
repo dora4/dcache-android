@@ -6,6 +6,7 @@ import android.net.NetworkInfo
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dora.cache.FlowableChain
 import dora.cache.IRequestParam
 import dora.cache.data.fetcher.IDataFetcher
 import dora.cache.data.fetcher.IFlowDataFetcher
@@ -97,6 +98,8 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
     protected val MClass: Class<M>
 
     protected var lastRequestKey: Any? = null
+
+    protected var requestQueue: FlowableChain<M> = FlowableChain<M>()
 
     protected abstract fun createCacheHolderFactory() : F
 

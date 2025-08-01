@@ -188,6 +188,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
 
     private fun rxOnLoadFromNetwork(liveData: MutableLiveData<M?>, listener: OnLoadListener? = null) {
         val flowable = backPressure(onLoadFromNetworkObservable(listener))
+        requestQueue.add(flowable)
         RxUtils.doApiObserver(flowable.toObservable(), object : Observer<M> {
             override fun onSubscribe(d: Disposable) {
             }
@@ -207,6 +208,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
 
     private fun rxOnLoadFromNetworkForList(liveData: MutableLiveData<MutableList<M>>, listener: OnLoadListener? = null) {
         val flowable = backPressureList(onLoadFromNetworkObservableList(listener))
+        requestQueue.addList(flowable)
         RxUtils.doApiObserver(flowable.toObservable(), object : Observer<MutableList<M>> {
             override fun onSubscribe(d: Disposable) {
             }

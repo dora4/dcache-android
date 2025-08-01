@@ -21,6 +21,7 @@ import io.reactivex.Observable
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
 
 /**
@@ -463,4 +464,22 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
      * 简体中文：在拦截数据之前会对数据进行初步的过滤，以降低编辑修改数据的复杂度，仅用于集合模式。
      */
     protected open fun onFilterData(type: DataSource.Type, models: MutableList<M>) : MutableList<M>{ return models }
+
+    /**
+     * Retrieves all non-static member property values of this instance and returns them as an array.
+     * 简体中文：检索当前实例的所有非静态成员属性值，并以数组形式返回。
+     *
+     * @since 3.5.0
+     */
+    protected open fun getRequestParams(): Array<Any> {
+        return this.javaClass.declaredFields
+            .filter { field ->
+                !Modifier.isStatic(field.modifiers)
+            }
+            .mapNotNull { field ->
+                field.isAccessible = true
+                field.get(this)
+            }
+            .toTypedArray()
+    }
 }

@@ -13,6 +13,8 @@ interface IRequestParam {
     /**
      * Returns a key for comparison. Must be deterministic and unique.
      * 简体中文：返回一个用于比较的键，必须是确定且唯一的。
+     *
+     * @since 3.5.0
      */
     fun comparisonKey(): Any
 }

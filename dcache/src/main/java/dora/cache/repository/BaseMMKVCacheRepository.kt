@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import dora.cache.data.fetcher.DataFetcher
 import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.fetcher.OnLoadListener
@@ -20,6 +21,9 @@ import dora.http.rx.RxUtils
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, MMKVCacheHolderFactory<M>>(context) {
 
@@ -241,47 +245,65 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
 
     protected open fun parseModels(models: MutableList<M>?,
                             liveData: MutableLiveData<MutableList<M>>) {
-        models?.let {
-            if (isLogPrint) {
-                for (model in it) {
-                    Log.d(TAG, "【$description】${model.toString()}")
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                models?.let {
+                    if (isLogPrint) {
+                        for (model in it) {
+                            Log.d(TAG, "【$description】${model.toString()}")
+                        }
+                    }
+                    val data = onFilterData(DataSource.Type.NETWORK, it)
+                    onInterceptData(DataSource.Type.NETWORK, data)
+                    (listCacheHolder as DoraListMMKVCacheHolder).removeOldCache(getCacheKey())
+                    (listCacheHolder as DoraListMMKVCacheHolder).addNewCache(getCacheKey(), data)
+                    withContext(Dispatchers.Main) {
+                        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
+                    }
+                    liveData.postValue(data)
+                    if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), data)
                 }
             }
-            val data = onFilterData(DataSource.Type.NETWORK, it)
-            onInterceptData(DataSource.Type.NETWORK, data)
-            (listCacheHolder as DoraListMMKVCacheHolder).removeOldCache(getCacheKey())
-            (listCacheHolder as DoraListMMKVCacheHolder).addNewCache(getCacheKey(), data)
-            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
-            liveData.postValue(data)
-            if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), data)
         }
     }
 
     protected open fun onParseModelFailure(msg: String) {
-        if (isLogPrint) {
-            if (description == null || description == "") {
-                description = javaClass.simpleName
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                if (isLogPrint) {
+                    if (description == null || description == "") {
+                        description = javaClass.simpleName
+                    }
+                    Log.d(TAG, "【${description}】$msg")
+                }
+                withContext(Dispatchers.Main) {
+                    listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
+                }
+                if (isClearDataOnNetworkError) {
+                    clearData()
+                    (cacheHolder as DoraMMKVCacheHolder).removeOldCache(getCacheKey())
+                }
             }
-            Log.d(TAG, "【${description}】$msg")
-        }
-        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
-        if (isClearDataOnNetworkError) {
-            clearData()
-            (cacheHolder as DoraMMKVCacheHolder).removeOldCache(getCacheKey())
         }
     }
 
     protected open fun onParseModelsFailure(msg: String) {
-        if (isLogPrint) {
-            if (description == null || description == "") {
-                description = javaClass.simpleName
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                if (isLogPrint) {
+                    if (description == null || description == "") {
+                        description = javaClass.simpleName
+                    }
+                    Log.d(TAG, "【${description}】$msg")
+                }
+                withContext(Dispatchers.Main) {
+                    listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
+                }
+                if (isClearDataOnNetworkError) {
+                    clearListData()
+                    (listCacheHolder as DoraListMMKVCacheHolder).readCache(getCacheKey())
+                }
             }
-            Log.d(TAG, "【${description}】$msg")
-        }
-        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
-        if (isClearDataOnNetworkError) {
-            clearListData()
-            (listCacheHolder as DoraListMMKVCacheHolder).readCache(getCacheKey())
         }
     }
 

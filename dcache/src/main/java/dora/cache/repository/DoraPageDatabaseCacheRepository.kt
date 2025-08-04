@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import dora.cache.data.fetcher.OnLoadListener
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
@@ -20,6 +21,9 @@ import dora.cache.factory.DoraDatabaseCacheHolderFactory
 import dora.cache.holder.ListDatabaseCacheHolder
 import dora.db.builder.WhereBuilder
 import io.reactivex.Observable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.IllegalArgumentException
 
 @ListRepository
@@ -242,37 +246,48 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
 
     override fun parseModels(models: MutableList<T>?,
                                    liveData: MutableLiveData<MutableList<T>>) {
-        models?.let {
-            if (isLogPrint) {
-                for (model in it) {
-                    Log.d(TAG, "【$description】$model")
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                models?.let {
+                    if (isLogPrint) {
+                        for (model in it) {
+                            Log.d(TAG, "【$description】$model")
+                        }
+                    }
+                    val data = onFilterData(DataSource.Type.NETWORK, it)
+                    onInterceptData(DataSource.Type.NETWORK, data)
+                    if (!checkParamsValid()) throw IllegalArgumentException(
+                        "Please check parameters, checkParamsValid returned false."
+                    )
+                    // Append pagination conditions.
+                    // 简体中文：追加分页的条件
+                    val whereBuilder =
+                        WhereBuilder.create(query()).andWhereEqualTo(getPaginationKey(), pageNo)
+                    val condition = QueryBuilder.create(query()).where(whereBuilder).toCondition()
+                    if (!disallowForceUpdate()) {
+                        (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(condition)
+                    }
+                    (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(data)
+                    withContext(Dispatchers.Main) {
+                        if (data.size > 0) {
+                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
+                        } else {
+                            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
+                        }
+                    }
+                    if (disallowForceUpdate()) {
+                        val oldValue = liveData.value
+                        oldValue?.addAll(data)
+                        liveData.value = oldValue
+                        if (isNotify) IListDataPublisher.DEFAULT.send(
+                            getModelType(),
+                            oldValue ?: arrayListOf()
+                        )
+                    } else {
+                        liveData.postValue(data)
+                        if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), data)
+                    }
                 }
-            }
-            val data = onFilterData(DataSource.Type.NETWORK, it)
-            onInterceptData(DataSource.Type.NETWORK, data)
-            if (!checkParamsValid()) throw IllegalArgumentException(
-                "Please check parameters, checkParamsValid returned false.")
-            // Append pagination conditions.
-            // 简体中文：追加分页的条件
-            val whereBuilder = WhereBuilder.create(query()).andWhereEqualTo(getPaginationKey(), pageNo)
-            val condition = QueryBuilder.create(query()).where(whereBuilder).toCondition()
-            if (!disallowForceUpdate()) {
-                (listCacheHolder as ListDatabaseCacheHolder<T>).removeOldCache(condition)
-            }
-            (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(data)
-            if (data.size > 0) {
-                listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
-            } else {
-                listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
-            }
-            if (disallowForceUpdate()) {
-                val oldValue = liveData.value
-                oldValue?.addAll(data)
-                liveData.value = oldValue
-                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), oldValue ?: arrayListOf())
-            } else {
-                liveData.postValue(data)
-                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), data)
             }
         }
     }

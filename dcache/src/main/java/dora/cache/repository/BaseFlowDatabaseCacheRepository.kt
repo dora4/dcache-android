@@ -2,6 +2,7 @@ package dora.cache.repository
 
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.viewModelScope
 import dora.cache.data.fetcher.FlowDataFetcher
 import dora.cache.data.fetcher.ListFlowDataFetcher
 import dora.cache.data.fetcher.OnLoadListener
@@ -21,8 +22,11 @@ import dora.http.rx.RxUtils
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.IllegalArgumentException
 
 /**
@@ -371,29 +375,35 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
 
     protected open fun parseModels(models: MutableList<M>?,
                                    flowData: MutableStateFlow<MutableList<M>>) {
-        models?.let {
-            if (isLogPrint) {
-                for (model in it) {
-                    Log.d(TAG, "【$description】${model.toString()}")
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                models?.let {
+                    if (isLogPrint) {
+                        for (model in it) {
+                            Log.d(TAG, "【$description】${model.toString()}")
+                        }
+                    }
+                    val data = onFilterData(DataSource.Type.NETWORK, it)
+                    onInterceptData(DataSource.Type.NETWORK, data)
+                    if (!checkParamsValid()) throw IllegalArgumentException(
+                        "Please check parameters, checkParamsValid returned false.")
+                    if (!disallowForceUpdate()) {
+                        (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(query())
+                    }
+                    (listCacheHolder as ListDatabaseCacheHolder<M>).addNewCache(data)
+                    withContext(Dispatchers.Main) {
+                        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
+                    }
+                    if (disallowForceUpdate()) {
+                        val oldValue = flowData.value
+                        oldValue.addAll(data)
+                        flowData.value = oldValue
+                        if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), oldValue)
+                    } else {
+                        flowData.value = data
+                        if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), data)
+                    }
                 }
-            }
-            val data = onFilterData(DataSource.Type.NETWORK, it)
-            onInterceptData(DataSource.Type.NETWORK, data)
-            if (!checkParamsValid()) throw IllegalArgumentException(
-                "Please check parameters, checkParamsValid returned false.")
-            if (!disallowForceUpdate()) {
-                (listCacheHolder as ListDatabaseCacheHolder<M>).removeOldCache(query())
-            }
-            (listCacheHolder as ListDatabaseCacheHolder<M>).addNewCache(data)
-            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
-            if (disallowForceUpdate()) {
-                val oldValue = flowData.value
-                oldValue.addAll(data)
-                flowData.value = oldValue
-                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), oldValue)
-            } else {
-                flowData.value = data
-                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), data)
             }
         }
     }

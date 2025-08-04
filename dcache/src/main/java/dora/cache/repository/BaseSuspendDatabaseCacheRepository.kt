@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.viewModelFactory
 import dora.cache.data.fetcher.DataFetcher
 import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.fetcher.OnLoadListener
@@ -24,7 +25,9 @@ import dora.http.rx.RxUtils
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Repository using the built-in SQLite database for caching.
@@ -371,86 +374,106 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
     }
 
     protected open fun parseModel(model: M, liveData: MutableLiveData<M?>) {
-        model.let {
-            if (isLogPrint) {
-                Log.d(TAG, "【$description】$it")
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                model.let {
+                    if (isLogPrint) {
+                        Log.d(TAG, "【$description】$it")
+                    }
+                    onInterceptData(DataSource.Type.NETWORK, it)
+                    if (!checkParamsValid()) throw IllegalArgumentException(
+                        "Please check parameters, checkParamsValid returned false.")
+                    (cacheHolder as SuspendDatabaseCacheHolder<M>).removeOldCache(query())
+                    (cacheHolder as SuspendDatabaseCacheHolder<M>).addNewCache(it)
+                    withContext(Dispatchers.Main) {
+                        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
+                    }
+                    liveData.postValue(it)
+                    if (isNotify) IDataPublisher.DEFAULT.send(getModelType(), it)
+                }
             }
-            onInterceptData(DataSource.Type.NETWORK, it)
-            if (!checkParamsValid()) throw IllegalArgumentException(
-                "Please check parameters, checkParamsValid returned false.")
-            viewModelScope.launch {
-                (cacheHolder as SuspendDatabaseCacheHolder<M>).removeOldCache(query())
-                (cacheHolder as SuspendDatabaseCacheHolder<M>).addNewCache(it)
-            }
-            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
-            liveData.postValue(it)
-            if (isNotify) IDataPublisher.DEFAULT.send(getModelType(), it)
         }
     }
 
     protected open fun parseModels(models: MutableList<M>?,
                             liveData: MutableLiveData<MutableList<M>>) {
-        models?.let {
-            if (isLogPrint) {
-                for (model in it) {
-                    Log.d(TAG, "【$description】$model")
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                models?.let {
+                    if (isLogPrint) {
+                        for (model in it) {
+                            Log.d(TAG, "【$description】$model")
+                        }
+                    }
+                    val data = onFilterData(DataSource.Type.NETWORK, it)
+                    onInterceptData(DataSource.Type.NETWORK, data)
+                    if (!checkParamsValid()) throw IllegalArgumentException(
+                        "Please check parameters, checkParamsValid returned false."
+                    )
+                    if (!disallowForceUpdate()) {
+                        (listCacheHolder as SuspendListDatabaseCacheHolder<M>).removeOldCache(query())
+                    }
+                    (listCacheHolder as SuspendListDatabaseCacheHolder<M>).addNewCache(data)
+                    withContext(Dispatchers.Main) {
+                        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
+                    }
+                    if (disallowForceUpdate()) {
+                        val oldValue = liveData.value
+                        oldValue?.addAll(data)
+                        liveData.value = oldValue
+                        if (isNotify) IListDataPublisher.DEFAULT.send(
+                            getModelType(),
+                            oldValue ?: arrayListOf()
+                        )
+                    } else {
+                        liveData.postValue(data)
+                        if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), data)
+                    }
                 }
-            }
-            val data = onFilterData(DataSource.Type.NETWORK, it)
-            onInterceptData(DataSource.Type.NETWORK, data)
-            if (!checkParamsValid()) throw IllegalArgumentException(
-                "Please check parameters, checkParamsValid returned false.")
-            viewModelScope.launch {
-                if (!disallowForceUpdate()) {
-                    (listCacheHolder as SuspendListDatabaseCacheHolder<M>).removeOldCache(query())
-                }
-                (listCacheHolder as SuspendListDatabaseCacheHolder<M>).addNewCache(data)
-            }
-            listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
-            if (disallowForceUpdate()) {
-                val oldValue = liveData.value
-                oldValue?.addAll(data)
-                liveData.value = oldValue
-                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), oldValue ?: arrayListOf())
-            } else {
-                liveData.postValue(data)
-                if (isNotify) IListDataPublisher.DEFAULT.send(getModelType(), data)
             }
         }
     }
 
     protected open fun onParseModelFailure(msg: String) {
-        if (isLogPrint) {
-            if (description == null || description == "") {
-                description = javaClass.simpleName
-            }
-            Log.d(TAG, "【${description}】$msg")
-        }
-        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
-        if (isClearDataOnNetworkError) {
-            if (!checkParamsValid()) throw IllegalArgumentException(
-                "Please check parameters, checkParamsValid returned false.")
-            clearData()
-            viewModelScope.launch {
-                (cacheHolder as SuspendDatabaseCacheHolder<M>).removeOldCache(query())
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                if (isLogPrint) {
+                    if (description == null || description == "") {
+                        description = javaClass.simpleName
+                    }
+                    Log.d(TAG, "【${description}】$msg")
+                }
+                withContext(Dispatchers.Main) {
+                    listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
+                }
+                if (isClearDataOnNetworkError) {
+                    if (!checkParamsValid()) throw IllegalArgumentException(
+                        "Please check parameters, checkParamsValid returned false.")
+                    clearData()
+                    (cacheHolder as SuspendDatabaseCacheHolder<M>).removeOldCache(query())
+                }
             }
         }
     }
 
     protected open fun onParseModelsFailure(msg: String) {
-        if (isLogPrint) {
-            if (description == null || description == "") {
-                description = javaClass.simpleName
-            }
-            Log.d(TAG, "【${description}】$msg")
-        }
-        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
-        if (isClearDataOnNetworkError) {
-            if (!checkParamsValid()) throw IllegalArgumentException(
-                "Please check parameters, checkParamsValid returned false.")
-            clearListData()
-            viewModelScope.launch {
-                (listCacheHolder as SuspendListDatabaseCacheHolder<M>).removeOldCache(query())
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                if (isLogPrint) {
+                    if (description == null || description == "") {
+                        description = javaClass.simpleName
+                    }
+                    Log.d(TAG, "【${description}】$msg")
+                }
+                withContext(Dispatchers.Main) {
+                    listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
+                }
+                if (isClearDataOnNetworkError) {
+                    if (!checkParamsValid()) throw IllegalArgumentException(
+                        "Please check parameters, checkParamsValid returned false.")
+                    clearListData()
+                    (listCacheHolder as SuspendListDatabaseCacheHolder<M>).removeOldCache(query())
+                }
             }
         }
     }

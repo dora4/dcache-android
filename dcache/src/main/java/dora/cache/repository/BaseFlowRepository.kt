@@ -97,6 +97,7 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
         protected get() = false
     protected val MClass: Class<M>
 
+    @Volatile
     protected var lastRequestKey: Any? = null
 
     protected var requestQueue: FlowableChain<M> = FlowableChain<M>()
@@ -495,49 +496,45 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
         val currentKey: Any = (this as? IRequestParam)?.comparisonKey()
             ?: getRequestParams().joinToString("|") { it.toString() }
         val repo = this.javaClass.getAnnotation(Repository::class.java)
+        val strategy = synchronized(this) {
+            val dropLatest = currentKey == lastRequestKey && repo?.dropLatestOnSameParams == true
+            val dropPrevious = currentKey != lastRequestKey && repo?.dropPreviousOnDifferentParams == true
+            lastRequestKey = currentKey
+            when {
+                dropLatest -> BackpressureStrategy.DROP
+                dropPrevious -> BackpressureStrategy.LATEST
+                else -> BackpressureStrategy.BUFFER
+            }
+        }
         return observable
             .distinctUntilChanged { old, new ->
                 val oldKey = (old as? IRequestParam)?.comparisonKey() ?: old.toString()
                 val newKey = (new as? IRequestParam)?.comparisonKey() ?: new.toString()
                 oldKey == newKey
             }
-            .toFlowable(BackpressureStrategy.BUFFER)
-            .let { fb ->
-                if (currentKey == lastRequestKey && repo?.dropLatestOnSameParams == true) {
-                    lastRequestKey = currentKey
-                    fb.onBackpressureDrop()
-                } else if (currentKey != lastRequestKey && repo?.dropPreviousOnDifferentParams == true) {
-                    lastRequestKey = currentKey
-                    fb.onBackpressureLatest()
-                } else {
-                    lastRequestKey = currentKey
-                    fb
-                }
-            }
+            .toFlowable(strategy)
     }
 
     protected fun backPressureList(observable: Observable<MutableList<M>>): Flowable<MutableList<M>> {
         val currentKey: Any = (this as? IRequestParam)?.comparisonKey()
             ?: getRequestParams().joinToString("|") { it.toString() }
         val repo = this.javaClass.getAnnotation(ListRepository::class.java)
+        val strategy = synchronized(this) {
+            val dropLatest = currentKey == lastRequestKey && repo?.dropLatestOnSameParams == true
+            val dropPrevious = currentKey != lastRequestKey && repo?.dropPreviousOnDifferentParams == true
+            lastRequestKey = currentKey
+            when {
+                dropLatest -> BackpressureStrategy.DROP
+                dropPrevious -> BackpressureStrategy.LATEST
+                else -> BackpressureStrategy.BUFFER
+            }
+        }
         return observable
             .distinctUntilChanged { old, new ->
                 val oldKey = (old as? IRequestParam)?.comparisonKey() ?: old.toString()
                 val newKey = (new as? IRequestParam)?.comparisonKey() ?: new.toString()
                 oldKey == newKey
             }
-            .toFlowable(BackpressureStrategy.BUFFER)
-            .let { fb ->
-                if (currentKey == lastRequestKey && repo?.dropLatestOnSameParams == true) {
-                    lastRequestKey = currentKey
-                    fb.onBackpressureDrop()
-                } else if (currentKey != lastRequestKey && repo?.dropPreviousOnDifferentParams == true) {
-                    lastRequestKey = currentKey
-                    fb.onBackpressureLatest()
-                } else {
-                    lastRequestKey = currentKey
-                    fb
-                }
-            }
+            .toFlowable(strategy)
     }
-}
+    }

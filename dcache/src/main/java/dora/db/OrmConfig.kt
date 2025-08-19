@@ -35,6 +35,9 @@ class OrmConfig private constructor(builder: Builder) {
         }
 
         fun build(): OrmConfig {
+            if (!::databaseName.isInitialized) {
+                throw IllegalStateException("Database name must be initialized")
+            }
             return OrmConfig(this)
         }
     }

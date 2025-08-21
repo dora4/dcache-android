@@ -23,6 +23,8 @@ import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.Observable
 import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.lang.reflect.Modifier
@@ -70,6 +72,18 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
      * 简体中文：集合数据缓存接口。
      */
     protected lateinit var listCacheHolder: CacheHolder<MutableList<M>>
+
+    /**
+     * Internal event flow for emitting event codes.
+     * 简体中文：内部事件流，用于发射事件代码。
+     */
+    private var _eventFlow = MutableSharedFlow<Int>()
+
+    /**
+     * Public event flow for observing emitted events.
+     * 简体中文：公共事件流，用于观察发射的事件。
+     */
+    val eventFlow: SharedFlow<Int> = _eventFlow
 
     /**
      * True represents collection data, while false represents non-collection data.

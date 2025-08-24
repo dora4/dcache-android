@@ -162,6 +162,13 @@ class WhereBuilder {
         return this
     }
 
+    private fun convertArg(value: Any): String {
+        return when (value) {
+            is Boolean -> if (value) "1" else "0"
+            else -> value.toString()
+        }
+    }
+
     /**
      * Convert argument values to string for SQL conditions.
      * 简体中文：将参数值转换为字符串，用于 SQL 条件。

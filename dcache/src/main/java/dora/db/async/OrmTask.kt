@@ -20,6 +20,7 @@ open class OrmTask<T : OrmTable> internal constructor(
      */
     enum class Type {
         Insert,
+        InsertReturnId,
         InsertList,
         InsertOrReplace,
         WhereInsertOrReplace,

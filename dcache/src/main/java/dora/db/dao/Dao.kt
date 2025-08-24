@@ -24,6 +24,18 @@ interface Dao<T : OrmTable> {
     fun insertAsync(bean: T, listener: OrmTaskListener<T>? = null)
 
     /**
+     * Insert a record.
+     * 简体中文：插入一条数据。
+     */
+    fun insertReturnId(bean: T): Long
+
+    /**
+     * Insert a record.
+     * 简体中文：插入一条数据。
+     */
+    fun insertReturnIdAsync(bean: T, listener: OrmTaskListener<T>? = null)
+
+    /**
      * Insert multiple records.
      * 简体中文：插入多条数据。
      */
@@ -96,6 +108,18 @@ interface Dao<T : OrmTable> {
      * 简体中文：插入或更新数据。如果有，则更新，没有，则插入。
      */
     fun insertOrUpdateAsync(bean: T, listener: OrmTaskListener<T>? = null)
+
+    /**
+     * Insert or update data. If it exists, update it; if not, insert it.
+     * 简体中文：插入或更新数据。如果有，则更新，没有，则插入。
+     */
+    fun insertOrUpdateReturnId(bean: T): Long
+
+    /**
+     * Insert or update data. If it exists, update it; if not, insert it.
+     * 简体中文：插入或更新数据。如果有，则更新，没有，则插入。
+     */
+    fun insertOrUpdateReturnIdAsync(bean: T, listener: OrmTaskListener<T>? = null)
 
     /**
      * Update all data that meets the conditions to [newBean].

@@ -380,7 +380,7 @@ class OrmDao<T : OrmTable> @JvmOverloads internal constructor(
         return insertOrUpdateReturnId(bean as T)
     }
 
-    private fun insertReturnId(bean: T): Long {
+    override fun insertReturnId(bean: T): Long {
         val contentValues = getContentValues(bean)
         val tableName = TableManager.getTableName(beanClass)
         val rowId = database.insert(tableName, null, contentValues)
@@ -394,7 +394,7 @@ class OrmDao<T : OrmTable> @JvmOverloads internal constructor(
         return rowId
     }
 
-    private fun insertOrUpdateReturnId(bean: T): Long {
+    override fun insertOrUpdateReturnId(bean: T): Long {
         val idField = beanClass.declaredFields.firstOrNull { it.getAnnotation(Id::class.java) != null }
             ?: throw IllegalArgumentException("Bean class must have a field annotated with @Id")
 
@@ -536,6 +536,12 @@ class OrmDao<T : OrmTable> @JvmOverloads internal constructor(
             OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 
+    override fun insertReturnIdAsync(bean: T, listener: OrmTaskListener<T>?) {
+        executor.listener = listener
+        executor.enqueue(OrmTask(OrmTask.Type.InsertReturnId, this, bean,
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
+    }
+
     /**
      * Delete data based on conditions.
      * 简体中文：按条件删除数据。
@@ -639,6 +645,14 @@ class OrmDao<T : OrmTable> @JvmOverloads internal constructor(
             Callable() {
                 insertOrUpdate(builder, newBean)
                        },
+            OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
+    }
+
+    override fun insertOrUpdateReturnIdAsync(bean: T, listener: OrmTaskListener<T>?) {executor.listener = listener
+        executor.enqueue(OrmTask(OrmTask.Type.WhereInsertOrReplace, this,
+            Callable() {
+                insertOrUpdateReturnId(bean)
+            },
             OrmTask.FLAG_TRACK_CREATOR_STACKTRACE))
     }
 

@@ -162,12 +162,19 @@ class WhereBuilder {
         return this
     }
 
+    private fun convertArg(value: Any): String {
+        return when (value) {
+            is Boolean -> if (value) "1" else "0"
+            else -> value.toString()
+        }
+    }
+
     /**
      * Add SQL statement fragments, such as `a = 0`.
      * 简体中文：添加sql语句片段，如a = 0。
      */
     fun addWhereEqualTo(column: String, value: Any): WhereBuilder {
-        return append(null, column + EQUAL_HOLDER, arrayOf(value.toString()))
+        return append(null, column + EQUAL_HOLDER, arrayOf(convertArg(value)))
     }
 
     /**
@@ -175,7 +182,7 @@ class WhereBuilder {
      * 简体中文：添加sql语句片段，如a != 0。
      */
     fun addWhereNotEqualTo(column: String, value: Any): WhereBuilder {
-        return append(null, column + NOT_EQUAL_HOLDER, arrayOf(value.toString()))
+        return append(null, column + NOT_EQUAL_HOLDER, arrayOf(convertArg(value)))
     }
 
     /**
@@ -225,7 +232,7 @@ class WhereBuilder {
      * 简体中文：添加sql语句片段，如and a = 0。
      */
     fun andWhereEqualTo(column: String, value: Any): WhereBuilder {
-        return append(if (selection == "") null else AND, column + EQUAL_HOLDER, arrayOf(value.toString()))
+        return append(if (selection == "") null else AND, column + EQUAL_HOLDER, arrayOf(convertArg(value)))
     }
 
     /**
@@ -233,7 +240,7 @@ class WhereBuilder {
      * 简体中文：添加sql语句片段，如and a != 0。
      */
     fun andWhereNotEqualTo(column: String, value: Any): WhereBuilder {
-        return append(if (selection == "") null else AND, column + NOT_EQUAL_HOLDER, arrayOf(value.toString()))
+        return append(if (selection == "") null else AND, column + NOT_EQUAL_HOLDER, arrayOf(convertArg(value)))
     }
 
     /**
@@ -281,7 +288,7 @@ class WhereBuilder {
      * 简体中文：添加sql语句片段，如or a = 0。
      */
     fun orWhereEqualTo(column: String, value: Any): WhereBuilder {
-        return append(if (selection == "") null else OR, column + EQUAL_HOLDER, arrayOf(value.toString()))
+        return append(if (selection == "") null else OR, column + EQUAL_HOLDER, arrayOf(convertArg(value)))
     }
 
     /**
@@ -289,7 +296,7 @@ class WhereBuilder {
      * 简体中文：添加sql语句片段，如or a != 0。
      */
     fun orWhereNotEqualTo(column: String, value: Any): WhereBuilder {
-        return append(if (selection == "") null else OR, column + NOT_EQUAL_HOLDER, arrayOf(value.toString()))
+        return append(if (selection == "") null else OR, column + NOT_EQUAL_HOLDER, arrayOf(convertArg(value)))
     }
 
     /**

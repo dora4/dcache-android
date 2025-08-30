@@ -1553,7 +1553,7 @@ class OrmDao<T : OrmTable> @JvmOverloads internal constructor(
      *
      * @see dora.db.Transaction
      */
-    fun runInTransaction(block:(OrmDao<T>) -> T) {
+    fun runInTransaction(block: (dao : OrmDao<T>) -> Unit) {
         try {
             // Begin the transaction.
             // 简体中文：开始事务

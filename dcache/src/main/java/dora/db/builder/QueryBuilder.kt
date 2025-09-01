@@ -53,9 +53,36 @@ class QueryBuilder private constructor() {
     }
 
     /**
-     * Specify the ORDER BY clause.
-     * 简体中文：指定order by子句。
+     * Convert fields with “-” and “+” into SQL statements.
+     * 简体中文：将带 “-” 和 “+” 的字段转换为 SQL 语句。
+     * @since 3.5.6
      */
+    private fun parseOrderBy(order: String): String {
+        if (order.isEmpty()) throw IllegalArgumentException("Order string cannot be empty")
+        val column = order.substring(1) // 去掉前缀
+        val direction = when {
+            order.startsWith("+") -> "ASC"
+            order.startsWith("-") -> "DESC"
+            else -> throw IllegalArgumentException("Invalid order prefix: $order")
+        }
+        return "$column $direction"
+    }
+
+    /**
+     * Specify the ORDER BY clause, e.g., -timestamp, +priority.
+     * 简体中文：指定 order by 子句，例如 -timestamp、+priority。
+     */
+    fun orderByNew(order: String): QueryBuilder {
+        return orderBy(parseOrderBy(order))
+    }
+
+    /**
+     * Specifying the ORDER BY clause will be removed in version 3.6.
+     * 简体中文：指定 order by 子句，将会在 3.6 版本移除。
+     */
+    @Deprecated(message = "Use orderByNew() instead.",
+        replaceWith = ReplaceWith("orderBy"),
+        level = DeprecationLevel.WARNING)
     fun orderBy(order: String): QueryBuilder {
         this.order = ORDER_BY + order
         return this

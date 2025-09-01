@@ -51,7 +51,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.github.dora4"
                 artifactId = "dcache-android"
-                version = "3.5.5"
+                version = "3.5.6"
             }
         }
     }

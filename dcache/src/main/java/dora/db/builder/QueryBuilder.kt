@@ -81,7 +81,7 @@ class QueryBuilder private constructor() {
      * 简体中文：指定 order by 子句，将会在 3.6 版本移除。
      */
     @Deprecated(message = "Use orderByNew() instead.",
-        replaceWith = ReplaceWith("orderBy"),
+        replaceWith = ReplaceWith("orderByNew"),
         level = DeprecationLevel.WARNING)
     fun orderBy(order: String): QueryBuilder {
         this.order = ORDER_BY + order

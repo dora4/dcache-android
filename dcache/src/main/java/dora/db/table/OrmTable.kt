@@ -13,12 +13,14 @@ interface OrmTable {
      * upgraded.Instead,it will expand directly on the previous table.
      * 简体中文：如果为 true，它将先删除表，然后在表升级时重新创建该表。相反，它将直接在原有表的基础上进行扩展。
      */
+    @Ignore
     val isUpgradeRecreated: Boolean
 
     /**
      * Use it to upgrade the ORM table data when [isUpgradeRecreated] is false.
      * 简体中文：在[isUpgradeRecreated]为false时使用它来升级ORM表数据。
      */
+    @Ignore
     val migrations: Array<OrmMigration>?
 
     companion object {

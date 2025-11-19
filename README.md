@@ -15,4 +15,4 @@ Dora Chat (https://dorachat.com)
 
 Dora Music ([Dora Music](https://github.com/dora4/DoraMusic))
 
-Crypto Tools ([https://dorachat.com](https://www.pgyer.com/cryptotools))
+Crypto Tools ([Crypto Tools](https://www.pgyer.com/cryptotools))

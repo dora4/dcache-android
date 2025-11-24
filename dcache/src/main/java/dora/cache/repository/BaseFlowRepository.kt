@@ -408,7 +408,7 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
      * @return
      */
     protected val isNetworkAvailable: Boolean
-        protected get() = checkNetwork(context)
+        get() = checkNetwork(context)
 
     private fun checkNetwork(context: Context): Boolean {
         val networkInfo = getActiveNetworkInfo(context)
@@ -551,4 +551,4 @@ abstract class BaseFlowRepository<M, F : CacheHolderFactory<M>>(val context: Con
             }
             .toFlowable(strategy)
     }
-    }
+}

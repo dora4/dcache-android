@@ -503,7 +503,7 @@ implementation "com.github.dora4:dcache-android:$stable_version"
    另外，你也可以使用官方提供的dcache扩展包来更换数据库orm框架，如有改进意见，或有整合好的扩展包，欢迎你的投稿！
 
    ```groovy
-   implementation 'com.github.dora4:dcache-room-support:1.8'
+   implementation 'com.github.dora4:dcache-room-support:1.20'
    implementation 'com.github.dora4:dcache-greendao-support:1.2'
    ```
 

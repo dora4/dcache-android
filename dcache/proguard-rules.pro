@@ -24,12 +24,14 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
+# --- 通用区 ---
 # 保持注解不被混淆
 -keepattributes *Annotation*
 -keep class * extends java.lang.annotation.Annotation {*;}
 # 保持异常不被混淆
 -keepattributes Exceptions
 
+# --- 特殊区 ---
 -keep class dora.cache.** {
     *;
 }

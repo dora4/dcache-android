@@ -3,10 +3,10 @@
     <!-- 使用在检测当前是否有可用的网络 -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <!-- 使用在RetrofitManager发起api调用 -->
+    <!-- 使用在RetrofitManager发起RESTFul API调用 -->
     <uses-permission android:name="android.permission.INTERNET"/>
 
-    <!-- 使用在数据库orm框架 -->
+    <!-- 使用在dora-db数据库ORM框架 -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 </manifest>

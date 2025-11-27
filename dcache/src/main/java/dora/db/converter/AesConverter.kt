@@ -62,7 +62,7 @@ abstract class AesConverter : PropertyConverter<String, String> {
         return bytes2hex(src, "")
     }
 
-    fun hex2bytes(hexString: String, separator: String): ByteArray {
+    private fun hex2bytes(hexString: String, separator: String): ByteArray {
         val hexArr = hexString.split(separator.toRegex()).toTypedArray()
         val bs = ByteArray(hexArr.size)
         var i = 0

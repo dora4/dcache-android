@@ -12,7 +12,8 @@ class ZipHelper private constructor() {
     companion object {
 
         @JvmOverloads
-        fun decompressToStringForZlib(bytesToDecompress: ByteArray, charsetName: String? = "UTF-8"): String? {
+        fun decompressToStringForZlib(bytesToDecompress: ByteArray,
+                                      charsetName: String? = "UTF-8"): String? {
             val bytesDecompressed = decompressForZlib(
                     bytesToDecompress
             )
@@ -85,7 +86,8 @@ class ZipHelper private constructor() {
             try {
                 returnValues =
                     compressForZlib(
-                            stringToCompress.toByteArray(StandardCharsets.UTF_8)
+                            stringToCompress.toByteArray(
+                                StandardCharsets.UTF_8)
                     )
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -122,7 +124,8 @@ class ZipHelper private constructor() {
                 val data = ByteArray(BUFFER_SIZE)
                 var bytesRead: Int
                 while (gis.read(data).also { bytesRead = it } != -1) {
-                    string.append(String(data, 0, bytesRead, Charset.forName(charsetName)))
+                    string.append(String(data, 0, bytesRead,
+                        Charset.forName(charsetName)))
                 }
                 return string.toString()
             } catch (e: IOException) {

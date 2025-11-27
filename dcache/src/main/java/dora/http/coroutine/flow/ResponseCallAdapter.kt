@@ -10,7 +10,7 @@ import retrofit2.CallAdapter
 import retrofit2.HttpException
 import retrofit2.Response
 
-internal class ResponseCallAdapter<T>(
+class ResponseCallAdapter<T>(
     private val responseType: Type
 ) : CallAdapter<T, Flow<Response<T>>> {
 

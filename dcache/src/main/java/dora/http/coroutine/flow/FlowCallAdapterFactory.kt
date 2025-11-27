@@ -7,6 +7,20 @@ import retrofit2.CallAdapter
 import retrofit2.Response
 import retrofit2.Retrofit
 
+/**
+ * A Retrofit CallAdapter.Factory that adapts API return types into Kotlin Flow.
+ * 简体中文：Retrofit 的 CallAdapter.Factory，用于将接口返回类型适配为 Kotlin Flow。
+ *
+ * Supports the following return types:
+ *  - Flow<Foo>
+ *  - Flow<Response<Foo>>
+ * 简体中文：支持如下两种返回形式：
+ *  - Flow<Foo>
+ *  - Flow<Response<Foo>>
+ *
+ * If the API method returns a Flow type, this factory will provide a proper CallAdapter.
+ * 简体中文：若接口返回类型匹配 Flow，则本工厂会提供相应的 CallAdapter。
+ */
 class FlowCallAdapterFactory : CallAdapter.Factory() {
 
     override fun get(

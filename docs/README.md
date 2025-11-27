@@ -350,6 +350,12 @@ implementation "com.github.dora4:dcache-android:$stable_version"
      }
      ```
 
+     Of course, we also have a more advanced syntax.
+
+     ```kotlin
+     val user = result(UserService::class) { getUser() }
+     ```
+
 #### Three.Using Repositories
 
 - **Design Philosophy of Data Caching**

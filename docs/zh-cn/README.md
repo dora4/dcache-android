@@ -388,6 +388,12 @@ implementation "com.github.dora4:dcache-android:$stable_version"
          Toast.makeText(this, "$user1--$user2--$user3", Toast.LENGTH_SHORT).show()
      }
      ```
+     
+     当然我们还有高级写法。
+
+     ```kotlin
+     val user = result(UserService::class) { getUser() }
+     ```
 
 #### 三、repository的使用
 

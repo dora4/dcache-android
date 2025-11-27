@@ -458,7 +458,7 @@ object DoraHttp {
 
     /**
      * Conveniently create `MultipartBody.Part` objects.
-     * 简体中文：便捷创建创建MultipartBody.Part对象。
+     * 简体中文：便捷创建MultipartBody.Part对象。
      */
     fun createFilePart(file: File, partName: String = "file", mimeType: String = "*/*") : MultipartBody.Part {
         val requestFile: RequestBody = file

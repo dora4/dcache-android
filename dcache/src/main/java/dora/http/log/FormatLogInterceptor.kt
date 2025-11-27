@@ -8,6 +8,7 @@ import java.io.IOException
 import java.io.UnsupportedEncodingException
 import java.net.URLDecoder
 import java.nio.charset.Charset
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class FormatLogInterceptor : Interceptor {
@@ -126,14 +127,14 @@ class FormatLogInterceptor : Interceptor {
         fun parseParams(request: Request): String {
             return try {
                 val body = request.newBuilder().build().body ?: return ""
-                val requestbuffer = Buffer()
-                body.writeTo(requestbuffer)
+                val requestBuffer = Buffer()
+                body.writeTo(requestBuffer)
                 var charset = Charset.forName("UTF-8")
                 val contentType = body.contentType()
                 if (contentType != null) {
                     charset = contentType.charset(charset)
                 }
-                var json: String = requestbuffer.readString(charset!!)
+                var json: String = requestBuffer.readString(charset!!)
                 if (UrlEncoderUtils.hasUrlEncoded(json)) {
                     json = URLDecoder.decode(json, convertCharset(charset))
                 }
@@ -159,23 +160,23 @@ class FormatLogInterceptor : Interceptor {
         }
 
         fun isPlain(mediaType: MediaType?): Boolean {
-            return mediaType?.subtype?.toLowerCase()?.contains("plain") ?: false
+            return mediaType?.subtype?.toLowerCase(Locale.getDefault())?.contains("plain") ?: false
         }
 
         fun isJson(mediaType: MediaType?): Boolean {
-            return mediaType?.subtype?.toLowerCase()?.contains("json") ?: false
+            return mediaType?.subtype?.toLowerCase(Locale.getDefault())?.contains("json") ?: false
         }
 
         fun isXml(mediaType: MediaType?): Boolean {
-            return mediaType?.subtype?.toLowerCase()?.contains("xml") ?: false
+            return mediaType?.subtype?.toLowerCase(Locale.getDefault())?.contains("xml") ?: false
         }
 
         fun isHtml(mediaType: MediaType?): Boolean {
-            return mediaType?.subtype?.toLowerCase()?.contains("html") ?: false
+            return mediaType?.subtype?.toLowerCase(Locale.getDefault())?.contains("html") ?: false
         }
 
         fun isForm(mediaType: MediaType?): Boolean {
-            return mediaType?.subtype?.toLowerCase()?.contains("x-www-form-urlencoded") ?: false
+            return mediaType?.subtype?.toLowerCase(Locale.getDefault())?.contains("x-www-form-urlencoded") ?: false
         }
 
         fun convertCharset(charset: Charset?): String {

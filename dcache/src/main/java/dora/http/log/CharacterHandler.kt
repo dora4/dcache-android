@@ -1,14 +1,11 @@
 package dora.http.log
 
-import android.text.InputFilter
-import android.text.Spanned
 import android.text.TextUtils
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.StringReader
 import java.io.StringWriter
-import java.util.regex.Pattern
 import javax.xml.transform.OutputKeys
 import javax.xml.transform.Source
 import javax.xml.transform.TransformerException

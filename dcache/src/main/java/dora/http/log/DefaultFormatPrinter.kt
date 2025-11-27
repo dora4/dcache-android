@@ -55,8 +55,8 @@ class DefaultFormatPrinter : FormatPrinter {
 
     companion object {
         private const val TAG = "DoraHttpLog"
-        private val LINE_SEPARATOR = System.getProperty("line.separator")
-        private val DOUBLE_SEPARATOR = LINE_SEPARATOR?.plus(LINE_SEPARATOR)
+        private val LINE_SEPARATOR = System.lineSeparator()
+        private val DOUBLE_SEPARATOR = LINE_SEPARATOR.plus(LINE_SEPARATOR)
         private val OMITTED_RESPONSE = arrayOf(LINE_SEPARATOR, "Omitted response body")
         private val OMITTED_REQUEST = arrayOf(LINE_SEPARATOR, "Omitted request body")
         private const val N = "\n"

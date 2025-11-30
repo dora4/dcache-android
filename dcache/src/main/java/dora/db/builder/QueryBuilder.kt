@@ -69,23 +69,23 @@ class QueryBuilder private constructor() {
     }
 
     /**
-     * Specify the ORDER BY clause, e.g., -timestamp, +priority.
-     * 简体中文：指定 order by 子句，例如 -timestamp、+priority。
+     * Specify the ORDER BY clause.This is the original order-by method. It has now been refactored
+     * into an internal method and should no longer be called directly.
+     * 简体中文：指定 ORDER BY 子句。此方法为原始的 ORDER BY 实现，现已重构为内部方法，不应再被直接调用。
      */
-    fun orderByNew(order: String): QueryBuilder {
-        return orderBy(parseOrderBy(order))
+    private fun orderByInternal(order: String): QueryBuilder {
+        this.order = ORDER_BY + order
+        return this
     }
 
     /**
-     * Specifying the ORDER BY clause will be removed in version 3.6.
-     * 简体中文：指定 order by 子句，将会在 3.6 版本移除。
+     * Specify the ORDER BY clause, e.g., -timestamp, +priority.
+     * 简体中文：指定 order by 子句，例如 -timestamp、+priority。
+     * @see orderByInternal
+     * @since 3.6.0
      */
-    @Deprecated(message = "Use orderByNew() instead.",
-        replaceWith = ReplaceWith("orderByNew"),
-        level = DeprecationLevel.WARNING)
     fun orderBy(order: String): QueryBuilder {
-        this.order = ORDER_BY + order
-        return this
+        return orderByInternal(parseOrderBy(order))
     }
 
     /**

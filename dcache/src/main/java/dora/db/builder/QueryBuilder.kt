@@ -98,11 +98,11 @@ class QueryBuilder private constructor() {
      * 示例："timestamp", true  → +timestamp
      *       "priority",  false → -priority
      *
-     * @since 3.6.2
+     * @since 3.6.3
      */
     fun orderBy(column: String, asc: Boolean): QueryBuilder {
         val prefix = if (asc) "+" else "-"
-        return orderByInternal(prefix + column)
+        return orderByInternal(parseOrderBy(prefix + column))
     }
 
     /**

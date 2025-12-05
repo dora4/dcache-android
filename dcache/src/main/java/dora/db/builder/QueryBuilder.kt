@@ -89,6 +89,23 @@ class QueryBuilder private constructor() {
     }
 
     /**
+     * Specify the ORDER BY clause using a column and ascending flag.
+     * Example: ("timestamp", true)  → +timestamp   (ASC)
+     *          ("priority",  false) → -priority   (DESC)
+     *
+     * 简体中文：
+     * 通过列名和是否升序指定 ORDER BY 子句。
+     * 示例："timestamp", true  → +timestamp
+     *       "priority",  false → -priority
+     *
+     * @since 3.6.2
+     */
+    fun orderBy(column: String, asc: Boolean): QueryBuilder {
+        val prefix = if (asc) "+" else "-"
+        return orderByInternal(prefix + column)
+    }
+
+    /**
      * Specify the GROUP BY clause.
      * 简体中文：指定group by子句。
      */

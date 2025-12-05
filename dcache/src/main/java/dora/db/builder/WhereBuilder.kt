@@ -348,6 +348,54 @@ class WhereBuilder {
         return appendWhereIn(if (selection == "") null else OR, column, values)
     }
 
+    /**
+     * Add SQL statement fragments, such as `a IS NULL`.
+     * 简体中文：添加 SQL 语句片段，如 a IS NULL。
+     */
+    fun addWhereIsNull(column: String): WhereBuilder {
+        return append(null, "$column IS NULL", emptyArray())
+    }
+
+    /**
+     * Add SQL statement fragments, such as `a IS NOT NULL`.
+     * 简体中文：添加 SQL 语句片段，如 a IS NOT NULL。
+     */
+    fun addWhereIsNotNull(column: String): WhereBuilder {
+        return append(null, "$column IS NOT NULL", emptyArray())
+    }
+
+    /**
+     * Add SQL statement fragments, such as `AND a IS NULL`.
+     * 简体中文：添加 SQL 语句片段，如 AND a IS NULL。
+     */
+    fun andWhereIsNull(column: String): WhereBuilder {
+        return append(if (selection == "") null else AND, "$column IS NULL", emptyArray())
+    }
+
+    /**
+     * Add SQL statement fragments, such as `AND a IS NOT NULL`.
+     * 简体中文：添加 SQL 语句片段，如 AND a IS NOT NULL。
+     */
+    fun andWhereIsNotNull(column: String): WhereBuilder {
+        return append(if (selection == "") null else AND, "$column IS NOT NULL", emptyArray())
+    }
+
+    /**
+     * Add SQL statement fragments, such as `OR a IS NULL`.
+     * 简体中文：添加 SQL 语句片段，如 OR a IS NULL。
+     */
+    fun orWhereIsNull(column: String): WhereBuilder {
+        return append(if (selection == "") null else OR, "$column IS NULL", emptyArray())
+    }
+
+    /**
+     * Add SQL statement fragments, such as `OR a IS NOT NULL`.
+     * 简体中文：添加 SQL 语句片段，如 OR a IS NOT NULL。
+     */
+    fun orWhereIsNotNull(column: String): WhereBuilder {
+        return append(if (selection == "") null else OR, "$column IS NOT NULL", emptyArray())
+    }
+
     private fun append(connect: String?, whereClause: String, whereArgs: Array<Any>): WhereBuilder {
         if (connect != null) {
             selection += connect

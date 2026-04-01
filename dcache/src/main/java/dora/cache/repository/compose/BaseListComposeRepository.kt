@@ -46,7 +46,7 @@ abstract class BaseListComposeRepository<M>(
      * Fetch data.
      * 简体中文：获取列表数据。
      */
-    fun fetchData(listener: OnLoadListener? = null) {
+    fun fetchListData(listener: OnLoadListener? = null) {
         viewModelScope.launch {
             _loading.value = true
             try {

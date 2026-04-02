@@ -2,11 +2,11 @@ package dora.cache.repository.compose
 
 import android.content.Context
 import androidx.lifecycle.viewModelScope
-import dora.cache.factory.DatabaseCacheHolderFactory
 import dora.cache.holder.DatabaseCacheHolder
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -19,13 +19,19 @@ abstract class BaseComposeDatabaseRepository<M>(
     context: Context
 ) : BaseComposeRepository<M>(context) {
 
-    protected abstract fun createCacheHolderFactory(): DatabaseCacheHolderFactory<M>
-
+    /**
+     * Cache holder.
+     * 简体中文：缓存持有者（懒加载）。
+     */
     protected val cacheHolder: DatabaseCacheHolder<M> by lazy {
-        createCacheHolderFactory()
-            .createCacheHolder(getModelClass())
-            .apply { init() } as DatabaseCacheHolder<M>
+        createCacheHolder().apply { init() }
     }
+
+    /**
+     * Create cache holder.
+     * 简体中文：创建缓存持有者。
+     */
+    protected abstract fun createCacheHolder(): DatabaseCacheHolder<M>
 
     /**
      * Query condition.
@@ -57,34 +63,40 @@ abstract class BaseComposeDatabaseRepository<M>(
     }
 
     /**
-     * Compose-style fetch (cache + network).
-     * 简体中文：Compose风格获取数据（缓存 + 网络）。
+     * Fetch job.
+     * 简体中文：请求任务（防止重复请求）。
+     */
+    private var fetchJob: Job? = null
+
+    /**
+     * Fetch data.
+     * 简体中文：获取数据（缓存 + 网络）。
      */
     fun fetchData() {
-        viewModelScope.launch {
+        fetchJob?.cancel()
+        fetchJob = viewModelScope.launch {
             _loading.value = true
-            val cache = loadFromCache()
-            cache?.let {
-                _state.value = it
-            }
-            onLoadFromNetwork()
-                .flowOn(Dispatchers.IO)
-                .onEach {
-                    saveCache(it)
+            try {
+                // Load cache first.
+                // 简体中文：优先加载缓存。
+                val cache = loadFromCache()
+                cache?.let {
                     _state.value = it
                 }
-                .catch {
-                    _error.emit(it.message ?: "network error")
-                }
-                .collect()
-
-            _loading.value = false
+                // Load from network.
+                // 简体中文：再请求网络。
+                onLoadFromNetwork()
+                    .onEach {
+                        saveCache(it)
+                        _state.value = it
+                    }
+                    .catch {
+                        _error.emit(it.message ?: "error")
+                    }
+                    .collect()
+            } finally {
+                _loading.value = false
+            }
         }
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    private fun getModelClass(): Class<M> {
-        return (javaClass.genericSuperclass as java.lang.reflect.ParameterizedType)
-            .actualTypeArguments[0] as Class<M>
     }
 }

@@ -2,11 +2,11 @@ package dora.cache.repository.compose
 
 import android.content.Context
 import androidx.lifecycle.viewModelScope
-import dora.cache.factory.DatabaseCacheHolderFactory
 import dora.cache.holder.ListDatabaseCacheHolder
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -19,13 +19,19 @@ abstract class BaseListComposeDatabaseRepository<M>(
     context: Context
 ) : BaseListComposeRepository<M>(context) {
 
-    protected abstract fun createCacheHolderFactory(): DatabaseCacheHolderFactory<M>
-
-    protected val listCacheHolder: ListDatabaseCacheHolder<M> by lazy {
-        createCacheHolderFactory()
-            .createCacheHolder(getModelClass())
-            .apply { init() } as ListDatabaseCacheHolder<M>
+    /**
+     * Cache holder.
+     * 简体中文：缓存持有者（懒加载）。
+     */
+    protected open val listCacheHolder: ListDatabaseCacheHolder<M> by lazy {
+        createCacheHolder().apply { init() }
     }
+
+    /**
+     * Create cache holder.
+     * 简体中文：创建缓存持有者。
+     */
+    protected abstract fun createCacheHolder(): ListDatabaseCacheHolder<M>
 
     /**
      * Query condition.
@@ -45,6 +51,10 @@ abstract class BaseListComposeDatabaseRepository<M>(
         }
     }
 
+    /**
+     * Save list to cache.
+     * 简体中文：保存列表到缓存。
+     */
     protected open suspend fun saveCacheList(list: List<M>) {
         withContext(Dispatchers.IO) {
             listCacheHolder.removeOldCache(query())
@@ -52,31 +62,41 @@ abstract class BaseListComposeDatabaseRepository<M>(
         }
     }
 
-    fun fetchListData() {
-        viewModelScope.launch {
-            _loading.value = true
-            val cache = withContext(Dispatchers.IO) {
-                listCacheHolder.queryCache(query())
-            }
-            if (!cache.isNullOrEmpty()) {
-                _state.value = cache
-            }
-            onLoadFromNetwork()
-                .onEach {
-                    saveCacheList(it)
-                    _state.value = it
-                }
-                .catch {
-                    _error.emit(it.message ?: "error")
-                }
-                .collect()
-            _loading.value = false
-        }
-    }
+    /**
+     * Fetch job.
+     * 简体中文：请求任务（防止重复请求）。
+     */
+    private var fetchJob: Job? = null
 
-    @Suppress("UNCHECKED_CAST")
-    private fun getModelClass(): Class<M> {
-        return (javaClass.genericSuperclass as java.lang.reflect.ParameterizedType)
-            .actualTypeArguments[0] as Class<M>
+    /**
+     * Fetch list data.
+     * 简体中文：获取列表数据（缓存 + 网络）。
+     */
+    fun fetchListData() {
+        fetchJob?.cancel()
+        fetchJob = viewModelScope.launch {
+            _loading.value = true
+            try {
+                // Load cache first.
+                // 简体中文：优先加载缓存。
+                val cache = loadFromCacheList()
+                if (!cache.isNullOrEmpty()) {
+                    _state.value = cache
+                }
+                // Load from network.
+                // 简体中文：再请求网络。
+                onLoadFromNetwork()
+                    .onEach {
+                        saveCacheList(it)
+                        _state.value = it
+                    }
+                    .catch {
+                        _error.emit(it.message ?: "error")
+                    }
+                    .collect()
+            } finally {
+                _loading.value = false
+            }
+        }
     }
 }

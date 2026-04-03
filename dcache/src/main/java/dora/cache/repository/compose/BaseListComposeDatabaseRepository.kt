@@ -20,6 +20,12 @@ abstract class BaseListComposeDatabaseRepository<M>(
 ) : BaseListComposeRepository<M>(context) {
 
     /**
+     * Fetch job.
+     * 简体中文：请求任务（防止重复请求）。
+     */
+    private var fetchJob: Job? = null
+
+    /**
      * Cache holder.
      * 简体中文：缓存持有者（懒加载）。
      */
@@ -63,14 +69,8 @@ abstract class BaseListComposeDatabaseRepository<M>(
     }
 
     /**
-     * Fetch job.
-     * 简体中文：请求任务（防止重复请求）。
-     */
-    private var fetchJob: Job? = null
-
-    /**
      * Fetch list data.
-     * 简体中文：获取列表数据（缓存 + 网络）。
+     * 简体中文：获取列表数据。
      */
     fun fetchListData() {
         fetchJob?.cancel()
@@ -83,21 +83,17 @@ abstract class BaseListComposeDatabaseRepository<M>(
                 if (!cache.isNullOrEmpty()) {
                     _state.value = cache
                 }
-                try {
-                    // Load from network.
-                    // 简体中文：再请求网络。
-                    onLoadFromNetwork()
-                        .onEach {
-                            saveCacheList(it)
-                            _state.value = it
-                        }
-                        .catch {
-                            _error.emit(it.message ?: "error")
-                        }
-                        .collect()
-                } catch (e: Exception) {
-                    _error.emit(e.message ?: "network error")
-                }
+                // Load from network.
+                // 简体中文：再请求网络。
+                onLoadFromNetwork()
+                    .onEach {
+                        saveCacheList(it)
+                        _state.value = it
+                    }
+                    .catch {
+                        _error.emit(it.message ?: "error")
+                    }
+                    .collect()
             } finally {
                 _loading.value = false
             }

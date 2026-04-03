@@ -11,9 +11,7 @@ import kotlinx.coroutines.launch
  * Compose-first List repository (Flow only).
  * 简体中文：Compose列表Repository，仅使用Flow。
  */
-abstract class BaseListComposeRepository<M>(
-    val context: Context
-) : ViewModel() {
+abstract class BaseListComposeRepository<M>(val context: Context) : ViewModel() {
 
     /**
      * UI state flow.
@@ -38,13 +36,13 @@ abstract class BaseListComposeRepository<M>(
 
     /**
      * Flow network request (must override).
-     * 简体中文：Flow网络请求（返回列表）。
+     * 简体中文：Flow网络请求，必须实现。
      */
     protected abstract fun onLoadFromNetwork(): Flow<List<M>>
 
     /**
-     * Fetch data.
-     * 简体中文：获取列表数据。
+     * Fetch list data (Compose-friendly).
+     * 简体中文：获取列表数据（适用于Compose）。
      */
     fun fetchListData(listener: OnLoadListener? = null) {
         viewModelScope.launch {

@@ -12,12 +12,18 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Compose + Database cache repository.
- * 简体中文：Compose + 数据库缓存版本。
+ * Compose + Database cache.
+ * 简体中文：Compose + 数据库缓存。
  */
 abstract class BaseComposeDatabaseRepository<M>(
     context: Context
 ) : BaseComposeRepository<M>(context) {
+
+    /**
+     * Fetch job.
+     * 简体中文：请求任务（防止重复请求）。
+     */
+    private var fetchJob: Job? = null
 
     /**
      * Cache holder.
@@ -63,14 +69,8 @@ abstract class BaseComposeDatabaseRepository<M>(
     }
 
     /**
-     * Fetch job.
-     * 简体中文：请求任务（防止重复请求）。
-     */
-    private var fetchJob: Job? = null
-
-    /**
      * Fetch data.
-     * 简体中文：获取数据（缓存 + 网络）。
+     * 简体中文：获取数据。
      */
     fun fetchData() {
         fetchJob?.cancel()
@@ -83,21 +83,17 @@ abstract class BaseComposeDatabaseRepository<M>(
                 cache?.let {
                     _state.value = it
                 }
-                try {
-                    // Load from network.
-                    // 简体中文：再请求网络。
-                    onLoadFromNetwork()
-                        .onEach {
-                            saveCache(it)
-                            _state.value = it
-                        }
-                        .catch {
-                            _error.emit(it.message ?: "error")
-                        }
-                        .collect()
-                } catch (e: Exception) {
-                    _error.emit(e.message ?: "network error")
-                }
+                // Load from network.
+                // 简体中文：再请求网络。
+                onLoadFromNetwork()
+                    .onEach {
+                        saveCache(it)
+                        _state.value = it
+                    }
+                    .catch {
+                        _error.emit(it.message ?: "error")
+                    }
+                    .collect()
             } finally {
                 _loading.value = false
             }

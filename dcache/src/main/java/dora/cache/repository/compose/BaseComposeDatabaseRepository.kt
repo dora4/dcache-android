@@ -83,17 +83,21 @@ abstract class BaseComposeDatabaseRepository<M>(
                 cache?.let {
                     _state.value = it
                 }
-                // Load from network.
-                // 简体中文：再请求网络。
-                onLoadFromNetwork()
-                    .onEach {
-                        saveCache(it)
-                        _state.value = it
-                    }
-                    .catch {
-                        _error.emit(it.message ?: "error")
-                    }
-                    .collect()
+                try {
+                    // Load from network.
+                    // 简体中文：再请求网络。
+                    onLoadFromNetwork()
+                        .onEach {
+                            saveCache(it)
+                            _state.value = it
+                        }
+                        .catch {
+                            _error.emit(it.message ?: "error")
+                        }
+                        .collect()
+                } catch (e: Exception) {
+                    _error.emit(e.message ?: "network error")
+                }
             } finally {
                 _loading.value = false
             }

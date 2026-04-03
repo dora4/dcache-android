@@ -83,17 +83,21 @@ abstract class BaseListComposeDatabaseRepository<M>(
                 if (!cache.isNullOrEmpty()) {
                     _state.value = cache
                 }
-                // Load from network.
-                // 简体中文：再请求网络。
-                onLoadFromNetwork()
-                    .onEach {
-                        saveCacheList(it)
-                        _state.value = it
-                    }
-                    .catch {
-                        _error.emit(it.message ?: "error")
-                    }
-                    .collect()
+                try {
+                    // Load from network.
+                    // 简体中文：再请求网络。
+                    onLoadFromNetwork()
+                        .onEach {
+                            saveCacheList(it)
+                            _state.value = it
+                        }
+                        .catch {
+                            _error.emit(it.message ?: "error")
+                        }
+                        .collect()
+                } catch (e: Exception) {
+                    _error.emit(e.message ?: "network error")
+                }
             } finally {
                 _loading.value = false
             }

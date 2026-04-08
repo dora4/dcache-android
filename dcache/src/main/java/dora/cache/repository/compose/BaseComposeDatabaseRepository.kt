@@ -3,6 +3,7 @@ package dora.cache.repository.compose
 import android.content.Context
 import androidx.lifecycle.viewModelScope
 import dora.cache.holder.DatabaseCacheHolder
+import dora.cache.repository.BaseRepository.DataSource
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import kotlinx.coroutines.Dispatchers
@@ -81,12 +82,14 @@ abstract class BaseComposeDatabaseRepository<M>(
                 // 简体中文：优先加载缓存。
                 val cache = loadFromCache()
                 cache?.let {
+                    onInterceptData(DataSource.Type.CACHE, it)
                     _state.value = it
                 }
                 // Load from network.
                 // 简体中文：再请求网络。
                 onLoadFromNetwork()
                     .onEach {
+                        onInterceptData(DataSource.Type.NETWORK, it)
                         saveCache(it)
                         _state.value = it
                     }

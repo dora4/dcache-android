@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dora.cache.data.fetcher.OnLoadListener
+import dora.cache.repository.BaseRepository.DataSource
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 
 /**
  * Compose-first repository (Flow only, no Rx / callback).
@@ -41,26 +41,38 @@ abstract class BaseComposeRepository<M>(val context: Context) : ViewModel() {
     protected abstract fun onLoadFromNetwork(): Flow<M>
 
     /**
+     * Intercept network requests and the loaded cached data, making some modifications.
+     * 简体中文：拦截网络请求和缓存加载出来的数据，并做一些修改。
+     */
+    protected open fun onInterceptData(type: DataSource.Type, model: M) {}
+
+    /**
      * Fetch data (Compose-friendly).
      * 简体中文：获取数据（适用于Compose）。
      */
     fun fetchData(listener: OnLoadListener? = null) {
-        viewModelScope.launch {
-            _loading.value = true
-            try {
-                onLoadFromNetwork()
-                    .onEach {
-                        _state.value = it
-                        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
-                    }
-                    .catch {
-                        _error.emit(it.message ?: "unknown error")
-                        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
-                    }
-                    .collect()
-            } finally {
+        onLoadFromNetwork()
+            .onStart {
+                _loading.value = true
+            }
+            .onEach { data ->
+                onInterceptData(DataSource.Type.NETWORK, data)
+                _state.value = data
+                listener?.onLoad(
+                    OnLoadListener.Source.NETWORK,
+                    OnLoadListener.SUCCESS
+                )
+            }
+            .catch { e ->
+                _error.emit(e.message ?: "unknown error")
+                listener?.onLoad(
+                    OnLoadListener.Source.NETWORK,
+                    OnLoadListener.FAILURE
+                )
+            }
+            .onCompletion {
                 _loading.value = false
             }
-        }
+            .launchIn(viewModelScope)
     }
 }

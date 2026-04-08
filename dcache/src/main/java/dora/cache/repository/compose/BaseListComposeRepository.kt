@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dora.cache.data.fetcher.OnLoadListener
+import dora.cache.repository.BaseRepository.DataSource
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 
 /**
  * Compose-first List repository (Flow only).
@@ -41,26 +41,31 @@ abstract class BaseListComposeRepository<M>(val context: Context) : ViewModel() 
     protected abstract fun onLoadFromNetwork(): Flow<List<M>>
 
     /**
+     * Intercept network requests and the loaded cached data, making some modifications.
+     * 简体中文：拦截网络请求和缓存加载出来的数据，并做一些修改。
+     */
+    protected open fun onInterceptData(type: DataSource.Type, models: MutableList<M>) {}
+
+    /**
      * Fetch list data (Compose-friendly).
      * 简体中文：获取列表数据（适用于Compose）。
      */
     fun fetchListData(listener: OnLoadListener? = null) {
-        viewModelScope.launch {
-            _loading.value = true
-            try {
-                onLoadFromNetwork()
-                    .onEach {
-                        _state.value = it
-                        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
-                    }
-                    .catch {
-                        _error.emit(it.message ?: "unknown error")
-                        listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
-                    }
-                    .collect()
-            } finally {
+        onLoadFromNetwork()
+            .onStart {
+                _loading.value = true
+            }.onEach {
+                _state.value = it
+                onInterceptData(DataSource.Type.NETWORK, it.toMutableList())
+                listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
+            }
+            .catch {
+                _error.emit(it.message ?: "unknown error")
+                listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
+            }
+            .onCompletion {
                 _loading.value = false
             }
-        }
+            .launchIn(viewModelScope)
     }
 }

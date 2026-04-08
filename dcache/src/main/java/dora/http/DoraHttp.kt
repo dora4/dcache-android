@@ -460,7 +460,7 @@ object DoraHttp {
      * Conveniently create `MultipartBody.Part` objects.
      * 简体中文：便捷创建MultipartBody.Part对象。
      */
-    fun createFilePart(file: File, partName: String = "file", mimeType: String = "*/*") : MultipartBody.Part {
+    fun createFilePart(file: File, partName: String = "file", mimeType: String = "multipart/form-data") : MultipartBody.Part {
         val requestFile: RequestBody = file
             .asRequestBody(
                 mimeType.toMediaTypeOrNull()

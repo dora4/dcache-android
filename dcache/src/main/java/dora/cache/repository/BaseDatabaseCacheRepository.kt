@@ -263,7 +263,7 @@ abstract class BaseDatabaseCacheRepository<M, F : DatabaseCacheHolderFactory<M>>
         if (!checkParamsValid()) throw IllegalArgumentException(
             "Please check parameters, checkParamsValid returned false.")
         val models = (listCacheHolder as ListDatabaseCacheHolder<M>).queryCache(query())
-        if (models != null && models.size > 0) {
+        if (models != null && models.isNotEmpty()) {
             val data = onFilterData(DataSource.Type.CACHE, models)
             onInterceptData(DataSource.Type.CACHE, data)
             liveData.postValue(data)

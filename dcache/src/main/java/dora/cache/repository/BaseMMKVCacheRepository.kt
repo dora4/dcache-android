@@ -164,7 +164,7 @@ abstract class BaseMMKVCacheRepository<M>(context: Context) : BaseRepository<M, 
 
     private fun onLoadFromCacheList(liveData: MutableLiveData<MutableList<M>>) : Boolean {
         val models = (listCacheHolder as DoraListMMKVCacheHolder).readCache(getCacheKey())
-        if (models != null && models.size > 0) {
+        if (models != null && models.isNotEmpty()) {
             val data = onFilterData(DataSource.Type.CACHE, models)
             onInterceptData(DataSource.Type.CACHE, data)
             liveData.postValue(data)

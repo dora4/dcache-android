@@ -105,7 +105,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
 
     fun isOutOfPageRange() : Boolean {
         val lastPage = if (totalSize % pageSize == 0) totalSize / pageSize - 1 else totalSize / pageSize
-        return pageNo < 0 || lastPage < pageNo
+        return pageNo !in 0..lastPage
     }
 
     fun observeData(owner: LifecycleOwner, adapter: AdapterDelegate<T>) {
@@ -228,7 +228,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
         }
         val models = (listCacheHolder as ListDatabaseCacheHolder<T>).queryCache(query())
         models?.let {
-            if (it.size > 0) {
+            if (it.isNotEmpty()) {
                 val data = onFilterData(DataSource.Type.CACHE, it)
                 onInterceptData(DataSource.Type.CACHE, data)
                 liveData.postValue(data)
@@ -269,7 +269,7 @@ abstract class DoraPageDatabaseCacheRepository<T : OrmTable>(context: Context)
                     }
                     (listCacheHolder as ListDatabaseCacheHolder<T>).addNewCache(data)
                     withContext(Dispatchers.Main) {
-                        if (data.size > 0) {
+                        if (data.isNotEmpty()) {
                             listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.SUCCESS)
                         } else {
                             listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)

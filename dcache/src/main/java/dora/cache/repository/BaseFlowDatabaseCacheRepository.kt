@@ -112,7 +112,7 @@ abstract class BaseFlowDatabaseCacheRepository<M, F: DatabaseCacheHolderFactory<
      * 服务端，以致于下次请求api接口时也会有这部分数据。
      */
     fun addData(data: MutableList<M>, listener: OnSyncListener<M>?) {
-        if (data.size == 0) return
+        if (data.isEmpty()) return
         if (isListMode) {
             getListFlowData().value.let {
                 it.addAll(data)

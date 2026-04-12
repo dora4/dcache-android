@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.viewModelFactory
 import dora.cache.data.fetcher.DataFetcher
 import dora.cache.data.fetcher.ListDataFetcher
 import dora.cache.data.fetcher.OnLoadListener
@@ -114,7 +113,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
      * 服务端，以致于下次请求api接口时也会有这部分数据。
      */
     fun addData(data: MutableList<M>, listener: OnSyncListener<M>?) {
-        if (data.size == 0) return
+        if (data.isEmpty()) return
         if (isListMode) {
             getListLiveData().value?.let {
                 it.addAll(data)
@@ -208,7 +207,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
                 }
                 selectData(object : DataSource {
                     override fun loadFromCache(type: DataSource.CacheType): Boolean {
-                        var result: Boolean = false
+                        var result = false
                         if (type === DataSource.CacheType.DATABASE) {
                             onLoadFromCacheList(liveData) {
                                 result = it
@@ -277,7 +276,7 @@ abstract class BaseSuspendDatabaseCacheRepository<M, F : DatabaseCacheHolderFact
             "Please check parameters, checkParamsValid returned false.")
         viewModelScope.launch {
             val models = (listCacheHolder as SuspendListDatabaseCacheHolder<M>).queryCache(query())
-            if (models != null && models.size > 0) {
+            if (models != null && models.isNotEmpty()) {
                 val data = onFilterData(DataSource.Type.CACHE, models)
                 onInterceptData(DataSource.Type.CACHE, data)
                 liveData.postValue(data)

@@ -49,7 +49,8 @@ abstract class BaseComposeRepository<M>(val context: Context) : ViewModel() {
      * Fetch data (Compose-friendly).
      * 简体中文：获取数据（适用于Compose）。
      */
-    fun fetchData(listener: OnLoadListener? = null) {
+    @JvmOverloads
+    open fun fetchData(listener: OnLoadListener? = null) {
         onLoadFromNetwork()
             .onStart {
                 _loading.value = true

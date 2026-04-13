@@ -49,7 +49,8 @@ abstract class BaseListComposeRepository<M>(val context: Context) : ViewModel() 
      * Fetch list data (Compose-friendly).
      * 简体中文：获取列表数据（适用于Compose）。
      */
-    fun fetchListData(listener: OnLoadListener? = null) {
+    @JvmOverloads
+    open fun fetchListData(listener: OnLoadListener? = null) {
         onLoadFromNetwork()
             .onStart {
                 _loading.value = true

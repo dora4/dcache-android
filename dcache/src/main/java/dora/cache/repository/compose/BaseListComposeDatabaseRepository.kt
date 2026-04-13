@@ -2,8 +2,8 @@ package dora.cache.repository.compose
 
 import android.content.Context
 import androidx.lifecycle.viewModelScope
+import dora.cache.data.fetcher.OnLoadListener
 import dora.cache.holder.ListDatabaseCacheHolder
-import dora.cache.repository.BaseRepository.DataSource
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import kotlinx.coroutines.Dispatchers
@@ -73,7 +73,7 @@ abstract class BaseListComposeDatabaseRepository<M>(
      * Fetch list data.
      * 简体中文：获取列表数据。
      */
-    fun fetchListData() {
+    override fun fetchListData(listener: OnLoadListener?) {
         fetchJob?.cancel()
         fetchJob = viewModelScope.launch {
             _loading.value = true
@@ -81,9 +81,14 @@ abstract class BaseListComposeDatabaseRepository<M>(
                 // Load cache first.
                 // 简体中文：优先加载缓存。
                 val cache = loadFromCacheList()
-                if (!cache.isNullOrEmpty()) {
-                    onInterceptData(DataSource.Type.CACHE, cache.toMutableList())
-                    _state.value = cache
+                if (cache != null) {
+                    if (cache.isNotEmpty()) {
+                        onInterceptData(DataSource.Type.CACHE, cache.toMutableList())
+                        _state.value = cache
+                        listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
+                    }
+                } else {
+                    listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE)
                 }
                 // Load from network.
                 // 简体中文：再请求网络。
@@ -92,9 +97,17 @@ abstract class BaseListComposeDatabaseRepository<M>(
                         onInterceptData(DataSource.Type.NETWORK, it.toMutableList())
                         saveCacheList(it)
                         _state.value = it
+                        listener?.onLoad(
+                            OnLoadListener.Source.NETWORK,
+                            OnLoadListener.SUCCESS
+                        )
                     }
                     .catch {
                         _error.emit(it.message ?: "error")
+                        listener?.onLoad(
+                            OnLoadListener.Source.NETWORK,
+                            OnLoadListener.FAILURE
+                        )
                     }
                     .collect()
             } finally {

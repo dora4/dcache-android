@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dora.cache.data.fetcher.OnLoadListener
-import dora.cache.repository.BaseRepository.DataSource
 import kotlinx.coroutines.flow.*
 
 /**
@@ -74,5 +73,27 @@ abstract class BaseComposeRepository<M>(val context: Context) : ViewModel() {
                 _loading.value = false
             }
             .launchIn(viewModelScope)
+    }
+
+    /**
+     * Source of the data.
+     * 简体中文：数据的来源。
+     */
+    interface DataSource {
+
+        enum class Type {
+
+            /**
+             * Data comes from the network server.
+             * 简体中文：数据来源于网络服务器。
+             */
+            NETWORK,
+
+            /**
+             * Data comes from the cache.
+             * 简体中文：数据来源于缓存。
+             */
+            CACHE
+        }
     }
 }

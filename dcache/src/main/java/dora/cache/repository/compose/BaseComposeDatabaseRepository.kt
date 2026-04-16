@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.lifecycle.viewModelScope
 import dora.cache.data.fetcher.OnLoadListener
 import dora.cache.holder.DatabaseCacheHolder
+import dora.cache.repository.compose.flow.UiEvent
+import dora.cache.repository.compose.flow.UiState
 import dora.db.builder.Condition
 import dora.db.builder.QueryBuilder
 import kotlinx.coroutines.Dispatchers
@@ -76,14 +78,14 @@ abstract class BaseComposeDatabaseRepository<M>(
     override fun fetchData(listener: OnLoadListener?) {
         fetchJob?.cancel()
         fetchJob = viewModelScope.launch {
-            _loading.value = true
+            _state.value = UiState.Loading(true)
             try {
                 // Load cache first.
                 // 简体中文：优先加载缓存。
                 val cache = loadFromCache()
                 if (cache != null) {
                     onInterceptData(DataSource.Type.CACHE, cache)
-                    _state.value = cache
+                    _state.value = UiState.Success(cache, UiState.Source.CACHE)
                     listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
                 } else {
                     listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE)
@@ -94,14 +96,14 @@ abstract class BaseComposeDatabaseRepository<M>(
                     .onEach {
                         onInterceptData(DataSource.Type.NETWORK, it)
                         saveCache(it)
-                        _state.value = it
+                        _state.value = UiState.Success(it, UiState.Source.NETWORK)
                         listener?.onLoad(
                             OnLoadListener.Source.NETWORK,
                             OnLoadListener.SUCCESS
                         )
                     }
                     .catch {
-                        _error.emit(it.message ?: "error")
+                        _event.emit(UiEvent.Toast(it.message ?: "error"))
                         listener?.onLoad(
                             OnLoadListener.Source.NETWORK,
                             OnLoadListener.FAILURE
@@ -109,7 +111,7 @@ abstract class BaseComposeDatabaseRepository<M>(
                     }
                     .collect()
             } finally {
-                _loading.value = false
+                _state.value = UiState.Loading(false)
             }
         }
     }

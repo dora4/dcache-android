@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dora.cache.data.fetcher.OnLoadListener
+import dora.cache.repository.compose.flow.UiEvent
+import dora.cache.repository.compose.flow.UiState
 import kotlinx.coroutines.flow.*
 
 /**
@@ -16,22 +18,15 @@ abstract class BaseComposeRepository<M>(val context: Context) : ViewModel() {
      * UI state flow.
      * 简体中文：UI状态流。
      */
-    protected val _state = MutableStateFlow<M?>(null)
-    val state: StateFlow<M?> = _state.asStateFlow()
+    protected val _state = MutableStateFlow<UiState<M>>(UiState.Idle)
+    val state: StateFlow<UiState<M>> = _state
 
     /**
-     * Loading state.
-     * 简体中文：加载状态。
+     * UI event flow.
+     * 简体中文：UI事件流。
      */
-    protected val _loading = MutableStateFlow(false)
-    val loading: StateFlow<Boolean> = _loading.asStateFlow()
-
-    /**
-     * Error state.
-     * 简体中文：错误状态。
-     */
-    protected val _error = MutableSharedFlow<String>()
-    val error: SharedFlow<String> = _error
+    protected val _event = MutableSharedFlow<UiEvent>()
+    val event: SharedFlow<UiEvent> = _event
 
     /**
      * Flow network request (must override).
@@ -53,25 +48,26 @@ abstract class BaseComposeRepository<M>(val context: Context) : ViewModel() {
     open fun fetchData(listener: OnLoadListener? = null) {
         onLoadFromNetwork()
             .onStart {
-                _loading.value = true
+                _state.value = UiState.Loading(true)
             }
             .onEach { data ->
                 onInterceptData(DataSource.Type.NETWORK, data)
-                _state.value = data
+                _state.value = UiState.Success(data, UiState.Source.NETWORK)
                 listener?.onLoad(
                     OnLoadListener.Source.NETWORK,
                     OnLoadListener.SUCCESS
                 )
             }
             .catch { e ->
-                _error.emit(e.message ?: "unknown error")
+                _state.value = UiState.Error(e.message)
+                _event.emit(UiEvent.Toast(e.message ?: "unknown error"))
                 listener?.onLoad(
                     OnLoadListener.Source.NETWORK,
                     OnLoadListener.FAILURE
                 )
             }
             .onCompletion {
-                _loading.value = false
+                _state.value = UiState.Loading(false)
             }
             .launchIn(viewModelScope)
     }

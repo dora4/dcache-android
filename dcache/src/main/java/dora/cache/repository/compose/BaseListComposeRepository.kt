@@ -48,7 +48,7 @@ abstract class BaseListComposeRepository<M>(val context: Context) : ViewModel() 
     open fun fetchListData(listener: OnLoadListener? = null) {
         onLoadFromNetwork()
             .onStart {
-                _state.value = UiState.Loading(true)
+                _state.value = UiState.Loading
             }.onEach {
                 if (it.isEmpty()) {
                     _state.value = UiState.Empty
@@ -62,9 +62,6 @@ abstract class BaseListComposeRepository<M>(val context: Context) : ViewModel() 
                 _state.value = UiState.Error(it.message)
                 _event.emit(UiEvent.Toast(it.message ?: "unknown error"))
                 listener?.onLoad(OnLoadListener.Source.NETWORK, OnLoadListener.FAILURE)
-            }
-            .onCompletion {
-                _state.value = UiState.Loading(false)
             }
             .launchIn(viewModelScope)
     }

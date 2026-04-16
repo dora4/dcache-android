@@ -48,7 +48,7 @@ abstract class BaseComposeRepository<M>(val context: Context) : ViewModel() {
     open fun fetchData(listener: OnLoadListener? = null) {
         onLoadFromNetwork()
             .onStart {
-                _state.value = UiState.Loading(true)
+                _state.value = UiState.Loading
             }
             .onEach { data ->
                 onInterceptData(DataSource.Type.NETWORK, data)
@@ -65,9 +65,6 @@ abstract class BaseComposeRepository<M>(val context: Context) : ViewModel() {
                     OnLoadListener.Source.NETWORK,
                     OnLoadListener.FAILURE
                 )
-            }
-            .onCompletion {
-                _state.value = UiState.Loading(false)
             }
             .launchIn(viewModelScope)
     }

@@ -14,10 +14,9 @@ sealed class UiState<out T> {
 
     /**
      * Loading state.
-     * true means loading started, false means loading finished.
-     * 简体中文：加载状态，true 表示开始加载，false 表示加载结束。
+     * 简体中文：加载状态。
      */
-    data class Loading(val isShow: Boolean) : UiState<Nothing>()
+    object Loading : UiState<Nothing>()
 
     /**
      * Success state with data payload.

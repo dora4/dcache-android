@@ -78,41 +78,37 @@ abstract class BaseComposeDatabaseRepository<M>(
     override fun fetchData(listener: OnLoadListener?) {
         fetchJob?.cancel()
         fetchJob = viewModelScope.launch {
-            _state.value = UiState.Loading(true)
-            try {
-                // Load cache first.
-                // 简体中文：优先加载缓存。
-                val cache = loadFromCache()
-                if (cache != null) {
-                    onInterceptData(DataSource.Type.CACHE, cache)
-                    _state.value = UiState.Success(cache, UiState.Source.CACHE)
-                    listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
-                } else {
-                    listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE)
-                }
-                // Load from network.
-                // 简体中文：再请求网络。
-                onLoadFromNetwork()
-                    .onEach {
-                        onInterceptData(DataSource.Type.NETWORK, it)
-                        saveCache(it)
-                        _state.value = UiState.Success(it, UiState.Source.NETWORK)
-                        listener?.onLoad(
-                            OnLoadListener.Source.NETWORK,
-                            OnLoadListener.SUCCESS
-                        )
-                    }
-                    .catch {
-                        _event.emit(UiEvent.Toast(it.message ?: "error"))
-                        listener?.onLoad(
-                            OnLoadListener.Source.NETWORK,
-                            OnLoadListener.FAILURE
-                        )
-                    }
-                    .collect()
-            } finally {
-                _state.value = UiState.Loading(false)
+            _state.value = UiState.Loading
+            // Load cache first.
+            // 简体中文：优先加载缓存。
+            val cache = loadFromCache()
+            if (cache != null) {
+                onInterceptData(DataSource.Type.CACHE, cache)
+                _state.value = UiState.Success(cache, UiState.Source.CACHE)
+                listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
+            } else {
+                listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE)
             }
+            // Load from network.
+            // 简体中文：再请求网络。
+            onLoadFromNetwork()
+                .onEach {
+                    onInterceptData(DataSource.Type.NETWORK, it)
+                    saveCache(it)
+                    _state.value = UiState.Success(it, UiState.Source.NETWORK)
+                    listener?.onLoad(
+                        OnLoadListener.Source.NETWORK,
+                        OnLoadListener.SUCCESS
+                    )
+                }
+                .catch {
+                    _event.emit(UiEvent.Toast(it.message ?: "error"))
+                    listener?.onLoad(
+                        OnLoadListener.Source.NETWORK,
+                        OnLoadListener.FAILURE
+                    )
+                }
+                .collect()
         }
     }
 }

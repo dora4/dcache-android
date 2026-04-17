@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.*
  * Compose-first repository (Flow only, no Rx / callback).
  * 简体中文：Compose优先的Repository，仅使用Flow，不再依赖Rx或Callback。
  */
-abstract class BaseComposeRepository<M>(val context: Context) : ViewModel() {
+abstract class BaseComposeRepository<M> : ViewModel() {
 
     /**
      * UI state flow.

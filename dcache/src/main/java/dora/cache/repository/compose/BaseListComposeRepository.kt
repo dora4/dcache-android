@@ -51,7 +51,7 @@ abstract class BaseListComposeRepository<M>(val context: Context) : ViewModel() 
                 _state.value = UiState.Loading
             }.onEach {
                 if (it.isEmpty()) {
-                    _state.value = UiState.Empty
+                    _state.value = UiState.Empty(UiState.Source.NETWORK)
                 } else {
                     _state.value = UiState.Success(it, UiState.Source.NETWORK)
                 }

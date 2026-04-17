@@ -1,6 +1,5 @@
 package dora.cache.repository.compose
 
-import android.content.Context
 import androidx.lifecycle.viewModelScope
 import dora.cache.data.fetcher.OnLoadListener
 import dora.cache.holder.DatabaseCacheHolder
@@ -18,9 +17,7 @@ import kotlinx.coroutines.withContext
  * Compose + Database cache.
  * 简体中文：Compose + 数据库缓存。
  */
-abstract class BaseComposeDatabaseRepository<M>(
-    context: Context
-) : BaseComposeRepository<M>(context) {
+abstract class BaseComposeDatabaseRepository<M> : BaseComposeRepository<M>() {
 
     /**
      * Fetch job.

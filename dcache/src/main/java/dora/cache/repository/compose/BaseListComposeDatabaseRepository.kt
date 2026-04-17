@@ -87,6 +87,8 @@ abstract class BaseListComposeDatabaseRepository<M>(
                     onInterceptData(DataSource.Type.CACHE, cache.toMutableList())
                     _state.value = UiState.Success(cache, UiState.Source.CACHE)
                     listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.SUCCESS)
+                } else {
+                    _state.value = UiState.Empty(UiState.Source.CACHE)
                 }
             } else {
                 listener?.onLoad(OnLoadListener.Source.CACHE, OnLoadListener.FAILURE)
@@ -98,7 +100,7 @@ abstract class BaseListComposeDatabaseRepository<M>(
                     onInterceptData(DataSource.Type.NETWORK, it.toMutableList())
                     saveCacheList(it)
                     if (it.isEmpty()) {
-                        _state.value = UiState.Empty
+                        _state.value = UiState.Empty(UiState.Source.NETWORK)
                     } else {
                         _state.value = UiState.Success(it, UiState.Source.NETWORK)
                     }

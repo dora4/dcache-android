@@ -32,7 +32,9 @@ sealed class UiState<out T> {
      * Empty state when data is successfully loaded but has no content.
      * 简体中文：空数据状态，表示请求成功但无数据。
      */
-    object Empty : UiState<Nothing>()
+    data class Empty(
+        val source: Source = Source.NETWORK
+    ) : UiState<Nothing>()
 
     /**
      * Error state when loading or processing fails.
@@ -41,7 +43,8 @@ sealed class UiState<out T> {
      */
     data class Error(
         val msg: String? = null,
-        val code: Int? = null
+        val code: Int? = null,
+        val source: Source = Source.NETWORK
     ) : UiState<Nothing>()
 
     /**

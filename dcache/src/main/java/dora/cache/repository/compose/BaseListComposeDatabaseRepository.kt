@@ -18,9 +18,7 @@ import kotlinx.coroutines.withContext
  * Compose + Database cache (List version).
  * 简体中文：Compose + 数据库缓存（列表版）。
  */
-abstract class BaseListComposeDatabaseRepository<M>(
-    context: Context
-) : BaseListComposeRepository<M>(context) {
+abstract class BaseListComposeDatabaseRepository<M> : BaseListComposeRepository<M>() {
 
     /**
      * Fetch job.

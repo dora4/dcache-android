@@ -1,6 +1,5 @@
 package dora.cache.repository.compose
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dora.cache.data.fetcher.OnLoadListener
@@ -12,7 +11,7 @@ import kotlinx.coroutines.flow.*
  * Compose-first List repository (Flow only).
  * 简体中文：Compose列表Repository，仅使用Flow。
  */
-abstract class BaseListComposeRepository<M>(val context: Context) : ViewModel() {
+abstract class BaseListComposeRepository<M> : ViewModel() {
 
     /**
      * UI state flow.

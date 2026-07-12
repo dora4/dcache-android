@@ -14,5 +14,7 @@ Dora Box ([Dora Box](https://www.pgyer.com/dorabox-android))
 
 Crypto Tools ([Crypto Tools](https://www.pgyer.com/cryptotools))
 
+Pet Words ([Dora Box](https://www.pgyer.com/enlishstudy))
+
 Demo App ([Demo App](https://github.com/dora4/dora_samples))
 

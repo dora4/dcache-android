@@ -29,6 +29,18 @@ def stable_version = '3.5.7'
 implementation "com.github.dora4:dcache-android:$stable_version"
 ```
 
+#### Proguard & R8
+```groovy
+-keepattributes *Annotation*
+-keep class * implements dora.db.table.OrmTable { *; }
+-keep class * implements dora.db.converter.PropertyConverter { *; }
+-keep class dora.db.dao.** { *; }
+-keep class dora.cache.repository.** { *; }
+-dontwarn dora.cache.repository.**
+-dontwarn dora.db.dao.**
+-dontwarn dora.db.converter.**
+```
+
 ### Documentation (Tutorial: https://github.com/dora4/DoraCacheSample)
 
 #### One. dcache ORM Details

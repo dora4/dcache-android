@@ -28,8 +28,6 @@ class UrlEncoderUtils private constructor() {
                     if (isValidHexChar(c1) && isValidHexChar(c2)) {
                         encode = true
                         break
-                    } else {
-                        break
                     }
                 }
             }
